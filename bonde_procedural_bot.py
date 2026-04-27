@@ -203,8 +203,11 @@ class BondeProceduralBot:
         ka.auth(svr=self.env_dv, product="01")
         
         while True:
-            now = datetime.now()
-            # 시장 개장 여부 확인
+            # GitHub Action 서버 시차(UTC) 대응: UTC 시간에 9시간을 더해 KST 기준 시간 생성
+            from datetime import timedelta, timezone
+            now = datetime.now(timezone(timedelta(hours=9)))
+            
+            # 시장 개장 여부 확인 (KST 기준)
             is_kr_open = (now.weekday() < 5) and (9, 0) <= (now.hour, now.minute) <= (15, 30)
             # 미국장 (서머타임 미적용 기준 23:30~06:00, 적용 기준 22:30~05:00)
             # 여기서는 넉넉하게 22:00 ~ 06:00 사이로 설정합니다.
