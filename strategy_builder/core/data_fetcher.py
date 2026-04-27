@@ -13,6 +13,15 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
+import sys
+import os
+
+# 현재 파일의 부모 디렉토리(core)의 부모(strategy_builder)를 경로에 추가
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+
 import kis_auth as ka
 
 logging.basicConfig(level=logging.INFO)

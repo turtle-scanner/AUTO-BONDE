@@ -9,7 +9,7 @@ Applied Skills: skills/investment-strategy-framework.md
 
 import logging
 
-from core.signal import Action, Signal
+from .signal import Action, Signal
 
 logging.basicConfig(level=logging.INFO)
 

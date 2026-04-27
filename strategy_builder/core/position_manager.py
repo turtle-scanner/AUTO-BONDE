@@ -7,11 +7,11 @@ Applied Skills: skills/investment-strategy-framework.md
 """
 
 import logging
-from typing import Optional
+from .signal import Action, Signal
 
 import pandas as pd
 
-from core import data_fetcher
+from . import data_fetcher
 
 logging.basicConfig(level=logging.INFO)
 

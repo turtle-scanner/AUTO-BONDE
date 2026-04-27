@@ -12,11 +12,20 @@ import math
 
 import pandas as pd
 
+import sys
+import os
+
+# 현재 파일의 부모 디렉토리(core)의 부모(strategy_builder)를 경로에 추가
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+
 import kis_auth as ka
-from core import data_fetcher
-from core.position_manager import PositionManager
-from core.risk_manager import RiskManager
-from core.signal import Action, Signal
+from . import data_fetcher
+from .position_manager import PositionManager
+from .risk_manager import RiskManager
+from .signal import Action, Signal
 
 logging.basicConfig(level=logging.INFO)
 
@@ -206,25 +215,29 @@ class OrderExecutor:
 
             if is_us:
                 # 미국 주식 주문 설정
-                if self.env_dv == "real":
-                    tr_id = "JTTT1002U" if signal.action == Action.BUY else "JTTT1001U"
+                if self.env_dv in ["real", "prod"]:
+                    tr_id = "TTTT1002U" if signal.action == Action.BUY else "TTTT1001U"
                 else:
                     tr_id = "VTTT1002U" if signal.action == Action.BUY else "VTTT1001U"
                 
+                # 현재가 조회 (지정가 00 사용 시 필수)
+                curr_price_info = data_fetcher.get_current_price(signal.stock_code, self.env_dv)
+                curr_price = float(curr_price_info.get('price', 0))
+
                 params = {
                     "CANO": trenv.my_acct,
                     "ACNT_PRDT_CD": trenv.my_prod,
-                    "EXCD": "NAS",  # 나스닥 기본
-                    "SYMB": signal.stock_code,
-                    "ORD_DVSN": "00", # 지정가 (해외는 00 사용)
-                    "ORD_QTY": str(ord_qty),
-                    "ORD_UNPR": str(ord_unpr) if ord_unpr != "0" else str(data_fetcher.get_current_price(signal.stock_code, self.env_dv).get('price', 0)),
+                    "OVRS_EXCH_CD": "NASD",  # 나스닥 (NVDA 등)
+                    "PDNO": signal.stock_code,
+                    "ORD_DVSN": "00", # 지정가 (해외 주식 기본)
+                    "ORD_QTY": str(int(ord_qty)),
+                    "OVRS_ORD_UNPR": str(round(curr_price, 2)), # 미국 주식은 소수점 2자리까지
                     "SFT_YN": "N"
                 }
                 api_path = "/uapi/overseas-stock/v1/trading/order"
             else:
                 # 한국 주식 주문 설정
-                if self.env_dv == "real":
+                if self.env_dv in ["real", "prod"]:
                     tr_id = "TTTC0802U" if signal.action == Action.BUY else "TTTC0801U"
                 else:
                     tr_id = "VTTC0802U" if signal.action == Action.BUY else "VTTC0801U"

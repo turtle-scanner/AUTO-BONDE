@@ -492,7 +492,7 @@ def _url_fetch(
         print(f"<body>\n{params}")
 
     if postFlag:
-        # if (hashFlag): set_order_hash_key(headers, params)
+        if hashFlag: set_order_hash_key(headers, params)
         res = requests.post(url, headers=headers, data=json.dumps(params))
     else:
         res = requests.get(url, headers=headers, params=params)
