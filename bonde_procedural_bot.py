@@ -87,6 +87,39 @@ class BondeProceduralBot:
         equity = self._get_equity()
         risk_amount = equity * self.risk_pct
 
+        # 자산 규모에 따른 최대 보유 종목 수 결정
+        if equity < 10000000:       # 1,000만원 미만
+            max_positions = 10
+        elif equity < 50000000:     # 5,000만원 미만
+            max_positions = 15
+        elif equity < 100000000:    # 1억 미만
+            max_positions = 20
+        elif equity < 1000000000:   # 10억 미만
+            max_positions = 25
+        else:                       # 10억 이상
+            max_positions = 30
+
+        current_pos_count = len(self.active_positions)
+        logger.info(f"📊 현재 자산: {equity:,}원 | 리스크(1%): {risk_amount:,}원 | 보유 한도: {current_pos_count}/{max_positions}")
+
+        if current_pos_count >= max_positions:
+            logger.info(f"⚠️ 보유 종목 한도 초과 ({current_pos_count}/{max_positions}). 스캔을 건너뜁니다.")
+            return
+
+        # 시장 환경 체크 (Market Filter)
+        # 나스닥(QQQ 또는 ^IXIC)이 50일선 위에 있는지 확인 (본데의 핵심 규칙)
+        market_ok = True
+        try:
+            m_df = data_fetcher.get_daily_prices("COMP", days=100, env_dv=self.env_dv) # 나스닥 지수
+            if not m_df.empty and len(m_df) >= 50:
+                m_sma50 = indicators.calc_ma(m_df, 50).iloc[-1]
+                m_curr = m_df['close'].iloc[-1]
+                if m_curr < m_sma50:
+                    logger.warning(f"⚠️ [시장 필터] 지수({m_curr:.2f})가 50일선({m_sma50:.2f}) 아래에 있습니다. 보수적 운용 (매수 중단).")
+                    market_ok = False
+        except:
+            logger.warning("⚠️ 지수 데이터 조회 실패. 필터 없이 진행합니다.")
+
         for i, item in enumerate(watchlist):
             code = item['code']
             name = item.get('name', code)
@@ -100,48 +133,49 @@ class BondeProceduralBot:
             if code in self.active_positions:
                 continue
 
+            # 시장이 안 좋으면 매수 건너뜀
+            if not market_ok:
+                continue
+
             try:
                 signal = self.strategy.generate_signal(code, name)
                 
                 if signal.action == Action.BUY:
                     price_info = data_fetcher.get_current_price(code, self.env_dv)
-                    entry_price = price_info.get('price', 0)
+                    entry_price = float(price_info.get('price', 0))
                     
-                    # 사용자의 기계적 손절선: -3% 또는 LOD 중 더 타이트한 것 사용 가능
-                    # 여기서는 사용자 요청에 따라 명시적인 -3%를 기본으로 하되, LOD도 참고
-                    hard_stop_price = entry_price * 0.97 
+                    # 본데 원칙: 진입 당일의 최저가(LOD)를 손절선으로 설정
+                    lod_stop = float(signal.stop_loss) if hasattr(signal, 'stop_loss') and signal.stop_loss else entry_price * 0.97
                     
-                    # 리스크 기반 수량 계산
-                    price_risk = entry_price - hard_stop_price
-                    qty = int(risk_amount / price_risk) if price_risk > 0 else 0
+                    # 리스크 기반 수량 계산 (1% Risk)
+                    price_risk = entry_price - lod_stop
+                    if price_risk <= 0: price_risk = entry_price * 0.03
                     
+                    qty = int(math.floor(risk_amount / price_risk))
                     if qty <= 0: continue
 
-                    logger.info(f"🔥 [매수] {name} | 진입가: {entry_price:,} | 손절선(-3%): {hard_stop_price:,}")
-                    signal.quantity = qty
-                    signal.strength = 1.0
+                    logger.info(f"🔥 [매수] {name} | 진입가: {entry_price:,} | 본데 손절가(LOD): {lod_stop:,}")
                     
-                    # 매수 (현금만 지원, 리스크 금액 전달)
+                    # 신규 필드 적용하여 주문
                     res = self.executor.execute_signal(signal, risk_amount=risk_amount)
                     
                     if not res.empty:
                         self.active_positions[code] = {
                             "name": name,
                             "entry_price": entry_price,
-                            "stop_price": hard_stop_price,
+                            "stop_price": lod_stop,
                             "qty": qty,
                             "entry_date": datetime.now().strftime("%Y-%m-%d"),
-                            "high_after_entry": entry_price,
                             "status": "active"
                         }
                         self._save_positions()
-                        send_telegram_message(f"🚀 *[본데 진입]* {name}\n• 수량: {qty}주\n• 진입가: {entry_price:,}\n• 손절가(-3%): {hard_stop_price:,}")
+                        send_telegram_message(f"🚀 *[본데 진입]* {name}\n• 수량: {qty}주\n• 진입가: {entry_price:,}\n• 손절가(LOD): {lod_stop:,}")
 
             except Exception as e:
                 logger.error(f"❌ {name} 스캔 중 오류: {e}")
 
     def monitor_and_sell(self):
-        """보유 종목 모니터링 및 매도 (손절 -3%, 익절 +21%, 3일 내 20% 규칙)"""
+        """보유 종목 모니터링 및 본데 원칙(LOD & SMA 7) 매도"""
         if not self.active_positions:
             return
 
@@ -151,10 +185,10 @@ class BondeProceduralBot:
         for code, pos in self.active_positions.items():
             try:
                 price_info = data_fetcher.get_current_price(code, self.env_dv)
-                curr_price = price_info.get('price', 0)
+                curr_price = float(price_info.get('price', 0))
                 if curr_price == 0: continue
 
-                # 최고가 갱신 기록
+                # 최고가 갱신 기록 (Trailing을 위해)
                 if curr_price > pos.get('high_after_entry', 0):
                     pos['high_after_entry'] = curr_price
 
@@ -162,36 +196,45 @@ class BondeProceduralBot:
                 entry_dt = datetime.strptime(pos['entry_date'], "%Y-%m-%d")
                 days_held = (now - entry_dt).days
 
-                # 1. 기계적 손절 (-3% 이탈)
+                # 1. 본데 LOD 손절 (실시간 이탈 시)
                 if curr_price <= pos['stop_price']:
-                    logger.info(f"💥 [손절] {pos['name']} | 현재가({curr_price:,}) <= 손절가({pos['stop_price']:,})")
-                    signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason="-3% 손절선 이탈")
+                    logger.info(f"💥 [손절] {pos['name']} | 현재가({curr_price:,}) <= LOD({pos['stop_price']:,})")
+                    signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason="본데 LOD 손절선 이탈")
                     self.executor.execute_signal(signal)
                     codes_to_remove.append(code)
-                    send_telegram_message(f"💥 *[본데 손절]* {pos['name']}\n• 현재가: {curr_price:,}\n• 손절가: {pos['stop_price']:,}\n• 수익률: {profit_rate:.2f}%")
+                    send_telegram_message(f"💥 *[본데 손절]* {pos['name']}\n• 현재가: {curr_price:,}\n• 손절가(LOD): {pos['stop_price']:,}\n• 수익률: {profit_rate:.2f}%")
                     continue
 
-                # 2. 기계적 익절 (+21% 도달)
-                if profit_rate >= 21.0:
-                    logger.info(f"✨ [익절] {pos['name']} | 목표 수익률(+21%) 도달!")
-                    signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason="+21% 익절 달성")
-                    self.executor.execute_signal(signal)
-                    codes_to_remove.append(code)
-                    send_telegram_message(f"✨ *[본데 익절]* {pos['name']}\n• 현재가: {curr_price:,}\n• 수익률: {profit_rate:.2f}% (목표 달성)")
-                    continue
-
-                # 3. 특수 규칙: 3일 내 20% 상승 시 손절선 재설정
+                # 2. 본데 추세 익절 (7일선 하향 돌파 시)
+                # 데이터 조회를 통해 SMA 7 확인
+                df = data_fetcher.get_daily_prices(code, days=20, env_dv=self.env_dv)
+                if not df.empty and len(df) >= 7:
+                    sma7 = indicators.calc_ma(df, 7).iloc[-1]
+                    # 본데 원칙: 종가 기준으로 7일선을 깨면 매매 종료 (추세 반전)
+                    if curr_price < sma7 * 0.99: # 1% 마진을 두어 노이즈 제거
+                        logger.info(f"💰 [익절/추세종료] {pos['name']} | 7일선({sma7:.2f}) 하향 돌파")
+                        signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason="7일선 추세 종료")
+                        self.executor.execute_signal(signal)
+                        codes_to_remove.append(code)
+                        send_telegram_message(f"💰 *[본데 추세익절]* {pos['name']}\n• 현재가: {curr_price:,}\n• 7일선: {sma7:.2f}\n• 수익률: {profit_rate:.2f}%")
+                        continue
+                
+                # 3. 수익 보호 규칙: 3일 내 20% 상승 시 손절선을 본전 위로 상향
                 if days_held <= 3 and profit_rate >= 20.0 and pos.get('status') == "active":
-                    # 손절선을 현재가의 -3% 지점으로 상향 조정 (수익 보존)
-                    new_stop = curr_price * 0.97
+                    new_stop = pos['entry_price'] * 1.05 # 본전 + 5% 수익 확보
                     pos['stop_price'] = new_stop
                     pos['status'] = "protected"
                     self._save_positions()
-                    logger.info(f"🛡️ [보호] {pos['name']} | 3일 내 20% 상승! 손절선을 {new_stop:,}원으로 상향 조정")
-                    send_telegram_message(f"🛡️ *[본데 보호]* {pos['name']}\n• 3일 내 20% 상승 달성\n• 손절선 상향 조정: {new_stop:,}원")
+                    logger.info(f"🛡️ [보호] {pos['name']} | 급등 달성! 손절선을 {new_stop:,}원으로 상향 조정")
+                    send_telegram_message(f"🛡️ *[본데 보호]* {pos['name']}\n• 급등 달성\n• 수익 보호선 설정: {new_stop:,}원")
 
             except Exception as e:
                 logger.error(f"❌ {pos['name']} 모니터링 중 오류: {e}")
+
+        for code in codes_to_remove:
+            del self.active_positions[code]
+        if codes_to_remove:
+            self._save_positions()
 
         for code in codes_to_remove:
             del self.active_positions[code]
