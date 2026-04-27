@@ -109,7 +109,7 @@ class BondeProceduralBot:
         # 시장 환경 체크 (Market Filter)
         market_ok = True
         try:
-            m_df = data_fetcher.get_daily_prices("COMP", days=250, env_dv=self.env_dv) # 나스닥 지수
+            m_df = data_fetcher.get_daily_prices("QQQ", days=250, env_dv=self.env_dv) # 나스닥 100 ETF (QQQ)
             if not m_df.empty and len(m_df) >= 200:
                 m_sma50 = indicators.calc_ma(m_df, 50).iloc[-1]
                 m_sma200 = indicators.calc_ma(m_df, 200).iloc[-1]
@@ -122,59 +122,88 @@ class BondeProceduralBot:
         except:
             logger.warning("⚠️ 지수 데이터 조회 실패. 필터 없이 진행합니다.")
 
+        # 1단계: 모든 종목 스캔하여 신호 수집
+        buy_signals = []
         for i, item in enumerate(watchlist):
             code = item['code']
             name = item.get('name', code)
             
-            # TPS 제한 방지를 위한 지연 (0.1초)
-            time.sleep(0.1)
-            
-            if i % 10 == 0:
-                logger.info(f"🔍 스캔 진행 중... ({i}/{len(watchlist)}) [{code}] {name}")
+            if i % 20 == 0:
+                logger.info(f"🔍 스캔 진행 중... ({i}/{len(watchlist)})")
             
             if code in self.active_positions:
                 continue
 
-            # 시장이 안 좋으면 매수 건너뜀
+            # 시장이 안 좋으면 신규 매수 수집 중단
             if not market_ok:
                 continue
 
             try:
+                time.sleep(0.1) # TPS 제한 방지
                 signal = self.strategy.generate_signal(code, name)
                 
                 if signal.action == Action.BUY:
-                    price_info = data_fetcher.get_current_price(code, self.env_dv)
-                    entry_price = float(price_info.get('price', 0))
+                    # RS 점수 추출 (reason 문자열에서 파싱)
+                    try:
+                        rs_score = float(signal.reason.split("RS: ")[1].split(" | ")[0])
+                    except:
+                        rs_score = 0.0
                     
-                    # 본데 원칙: 진입 당일의 최저가(LOD)를 손절선으로 설정
-                    lod_stop = float(signal.stop_loss) if hasattr(signal, 'stop_loss') and signal.stop_loss else entry_price * 0.97
-                    
-                    # 리스크 기반 수량 계산 (1% Risk)
-                    price_risk = entry_price - lod_stop
-                    if price_risk <= 0: price_risk = entry_price * 0.03
-                    
-                    qty = int(math.floor(risk_amount / price_risk))
-                    if qty <= 0: continue
-
-                    logger.info(f"🔥 [매수] {name} | 진입가: {entry_price:,} | 본데 손절가(LOD): {lod_stop:,}")
-                    
-                    # 신규 필드 적용하여 주문
-                    res = self.executor.execute_signal(signal, risk_amount=risk_amount)
-                    
-                    if not res.empty:
-                        self.active_positions[code] = {
-                            "name": name,
-                            "entry_price": entry_price,
-                            "stop_price": lod_stop,
-                            "qty": qty,
-                            "entry_date": datetime.now().strftime("%Y-%m-%d"),
-                            "status": "active"
-                        }
-                        self._save_positions()
-                        send_telegram_message(f"🚀 *[본데 진입]* {name}\n• 수량: {qty}주\n• 진입가: {entry_price:,}\n• 손절가(LOD): {lod_stop:,}")
+                    buy_signals.append({
+                        "signal": signal,
+                        "rs_score": rs_score,
+                        "code": code,
+                        "name": name
+                    })
+                    logger.info(f"✨ 신호 포착: {name} (RS: {rs_score})")
 
             except Exception as e:
                 logger.error(f"❌ {name} 스캔 중 오류: {e}")
+
+        # 2단계: RS 점수 순으로 내림차순 정렬
+        buy_signals.sort(key=lambda x: x['rs_score'], reverse=True)
+        
+        # 3단계: 정렬된 순서대로 매수 집행
+        for item in buy_signals:
+            if len(self.active_positions) >= max_positions:
+                break
+                
+            code = item['code']
+            name = item['name']
+            signal = item['signal']
+            
+            try:
+                price_info = data_fetcher.get_current_price(code, self.env_dv)
+                entry_price = float(price_info.get('price', 0))
+                if entry_price <= 0: continue
+                
+                lod_stop = float(signal.stop_loss) if hasattr(signal, 'stop_loss') and signal.stop_loss else entry_price * 0.97
+                
+                # 리스크 기반 수량 계산
+                price_risk = entry_price - lod_stop
+                if price_risk <= 0: price_risk = entry_price * 0.03
+                
+                qty = int(math.floor(risk_amount / price_risk))
+                if qty <= 0: continue
+
+                logger.info(f"🔥 [매수 집행] {name} (RS: {item['rs_score']}) | 진입가: {entry_price} | 손절가: {lod_stop}")
+                
+                res = self.executor.execute_signal(signal, risk_amount=risk_amount)
+                
+                if not res.empty:
+                    self.active_positions[code] = {
+                        "name": name,
+                        "entry_price": entry_price,
+                        "stop_price": lod_stop,
+                        "qty": qty,
+                        "entry_date": datetime.now().strftime("%Y-%m-%d"),
+                        "status": "active"
+                    }
+                    self._save_positions()
+                    send_telegram_message(f"🚀 *[본데 진입]* {name}\n• RS 점수: {item['rs_score']}\n• 수량: {qty}주\n• 진입가: {entry_price}\n• 손절가: {lod_stop}")
+            
+            except Exception as e:
+                logger.error(f"❌ {name} 매수 처리 중 오류: {e}")
 
     def monitor_and_sell(self):
         """보유 종목 모니터링 및 본데 원칙(분할 매도 & SMA 7) 매도"""

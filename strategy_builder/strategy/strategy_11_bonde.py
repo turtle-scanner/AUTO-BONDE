@@ -92,14 +92,18 @@ class BondeStrategy(BaseStrategy):
         if is_9m: setups.append("9M EP")
 
         if setups:
+            # RS 점수 계산 (최근 20일 수익률 기반)
+            df['RS_Score'] = df['close'] / df['close'].shift(20) * 100
+            rs_score = df['RS_Score'].iloc[-1]
+            
             # LOD (당일 최저점)를 손절가로 설정
             lod_price = latest['low']
             return Signal(
                 stock_code=stock_code,
                 stock_name=stock_name,
                 action=Action.BUY,
-                strength=0.9,
-                reason=f"본데 셋업 포착 ({' | '.join(setups)}) | TI65: {ti65:.3f}",
+                strength=0.9 if rs_score > 105 else 0.7, # RS가 5% 이상 높으면 강한 시그널
+                reason=f"본데 셋업 포착 ({' | '.join(setups)}) | RS: {rs_score:.1f} | TI65: {ti65:.3f}",
                 stop_loss=lod_price,
                 target_price=None  # 시장가 진입
             )
