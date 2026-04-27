@@ -143,17 +143,22 @@ def get_daily_prices(
             tr_id = "HHDFS76240000"
             params = {
                 "AUTH": "",
-                "EXCD": "NAS",  # 기본 나스닥 (필요시 상세 분기)
+                "EXCD": "NAS",  # 나스닥
                 "SYMB": stock_code,
-                "GUBN": "0",  # 일봉
+                "GUBN": "0",    # 일봉
                 "BYMD": "",
-                "MODP": "Y"
+                "MODP": "1"     # 수정주가 (1: 적용, 0: 미적용)
             }
             res = ka._url_fetch("/uapi/overseas-stock/v1/quotations/dailyprice", tr_id, "", params)
             
             if not res.isOK():
-                # 나스닥 실패 시 뉴욕거래소(NYS) 재시도
+                # 나스닥 실패 시 뉴욕거래소(NYS) 시도
                 params["EXCD"] = "NYS"
+                res = ka._url_fetch("/uapi/overseas-stock/v1/quotations/dailyprice", tr_id, "", params)
+
+            if not res.isOK():
+                # 뉴욕 실패 시 아멕스(AMS) 시도
+                params["EXCD"] = "AMS"
                 res = ka._url_fetch("/uapi/overseas-stock/v1/quotations/dailyprice", tr_id, "", params)
 
             if not res.isOK():

@@ -115,12 +115,30 @@ class BondeProceduralBot:
                 m_sma200 = indicators.calc_ma(m_df, 200).iloc[-1]
                 m_curr = m_df['close'].iloc[-1]
                 
-                # 본데 필터: 지수가 50일선 또는 200일선 아래면 매매 중단
+                # 1. 지수 이평선 필터
                 if m_curr < m_sma50 or m_curr < m_sma200:
-                    logger.warning(f"⚠️ [시장 필터] 지수({m_curr:.2f})가 주요 이평선(50일:{m_sma50:.2f}, 200일:{m_sma200:.2f}) 아래에 있습니다. 매수 중단.")
+                    logger.warning(f"⚠️ [지수 필터] QQQ({m_curr:.2f})가 이평선 아래에 있음. 매매 중단.")
                     market_ok = False
-        except:
-            logger.warning("⚠️ 지수 데이터 조회 실패. 필터 없이 진행합니다.")
+                
+                # 2. 시장 폭(Market Breadth) 필터: 와치리스트 중 50일선 위 종목 비율
+                above_50ma_count = 0
+                sample_size = min(len(watchlist), 30) # 상위 30개 종목 샘플링
+                for item in watchlist[:sample_size]:
+                    w_df = data_fetcher.get_daily_prices(item['code'], days=60, env_dv=self.env_dv)
+                    if not w_df.empty and len(w_df) >= 50:
+                        w_sma50 = indicators.calc_ma(w_df, 50).iloc[-1]
+                        if w_df['close'].iloc[-1] > w_sma50:
+                            above_50ma_count += 1
+                    time.sleep(0.05) # TPS 보호
+                
+                breadth_pct = (above_50ma_count / sample_size) * 100
+                logger.info(f"📊 시장 폭(Breadth): {breadth_pct:.1f}% ({above_50ma_count}/{sample_size})")
+                
+                if breadth_pct < 40: # 40% 미만이면 시장이 극도로 불안정함
+                    logger.warning(f"⚠️ [시장 폭 필터] 상승 종목 비중이 너무 낮음({breadth_pct:.1f}%). 매매 중단.")
+                    market_ok = False
+        except Exception as e:
+            logger.warning(f"⚠️ 시장 필터 계산 중 오류({e}). 보수적으로 진행합니다.")
 
         # 1단계: 모든 종목 스캔하여 신호 수집
         buy_signals = []
