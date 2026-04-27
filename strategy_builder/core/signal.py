@@ -48,16 +48,14 @@ class Signal:
     strength: float
     reason: str
     timestamp: datetime = field(default_factory=datetime.now)
-    target_price: Optional[int] = None
+    target_price: Optional[float] = None
+    stop_loss: Optional[float] = None
     quantity: Optional[int] = None
 
     def __post_init__(self):
         """생성 시 유효성 검증"""
         if not 0.0 <= self.strength <= 1.0:
             raise ValueError(f"strength must be between 0.0 and 1.0, got {self.strength}")
-
-        if len(self.stock_code) != 6:
-            raise ValueError(f"stock_code must be 6 digits, got {self.stock_code}")
 
     def is_strong(self) -> bool:
         """강한 시그널 여부 (시장가 주문 대상)"""

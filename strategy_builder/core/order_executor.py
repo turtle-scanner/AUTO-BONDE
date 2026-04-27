@@ -39,7 +39,7 @@ class OrderExecutor:
         self.position_manager = PositionManager(env_dv)
         self.risk_manager = RiskManager()
 
-    def execute_signal(self, signal: Signal) -> pd.DataFrame:
+    def execute_signal(self, signal: Signal, risk_amount: float = 100000) -> pd.DataFrame:
         """
         시그널을 실제 주문으로 실행
 
@@ -82,7 +82,7 @@ class OrderExecutor:
 
         # 5. 주문 파라미터 결정
         ord_dvsn, ord_unpr = self._determine_order_type(signal)
-        ord_qty = self._calculate_quantity(signal)
+        ord_qty = self._calculate_quantity(signal, risk_amount=risk_amount)
 
         if ord_qty <= 0:
             logging.warning(f"주문 수량 0 - 주문 생략: {signal.stock_name}")
@@ -146,9 +146,10 @@ class OrderExecutor:
         adjusted = self._round_to_tick(float(current_price), is_us)
         return ("00", str(adjusted))
 
-    def _calculate_quantity(self, signal: Signal) -> int:
+    def _calculate_quantity(self, signal: Signal, risk_amount: float = 100000) -> int:
         """
-        주문 수량 계산
+        리스크 기반 수량 계산
+        수량 = 리스크 금액 / (현재가 - 손절가)
         """
         if signal.quantity:
             return signal.quantity
@@ -156,7 +157,38 @@ class OrderExecutor:
         if signal.action == Action.SELL:
             return self.position_manager.get_holding_quantity(signal.stock_code)
 
-        return 1
+        # 매수 수량 계산
+        try:
+            price_info = data_fetcher.get_current_price(signal.stock_code, self.env_dv)
+            current_price = float(price_info.get("price", 0))
+            
+            if current_price <= 0:
+                return 0
+
+            # 손절가가 지정되지 않은 경우 기본 1% 손절로 가정
+            stop_loss = signal.stop_loss if signal.stop_loss else current_price * 0.99
+            
+            price_diff = abs(current_price - stop_loss)
+            if price_diff <= 0:
+                return 0
+            
+            # 미국 주식인 경우 리스크 금액(원화)을 달러로 환산 (대략 1,400원 기준)
+            is_us = not signal.stock_code.isdigit()
+            effective_risk = risk_amount
+            if is_us:
+                effective_risk = risk_amount / 1400.0
+            
+            qty = int(math.floor(effective_risk / price_diff))
+            
+            # 최소 1주 보장 (단, 현재가보다 리스크 금액이 작으면 0)
+            if qty == 0 and effective_risk >= current_price:
+                qty = 1
+                
+            return qty
+            
+        except Exception as e:
+            logging.error(f"수량 계산 중 오류: {e}")
+            return 1
 
     def _execute_order(
         self,

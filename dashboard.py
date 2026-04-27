@@ -85,6 +85,9 @@ def dashboard_page():
             acct_no = ka.getTREnv().my_acct
         except:
             acct_no = st.secrets.get("KIS_ACCOUNT_NO", os.environ.get("KIS_ACCOUNT_NO", "4654671301"))
+        
+        token = st.secrets.get("TELEGRAM_TOKEN", os.environ.get("TELEGRAM_TOKEN", "8713555022:AAFu6WjY6HUpaw2eyYSBSZSrIhiTFex9uho"))
+        chat_id = st.secrets.get("TELEGRAM_CHAT_ID", os.environ.get("TELEGRAM_CHAT_ID", "7998778160"))
             
         st.info(f"계좌: {acct_no}")
         

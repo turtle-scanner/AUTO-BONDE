@@ -100,7 +100,8 @@ class BondeStrategy(BaseStrategy):
                 action=Action.BUY,
                 strength=0.9,
                 reason=f"본데 셋업 포착 ({' | '.join(setups)}) | TI65: {ti65:.3f}",
-                target_price=lod_price  # target_price 필드를 LOD(손절가)로 활용
+                stop_loss=lod_price,
+                target_price=None  # 시장가 진입
             )
         
         return Signal(

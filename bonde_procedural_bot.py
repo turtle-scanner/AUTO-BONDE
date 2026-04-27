@@ -52,9 +52,27 @@ class BondeProceduralBot:
             json.dump(self.active_positions, f, ensure_ascii=False, indent=4)
 
     def _get_equity(self):
-        """현재 총 자산(총 평가금액) 조회"""
-        deposit = data_fetcher.get_deposit(self.env_dv)
-        return deposit.get('total_eval', 10000000) # 기본 1천만원
+        """통합증거금 계좌의 국내+해외 총 자산 합산"""
+        try:
+            # 국내 자산 조회
+            dom_info = data_fetcher.get_deposit(self.env_dv)
+            dom_total = dom_info.get('total_eval', 0)
+            
+            # 해외 자산 조회 (원화 환산액 합산)
+            for_info = data_fetcher.get_foreign_deposit(self.env_dv)
+            for_total = for_info.get('krw_equiv', 0)
+            
+            total_equity = dom_total + for_total
+            
+            # 자산이 0으로 조회될 경우를 대비한 기본값 (최소 100만원 가정)
+            if total_equity < 1000000:
+                logger.warning(f"⚠️ 조회된 총 자산({total_equity:,}원)이 너무 적습니다. 기본값을 사용하거나 잔고를 확인하세요.")
+                return max(total_equity, 10000000) # 기본 1000만원 기준
+                
+            return total_equity
+        except Exception as e:
+            logger.error(f"총 자산 합산 중 오류: {e}")
+            return 10000000
 
     def scan_and_buy(self):
         """Watchlist를 스캔하여 새로운 진입 기회 포착"""
@@ -69,9 +87,15 @@ class BondeProceduralBot:
         equity = self._get_equity()
         risk_amount = equity * self.risk_pct
 
-        for item in watchlist:
+        for i, item in enumerate(watchlist):
             code = item['code']
-            name = item['name']
+            name = item.get('name', code)
+            
+            # TPS 제한 방지를 위한 지연 (0.1초)
+            time.sleep(0.1)
+            
+            if i % 10 == 0:
+                logger.info(f"🔍 스캔 진행 중... ({i}/{len(watchlist)}) [{code}] {name}")
             
             if code in self.active_positions:
                 continue
@@ -97,7 +121,8 @@ class BondeProceduralBot:
                     signal.quantity = qty
                     signal.strength = 1.0
                     
-                    res = self.executor.execute_signal(signal)
+                    # 매수 (현금만 지원, 리스크 금액 전달)
+                    res = self.executor.execute_signal(signal, risk_amount=risk_amount)
                     
                     if not res.empty:
                         self.active_positions[code] = {
