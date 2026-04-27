@@ -51,12 +51,13 @@ if not os.path.exists(token_tmp):
     f.close() # 파일을 열었으면 바로 닫아주는 것이 안전합니다.
 
 # 프로젝트 로컬 경로를 우선적으로 참조하도록 수정
-config_root = os.path.join(os.getcwd(), "strategy_builder")
-if not os.path.exists(os.path.join(config_root, "kis_devlp.yaml")):
+config_root = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(config_root, "kis_devlp.yaml")
+
+if not os.path.exists(config_path):
     # 만약 없으면 기존처럼 홈 디렉토리 확인
     config_root = os.path.join(os.path.expanduser("~"), "KIS", "config")
-
-config_path = os.path.join(config_root, "kis_devlp.yaml")
+    config_path = os.path.join(config_root, "kis_devlp.yaml")
 
 if os.path.exists(config_path):
     with open(config_path, encoding="UTF-8") as f:
@@ -70,7 +71,7 @@ else:
         "paper_app": os.environ.get("KIS_PAPER_APP", ""),
         "paper_sec": os.environ.get("KIS_PAPER_SEC", ""),
         "my_htsid": os.environ.get("KIS_MY_HTSID", ""),
-        "my_acct_stock": os.environ.get("KIS_MY_ACCT_STOCK", ""),
+        "my_acct_stock": os.environ.get("KIS_MY_ACCT_STOCK", os.environ.get("KIS_ACCOUNT_NO", "")),
         "my_paper_stock": os.environ.get("KIS_MY_PAPER_STOCK", ""),
         "my_prod": os.environ.get("KIS_MY_PROD", "01"),
         "my_agent": "Mozilla/5.0",

@@ -5,7 +5,10 @@ import logging
 from datetime import datetime
 
 # 프로젝트 경로 추가
-sys.path.append(os.path.join(os.getcwd(), "strategy_builder"))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STRATEGY_DIR = os.path.join(BASE_DIR, "strategy_builder")
+if STRATEGY_DIR not in sys.path:
+    sys.path.append(STRATEGY_DIR)
 
 import kis_auth as ka
 from core import data_fetcher

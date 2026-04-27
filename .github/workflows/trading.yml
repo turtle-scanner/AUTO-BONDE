@@ -32,6 +32,7 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          # PYTHONPATH 설정 (strategy_builder 폴더를 찾을 수 있게 함)
-          export PYTHONPATH=$PYTHONPATH:$(pwd)/strategy_builder
+          # PYTHONPATH 설정 (절대 경로로 확실하게 추가)
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)/strategy_builder"
+          # 현재는 장외 시간일 경우 자동으로 종료되도록 Python 코드가 수정되었습니다.
           python bonde_procedural_bot.py

@@ -3,11 +3,15 @@ import os
 import json
 import time
 import logging
+import argparse
 from datetime import datetime
 import pandas as pd
 
 # 프로젝트 경로 추가
-sys.path.append(os.path.join(os.getcwd(), "strategy_builder"))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STRATEGY_DIR = os.path.join(BASE_DIR, "strategy_builder")
+if STRATEGY_DIR not in sys.path:
+    sys.path.append(STRATEGY_DIR)
 
 import kis_auth as ka
 from core import data_fetcher, indicators
@@ -186,12 +190,24 @@ class BondeProceduralBot:
                     self.scan_and_buy()
                 self.monitor_and_sell() # 1분마다 감시
             else:
-                if now.minute == 0:
-                    logger.info(f"💤 현재 시각 {now.strftime('%H:%M')}: 장외 대기 중...")
+                logger.info(f"💤 현재 시각 {now.strftime('%H:%M')}: 장외 시간이므로 엔진을 안전하게 종료합니다.")
+                break # 장 종료 시 루프 탈출 (GitHub Action 등에서 효율적)
             
             time.sleep(60)
 
 if __name__ == "__main__":
-    # 사용자가 secrets에서 KIS_MOCK_TRADING을 'false'로 설정했으므로 'prod' 사용
-    bot = BondeProceduralBot(env_dv="prod")
-    bot.run_forever()
+    parser = argparse.ArgumentParser(description="본데(Bonde) 자동매매 봇")
+    parser.add_argument("--once", action="store_true", help="1회만 스캔 및 감시 후 종료")
+    parser.add_argument("--env", default="prod", choices=["prod", "vps"], help="매매 환경 (prod/vps)")
+    args = parser.parse_args()
+
+    bot = BondeProceduralBot(env_dv=args.env)
+    
+    if args.once:
+        logger.info("🏃 1회성 실행 모드 시작")
+        ka.auth(svr=bot.env_dv, product="01")
+        bot.scan_and_buy()
+        bot.monitor_and_sell()
+        logger.info("🏁 1회성 실행 완료 및 종료")
+    else:
+        bot.run_forever()
