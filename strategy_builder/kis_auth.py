@@ -50,9 +50,12 @@ if not os.path.exists(token_tmp):
     f = open(token_tmp, "w+")
     f.close() # 파일을 열었으면 바로 닫아주는 것이 안전합니다.
 
-# 앱키, 앱시크리트, 토큰, 계좌번호 등 저장관리, 자신만의 경로와 파일명으로 설정하시기 바랍니다.
-# pip install PyYAML (패키지설치)
-_cfg = {}
+# 프로젝트 로컬 경로를 우선적으로 참조하도록 수정
+config_root = os.path.join(os.getcwd(), "strategy_builder")
+if not os.path.exists(os.path.join(config_root, "kis_devlp.yaml")):
+    # 만약 없으면 기존처럼 홈 디렉토리 확인
+    config_root = os.path.join(os.path.expanduser("~"), "KIS", "config")
+
 config_path = os.path.join(config_root, "kis_devlp.yaml")
 
 if os.path.exists(config_path):
@@ -258,7 +261,9 @@ def auth(svr="prod", product=_cfg["my_prod"], url=None):
             ).access_token_token_expired  # 토큰값 만료일시 가져오기
             save_token(my_token, my_expired)  # 새로 발급 받은 토큰 저장
         else:
-            print("Get Authentification token fail!\nYou have to restart your app!!!")
+            print("Get Authentification token fail!")
+            print(f"Server Response: {res.json()}") # 상세 에러 내용 출력 추가
+            print("You have to restart your app!!!")
             return
     else:
         my_token = saved_token  # 기존 발급 토큰 확인되어 기존 토큰 사용

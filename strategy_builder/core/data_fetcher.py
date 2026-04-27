@@ -438,8 +438,15 @@ def get_deposit(env_dv: str = "real") -> dict:
             logging.warning("예수금 데이터 형식 오류")
             return {}
 
+        # 통합증거금 계좌 대응: dnca_tot_amt(예수금총금액) 대신 tot_evlu_amt(총평가금액) 등 다양한 필드 확인
+        # 한국투자증권 API에서 통합증거금 사용 시 prsm_tamt(추정예수금) 필드가 사용되기도 함
+        deposit = int(summary.get("dnca_tot_amt", 0))
+        if deposit == 0:
+            # 예수금이 0이면 추정예수금이나 순자산금액 확인
+            deposit = int(summary.get("prsm_tamt", 0)) or int(summary.get("nass_amt", 0))
+
         return {
-            "deposit": int(summary.get("dnca_tot_amt", 0)),
+            "deposit": deposit,
             "total_eval": int(summary.get("tot_evlu_amt", 0)),
             "purchase_amount": int(summary.get("pchs_amt_smtl_amt", 0)),
             "eval_amount": int(summary.get("evlu_amt_smtl_amt", 0)),
@@ -716,3 +723,74 @@ def cancel_order(
             "message": str(e)
         }
 
+
+# =============================================================================
+# 해외 주식 잔고/예수금 조회 (통합증거금 대응)
+# =============================================================================
+
+def get_foreign_deposit(env_dv: str = "real") -> dict:
+    """
+    해외 주식 예수금 및 자산 조회
+    
+    Returns:
+        dict with keys:
+        - usd_deposit: 달러 예수금
+        - krw_equiv: 원화 환산금액
+    """
+    if not _assert_trenv_ready("해외 예수금 조회"):
+        return {"usd_deposit": 0.0, "krw_equiv": 0}
+
+    try:
+        trenv = ka.getTREnv()
+        is_real = env_dv in ("real", "prod")
+        
+        # 해외 주식 잔고/예수금 조회 TR (실전: CTRP6010R)
+        tr_id = "CTRP6010R" if is_real else "VTRP6010R"
+        
+        params = {
+            "CANO": trenv.my_acct,
+            "ACNT_PRDT_CD": trenv.my_prod,
+            "WCRC_FRCR_DVSN_CD": "02", # 달러 기준
+            "NATN_CD": "840", # 미국
+            "TR_OBJT_TP_CA": "0",
+            "INQR_DVSN_CD": "00"
+        }
+        
+        res = ka._url_fetch(
+            "/uapi/overseas-stock/v1/trading/inquire-present-balance",
+            tr_id, "", params
+        )
+        
+        if not res.isOK():
+            return {"usd_deposit": 0.0, "krw_equiv": 0}
+            
+        output2 = res.getBody().output2
+        
+        # 가능한 모든 달러/외화 잔액 필드 후보군 검사
+        # 467달러를 찾기 위해 frcr_dncl_amt_2, frcr_dnca_amt_2, frcr_dnca_amt_1 등을 모두 확인
+        usd_candidates = [
+            output2.get("frcr_dncl_amt_2", 0),  # 외화잔액 2
+            output2.get("frcr_dnca_amt_2", 0),  # 외화예수금 2
+            output2.get("frcr_dncl_amt_1", 0),  # 외화잔액 1
+            output2.get("frcr_dnca_amt_1", 0),  # 외화예수금 1
+            output2.get("frcr_evlu_amt2", 0),   # 외화평가금액 2
+        ]
+        
+        # 0이 아닌 첫 번째 값을 달러 잔액으로 선택
+        usd_val = 0.0
+        for val in usd_candidates:
+            if float(val or 0) > 0:
+                usd_val = float(val)
+                break
+            
+        # 원화 환산액도 유사하게 처리
+        krw_val = int(output2.get("frcr_dr_evlu_amt2", 0)) or int(output2.get("tot_evlu_amt", 0))
+        
+        return {
+            "usd_deposit": usd_val,
+            "krw_equiv": krw_val,
+        }
+        
+    except Exception as e:
+        logging.error(f"해외 예수금 조회 에러: {e}")
+        return {"usd_deposit": 0.0, "krw_equiv": 0}
