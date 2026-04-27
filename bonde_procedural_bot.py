@@ -107,15 +107,17 @@ class BondeProceduralBot:
             return
 
         # 시장 환경 체크 (Market Filter)
-        # 나스닥(QQQ 또는 ^IXIC)이 50일선 위에 있는지 확인 (본데의 핵심 규칙)
         market_ok = True
         try:
-            m_df = data_fetcher.get_daily_prices("COMP", days=100, env_dv=self.env_dv) # 나스닥 지수
-            if not m_df.empty and len(m_df) >= 50:
+            m_df = data_fetcher.get_daily_prices("COMP", days=250, env_dv=self.env_dv) # 나스닥 지수
+            if not m_df.empty and len(m_df) >= 200:
                 m_sma50 = indicators.calc_ma(m_df, 50).iloc[-1]
+                m_sma200 = indicators.calc_ma(m_df, 200).iloc[-1]
                 m_curr = m_df['close'].iloc[-1]
-                if m_curr < m_sma50:
-                    logger.warning(f"⚠️ [시장 필터] 지수({m_curr:.2f})가 50일선({m_sma50:.2f}) 아래에 있습니다. 보수적 운용 (매수 중단).")
+                
+                # 본데 필터: 지수가 50일선 또는 200일선 아래면 매매 중단
+                if m_curr < m_sma50 or m_curr < m_sma200:
+                    logger.warning(f"⚠️ [시장 필터] 지수({m_curr:.2f})가 주요 이평선(50일:{m_sma50:.2f}, 200일:{m_sma200:.2f}) 아래에 있습니다. 매수 중단.")
                     market_ok = False
         except:
             logger.warning("⚠️ 지수 데이터 조회 실패. 필터 없이 진행합니다.")
@@ -175,7 +177,7 @@ class BondeProceduralBot:
                 logger.error(f"❌ {name} 스캔 중 오류: {e}")
 
     def monitor_and_sell(self):
-        """보유 종목 모니터링 및 본데 원칙(LOD & SMA 7) 매도"""
+        """보유 종목 모니터링 및 본데 원칙(분할 매도 & SMA 7) 매도"""
         if not self.active_positions:
             return
 
@@ -188,56 +190,51 @@ class BondeProceduralBot:
                 curr_price = float(price_info.get('price', 0))
                 if curr_price == 0: continue
 
-                # 최고가 갱신 기록 (Trailing을 위해)
-                if curr_price > pos.get('high_after_entry', 0):
-                    pos['high_after_entry'] = curr_price
-
                 profit_rate = (curr_price - pos['entry_price']) / pos['entry_price'] * 100
                 entry_dt = datetime.strptime(pos['entry_date'], "%Y-%m-%d")
                 days_held = (now - entry_dt).days
 
                 # 1. 본데 LOD 손절 (실시간 이탈 시)
                 if curr_price <= pos['stop_price']:
-                    logger.info(f"💥 [손절] {pos['name']} | 현재가({curr_price:,}) <= LOD({pos['stop_price']:,})")
+                    logger.info(f"💥 [손절] {pos['name']} | LOD 손절선 이탈")
                     signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason="본데 LOD 손절선 이탈")
                     self.executor.execute_signal(signal)
                     codes_to_remove.append(code)
                     send_telegram_message(f"💥 *[본데 손절]* {pos['name']}\n• 현재가: {curr_price:,}\n• 손절가(LOD): {pos['stop_price']:,}\n• 수익률: {profit_rate:.2f}%")
                     continue
 
-                # 2. 본데 추세 익절 (7일선 하향 돌파 시)
-                # 데이터 조회를 통해 SMA 7 확인
+                # 2. 본데 분할 매도 (20% 수익 시 절반 매도)
+                if profit_rate >= 20.0 and pos.get('status') == "active":
+                    half_qty = int(pos['qty'] / 2)
+                    if half_qty > 0:
+                        logger.info(f"💰 [분할 매도] {pos['name']} | 20% 수익 달성! 절반 매도.")
+                        signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason="20% 수익 분할 매도", quantity=half_qty)
+                        self.executor.execute_signal(signal)
+                        pos['qty'] -= half_qty
+                        pos['status'] = "partial_sold"
+                        pos['stop_price'] = pos['entry_price'] * 1.05 # 본전 위로 상향 (Free trade)
+                        self._save_positions()
+                        send_telegram_message(f"💰 *[본데 분할익절]* {pos['name']}\n• 현재가: {curr_price:,}\n• 수익률: {profit_rate:.2f}%\n• 결과: 물량 50% 매도 후 추세 추종")
+                        continue
+
+                # 3. 본데 추세 익절 (7일선 하향 돌파 시 - 남은 물량 전량 매도)
                 df = data_fetcher.get_daily_prices(code, days=20, env_dv=self.env_dv)
                 if not df.empty and len(df) >= 7:
                     sma7 = indicators.calc_ma(df, 7).iloc[-1]
-                    # 본데 원칙: 종가 기준으로 7일선을 깨면 매매 종료 (추세 반전)
-                    if curr_price < sma7 * 0.99: # 1% 마진을 두어 노이즈 제거
-                        logger.info(f"💰 [익절/추세종료] {pos['name']} | 7일선({sma7:.2f}) 하향 돌파")
-                        signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason="7일선 추세 종료")
+                    if curr_price < sma7 * 0.99:
+                        logger.info(f"✨ [전량 익절] {pos['name']} | 7일선 이탈로 추세 종료.")
+                        signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason="7일선 이탈 추세 종료")
                         self.executor.execute_signal(signal)
                         codes_to_remove.append(code)
-                        send_telegram_message(f"💰 *[본데 추세익절]* {pos['name']}\n• 현재가: {curr_price:,}\n• 7일선: {sma7:.2f}\n• 수익률: {profit_rate:.2f}%")
+                        send_telegram_message(f"✨ *[본데 추세종료]* {pos['name']}\n• 현재가: {curr_price:,}\n• 7일선: {sma7:.2f}\n• 최종 수익률: {profit_rate:.2f}%")
                         continue
-                
-                # 3. 수익 보호 규칙: 3일 내 20% 상승 시 손절선을 본전 위로 상향
-                if days_held <= 3 and profit_rate >= 20.0 and pos.get('status') == "active":
-                    new_stop = pos['entry_price'] * 1.05 # 본전 + 5% 수익 확보
-                    pos['stop_price'] = new_stop
-                    pos['status'] = "protected"
-                    self._save_positions()
-                    logger.info(f"🛡️ [보호] {pos['name']} | 급등 달성! 손절선을 {new_stop:,}원으로 상향 조정")
-                    send_telegram_message(f"🛡️ *[본데 보호]* {pos['name']}\n• 급등 달성\n• 수익 보호선 설정: {new_stop:,}원")
 
             except Exception as e:
                 logger.error(f"❌ {pos['name']} 모니터링 중 오류: {e}")
 
         for code in codes_to_remove:
-            del self.active_positions[code]
-        if codes_to_remove:
-            self._save_positions()
-
-        for code in codes_to_remove:
-            del self.active_positions[code]
+            if code in self.active_positions:
+                del self.active_positions[code]
         if codes_to_remove:
             self._save_positions()
 
