@@ -120,80 +120,84 @@ def get_daily_prices(
     env_dv: str = "real"
 ) -> pd.DataFrame:
     """
-    일봉 데이터를 조회하여 정규화된 DataFrame 반환
-
-    Args:
-        stock_code: 종목코드 (6자리)
-        days: 조회 기간 (일)
-        env_dv: 환경 구분 (real/demo)
-
-    Returns:
-        DataFrame with columns:
-        - date: 날짜 (YYYYMMDD)
-        - open: 시가
-        - high: 고가
-        - low: 저가
-        - close: 종가
-        - volume: 거래량
-
-    Note:
-        skill: API 실패 시 빈 DataFrame 반환
+    일봉 데이터를 조회하여 정규화된 DataFrame 반환 (한국/미국 지원)
     """
     if not _assert_trenv_ready(f"일봉 조회 {stock_code}"):
         return pd.DataFrame()
 
     try:
-        end_date = datetime.now().strftime("%Y%m%d")
-        start_date = (datetime.now() - timedelta(days=days + 50)).strftime("%Y%m%d")
+        # 미국 주식 여부 확인 (종목코드가 숫자가 아니면 미국)
+        is_us = not stock_code.isdigit()
+        
+        if is_us:
+            # 미국 주식 TR 설정
+            tr_id = "HHDFS76240000"
+            params = {
+                "AUTH": "",
+                "EXCD": "NAS",  # 기본 나스닥 (필요시 상세 분기)
+                "SYMB": stock_code,
+                "GUBN": "0",  # 일봉
+                "BYMD": "",
+                "MODP": "Y"
+            }
+            res = ka._url_fetch("/uapi/overseas-stock/v1/quotations/dailyprice", tr_id, "", params)
+            
+            if not res.isOK():
+                # 나스닥 실패 시 뉴욕거래소(NYS) 재시도
+                params["EXCD"] = "NYS"
+                res = ka._url_fetch("/uapi/overseas-stock/v1/quotations/dailyprice", tr_id, "", params)
 
-        # TR_ID 설정
-        tr_id = "FHKST03010100"
+            if not res.isOK():
+                logging.warning(f"미국 주식 API 호출 실패: {stock_code}")
+                return pd.DataFrame()
 
-        params = {
-            "FID_COND_MRKT_DIV_CODE": "J",
-            "FID_INPUT_ISCD": stock_code,
-            "FID_INPUT_DATE_1": start_date,
-            "FID_INPUT_DATE_2": end_date,
-            "FID_PERIOD_DIV_CODE": "D",
-            "FID_ORG_ADJ_PRC": "0"  # 수정주가
-        }
+            df = pd.DataFrame(res.getBody().output2)
+            df = df.rename(columns={
+                "xymd": "date",
+                "open": "open",
+                "high": "high",
+                "low": "low",
+                "clos": "close",
+                "tvol": "volume"
+            })
+        else:
+            # 한국 주식 TR 설정
+            tr_id = "FHKST03010100"
+            end_date = datetime.now().strftime("%Y%m%d")
+            start_date = (datetime.now() - timedelta(days=days + 50)).strftime("%Y%m%d")
+            params = {
+                "FID_COND_MRKT_DIV_CODE": "J",
+                "FID_INPUT_ISCD": stock_code,
+                "FID_INPUT_DATE_1": start_date,
+                "FID_INPUT_DATE_2": end_date,
+                "FID_PERIOD_DIV_CODE": "D",
+                "FID_ORG_ADJ_PRC": "0"
+            }
+            res = ka._url_fetch("/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice", tr_id, "", params)
+            
+            if not res.isOK():
+                logging.warning(f"한국 주식 API 호출 실패: {stock_code}")
+                return pd.DataFrame()
 
-        res = ka._url_fetch(
-            "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice",
-            tr_id, "", params
-        )
-
-        if not res.isOK():
-            logging.warning(f"API 호출 실패: {stock_code}")
-            return pd.DataFrame()
-
-        df = pd.DataFrame(res.getBody().output2)
+            df = pd.DataFrame(res.getBody().output2)
+            df = df.rename(columns={
+                "stck_bsop_date": "date",
+                "stck_oprc": "open",
+                "stck_hgpr": "high",
+                "stck_lwpr": "low",
+                "stck_clpr": "close",
+                "acml_vol": "volume"
+            })
 
         if df.empty:
-            logging.warning(f"데이터 없음: {stock_code}")
             return pd.DataFrame()
 
-        # 정규화
-        df = df.rename(columns={
-            "stck_bsop_date": "date",
-            "stck_oprc": "open",
-            "stck_hgpr": "high",
-            "stck_lwpr": "low",
-            "stck_clpr": "close",
-            "acml_vol": "volume"
-        })
-
-        # 필요한 컬럼만 선택
+        # 공통 정규화 및 숫자 변환
         df = df[["date", "open", "high", "low", "close", "volume"]]
-
-        # 숫자형 변환
         for col in ["open", "high", "low", "close", "volume"]:
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
-        # 날짜순 정렬 (과거 → 최근)
         df = df.sort_values("date").reset_index(drop=True)
-
-        # 요청한 일수만큼만 반환
         return df.tail(days).reset_index(drop=True)
 
     except Exception as e:
@@ -201,67 +205,68 @@ def get_daily_prices(
         return pd.DataFrame()
 
 
-# =============================================================================
-# 현재가 조회
-# =============================================================================
-
 def get_current_price(
     stock_code: str,
     env_dv: str = "real"
 ) -> dict:
     """
-    현재가 시세 조회
-
-    Args:
-        stock_code: 종목코드 (6자리)
-        env_dv: 환경 구분 (real/demo)
-
-    Returns:
-        dict with keys:
-        - price: 현재가
-        - change: 전일대비
-        - change_rate: 전일대비율
-        - high: 고가
-        - low: 저가
-        - volume: 거래량
-        - w52_high: 52주 최고가
-        - w52_low: 52주 최저가
-
-    Note:
-        skill: API 실패 시 빈 dict 반환
+    현재가 시세 조회 (한국/미국 지원)
     """
     if not _assert_trenv_ready(f"현재가 조회 {stock_code}"):
         return {}
 
     try:
-        tr_id = "FHKST01010100"
+        is_us = not stock_code.isdigit()
+        
+        if is_us:
+            tr_id = "HHDFS00000300"
+            params = {
+                "AUTH": "",
+                "EXCD": "NAS",
+                "SYMB": stock_code
+            }
+            res = ka._url_fetch("/uapi/overseas-stock/v1/quotations/price", tr_id, "", params)
+            
+            if not res.isOK():
+                params["EXCD"] = "NYS"
+                res = ka._url_fetch("/uapi/overseas-stock/v1/quotations/price", tr_id, "", params)
+            
+            if not res.isOK():
+                return {}
 
-        params = {
-            "FID_COND_MRKT_DIV_CODE": "J",
-            "FID_INPUT_ISCD": stock_code
-        }
+            output = res.getBody().output
+            return {
+                "price": float(output.get("last", 0)),
+                "change": float(output.get("diff", 0)),
+                "change_rate": float(output.get("rate", 0)),
+                "high": float(output.get("high", 0)),
+                "low": float(output.get("low", 0)),
+                "volume": int(float(output.get("tvol", 0))),
+                "w52_high": 0, # 해외주식 TR에 따라 다름
+                "w52_low": 0,
+            }
+        else:
+            tr_id = "FHKST01010100"
+            params = {
+                "FID_COND_MRKT_DIV_CODE": "J",
+                "FID_INPUT_ISCD": stock_code
+            }
+            res = ka._url_fetch("/uapi/domestic-stock/v1/quotations/inquire-price", tr_id, "", params)
+            
+            if not res.isOK():
+                return {}
 
-        res = ka._url_fetch(
-            "/uapi/domestic-stock/v1/quotations/inquire-price",
-            tr_id, "", params
-        )
-
-        if not res.isOK():
-            logging.warning(f"현재가 조회 실패: {stock_code}")
-            return {}
-
-        output = res.getBody().output
-
-        return {
-            "price": int(output.get("stck_prpr", 0)),
-            "change": int(output.get("prdy_vrss", 0)),
-            "change_rate": float(output.get("prdy_ctrt", 0)),
-            "high": int(output.get("stck_hgpr", 0)),
-            "low": int(output.get("stck_lwpr", 0)),
-            "volume": int(output.get("acml_vol", 0)),
-            "w52_high": int(output.get("w52_hgpr", 0)),
-            "w52_low": int(output.get("w52_lwpr", 0)),
-        }
+            output = res.getBody().output
+            return {
+                "price": int(output.get("stck_prpr", 0)),
+                "change": int(output.get("prdy_vrss", 0)),
+                "change_rate": float(output.get("prdy_ctrt", 0)),
+                "high": int(output.get("stck_hgpr", 0)),
+                "low": int(output.get("stck_lwpr", 0)),
+                "volume": int(output.get("acml_vol", 0)),
+                "w52_high": int(output.get("w52_hgpr", 0)),
+                "w52_low": int(output.get("w52_lwpr", 0)),
+            }
 
     except Exception as e:
         logging.error(f"현재가 조회 에러 ({stock_code}): {e}")

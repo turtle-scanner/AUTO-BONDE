@@ -179,11 +179,14 @@ class BondeProceduralBot:
         
         while True:
             now = datetime.now()
-            # 정규장 시간 (한국 기준 09:00 ~ 15:30)
-            # 미국장은 나중에 별도 로직 추가 가능하지만 현재는 한국장 기준 예시
-            is_market_open = (now.weekday() < 5) and (
-                (9, 0) <= (now.hour, now.minute) <= (15, 30)
-            )
+            # 시장 개장 여부 확인
+            is_kr_open = (now.weekday() < 5) and (9, 0) <= (now.hour, now.minute) <= (15, 30)
+            # 미국장 (서머타임 미적용 기준 23:30~06:00, 적용 기준 22:30~05:00)
+            # 여기서는 넉넉하게 22:00 ~ 06:00 사이로 설정합니다.
+            is_us_open = (now.weekday() < 5 or (now.weekday() == 5 and now.hour < 6)) and \
+                         ((now.hour >= 22) or (now.hour < 6))
+            
+            is_market_open = is_kr_open or is_us_open
 
             if is_market_open:
                 if now.minute % 10 == 0: # 10분마다 스캔
