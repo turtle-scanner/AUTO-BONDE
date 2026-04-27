@@ -43,8 +43,12 @@ token_tmp = os.path.join(
 )  # 토큰 로컬저장시 파일명 년월일
 
 # 접근토큰 관리하는 파일 존재여부 체크, 없으면 생성
+if not os.path.exists(config_root):
+    os.makedirs(config_root, exist_ok=True)
+
 if not os.path.exists(token_tmp):
     f = open(token_tmp, "w+")
+    f.close() # 파일을 열었으면 바로 닫아주는 것이 안전합니다.
 
 # 앱키, 앱시크리트, 토큰, 계좌번호 등 저장관리, 자신만의 경로와 파일명으로 설정하시기 바랍니다.
 # pip install PyYAML (패키지설치)
