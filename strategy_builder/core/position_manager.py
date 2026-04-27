@@ -7,6 +7,7 @@ Applied Skills: skills/investment-strategy-framework.md
 """
 
 import logging
+from typing import Dict, List, Optional
 from .signal import Action, Signal
 
 import pandas as pd
