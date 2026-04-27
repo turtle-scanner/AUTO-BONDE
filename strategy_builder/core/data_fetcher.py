@@ -149,17 +149,17 @@ def get_daily_prices(
                 "BYMD": "",
                 "MODP": "1"     # 수정주가 (1: 적용, 0: 미적용)
             }
-            res = ka._url_fetch("/uapi/overseas-stock/v1/quotations/dailyprice", tr_id, "", params)
+            res = ka._url_fetch("/uapi/overseas-price/v1/quotations/dailyprice", tr_id, "", params)
             
             if not res.isOK():
                 # 나스닥 실패 시 뉴욕거래소(NYS) 시도
                 params["EXCD"] = "NYS"
-                res = ka._url_fetch("/uapi/overseas-stock/v1/quotations/dailyprice", tr_id, "", params)
+                res = ka._url_fetch("/uapi/overseas-price/v1/quotations/dailyprice", tr_id, "", params)
 
             if not res.isOK():
                 # 뉴욕 실패 시 아멕스(AMS) 시도
                 params["EXCD"] = "AMS"
-                res = ka._url_fetch("/uapi/overseas-stock/v1/quotations/dailyprice", tr_id, "", params)
+                res = ka._url_fetch("/uapi/overseas-price/v1/quotations/dailyprice", tr_id, "", params)
 
             if not res.isOK():
                 logging.warning(f"미국 주식 API 호출 실패: {stock_code}")

@@ -227,11 +227,14 @@ class OrderExecutor:
                 params = {
                     "CANO": trenv.my_acct,
                     "ACNT_PRDT_CD": trenv.my_prod,
-                    "OVRS_EXCH_CD": "NASD",  # 나스닥 (NVDA 등)
-                    "PDNO": signal.stock_code,
-                    "ORD_DVSN": "00", # 지정가 (해외 주식 기본)
+                    "OVRS_EXCG_CD": "NASD",  # 나스닥 (G 사용)
+                    "PDNO": signal.stock_code.upper(),
+                    "ORD_DVSN": "00", # 지정가
                     "ORD_QTY": str(int(ord_qty)),
-                    "OVRS_ORD_UNPR": str(round(curr_price, 2)), # 미국 주식은 소수점 2자리까지
+                    "OVRS_ORD_UNPR": str(round(curr_price, 2)),
+                    "ORD_SVR_DVSN_CD": "0",
+                    "MGN_DVSN": "01",
+                    "TR_CRCY_CD": "USD",
                     "SFT_YN": "N"
                 }
                 api_path = "/uapi/overseas-stock/v1/trading/order"
