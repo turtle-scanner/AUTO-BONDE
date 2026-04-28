@@ -97,8 +97,6 @@ def get_kosdaq_master_dataframe(base_dir):
 
     return df
 
-kosdaq_master_download(base_dir)
-df = get_kosdaq_master_dataframe(base_dir)
-
-df.to_excel('kosdaq_code.xlsx',index=False)  # 현재 위치에 엑셀파일로 저장
-df
+# kosdaq_master_download(base_dir)
+# df = get_kosdaq_master_dataframe(base_dir)
+# df.to_excel('kosdaq_code.xlsx',index=False)
