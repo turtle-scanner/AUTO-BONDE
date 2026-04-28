@@ -88,6 +88,9 @@ def login_page():
                     st.error("아이디 또는 비밀번호가 올바르지 않습니다.")
 
 def dashboard_page():
+    # 0. 경로 설정
+    signals_path = os.path.join(BASE_DIR, "bonde_signals.json")
+    
     # 1. 사이드바 설정
     with st.sidebar:
         st.title("🚀 BONDE COMMAND")
@@ -103,6 +106,18 @@ def dashboard_page():
             
         st.info(f"계좌: {acct_no}")
         
+        # 봇 상태 체크
+        st.markdown("---")
+        try:
+            import psutil
+            bot_running = any("python" in p.name() and ("scheduler.py" in " ".join(p.cmdline()) or "bonde_procedural_bot.py" in " ".join(p.cmdline())) for p in psutil.process_iter())
+            if bot_running:
+                st.success("🟢 봇 상태: 가동 중 (Online)")
+            else:
+                st.error("🔴 봇 상태: 정지 (Offline)")
+        except:
+            st.warning("⚪ 봇 상태: 확인 불가")
+
         if st.button("로그아웃"):
             st.session_state.logged_in = False
             st.rerun()
