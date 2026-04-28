@@ -172,9 +172,10 @@ class BondeProceduralBot:
                         "signal": signal,
                         "rs_score": rs_score,
                         "code": code,
-                        "name": name
+                        "name": name,
+                        "roe": item.get('roe', 0)
                     })
-                    logger.info(f"Signal found: {name} (RS: {rs_score})")
+                    logger.info(f"Signal found: {name} (RS: {rs_score} | ROE: {item.get('roe', 0)})")
 
             except Exception as e:
                 logger.error(f"Error scanning {name}: {e}")
@@ -214,12 +215,22 @@ class BondeProceduralBot:
                         "name": name,
                         "entry_price": entry_price,
                         "stop_price": lod_stop,
+                        "target_price": entry_price * 1.25, # 기본 25% 목표
                         "qty": qty,
                         "entry_date": datetime.now().strftime("%Y-%m-%d"),
+                        "roe": item.get('roe', 0),
+                        "reason": signal.reason,
                         "status": "active"
                     }
                     self._save_positions()
-                    send_telegram_message(f"[Bonde ENTRY] {name}\n- RS Score: {item['rs_score']}\n- Qty: {qty}\n- Entry: {entry_price}\n- Stop: {lod_stop}")
+                    msg = f"🟢 [Bonde BUY] {name}\n"
+                    msg += f"- Reason: {signal.reason}\n"
+                    msg += f"- ROE: {item.get('roe', 0)}%\n"
+                    msg += f"- Qty: {qty}\n"
+                    msg += f"- Entry: {entry_price:,}원\n"
+                    msg += f"- Stop: {lod_stop:,}원\n"
+                    msg += f"- Target: {entry_price * 1.25:,}원"
+                    send_telegram_message(msg)
             
             except Exception as e:
                 logger.error(f"Error processing buy for {name}: {e}")
@@ -247,6 +258,12 @@ class BondeProceduralBot:
                     logger.info(f"STOP: {pos['name']} | LOD Stop triggered")
                     signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason="본데 LOD 손절선 이탈")
                     self.executor.execute_signal(signal)
+                    
+                    msg = f"🔴 [Bonde SELL] {pos['name']}\n"
+                    msg += f"- Reason: 손절선 이탈\n"
+                    msg += f"- Profit: {profit_rate:+.2f}%\n"
+                    msg += f"- Hold Days: {days_held}일"
+                    send_telegram_message(msg)
                     codes_to_remove.append(code)
                     send_telegram_message(f"[Bonde STOP] {pos['name']}\n- Price: {curr_price}\n- Stop: {pos['stop_price']}\n- PnL: {profit_rate:.2f}%")
                     continue
