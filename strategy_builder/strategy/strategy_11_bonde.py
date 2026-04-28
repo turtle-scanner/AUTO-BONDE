@@ -11,6 +11,7 @@ class BondeStrategy(BaseStrategy):
     2. Episodic Pivot (EP): Pct >= 10%, Vol >= 3 * AvgV50
     3. 9 Million EP: Vol >= 9,000,000
     4. Anti-Bagholder: Exclude if up for 3 consecutive days
+    5. Nano Banana (NB): Parabolic Curve Acceleration + Huge Vol (5x AvgV50)
     """
 
     def __init__(
@@ -96,6 +97,18 @@ class BondeStrategy(BaseStrategy):
         # 3. 9 Million EP
         is_9m = (latest['volume'] >= self.vol_threshold_9m)
         if is_9m: setups.append("9M EP")
+        
+        # 4. Nano Banana (NB) - Parabolic Move
+        # 최근 5일 이평선이 급격히 꺾여 올라가는 패턴 (바나나 곡선)
+        sma5 = indicators.calc_ma(df, 5)
+        slope_today = sma5.iloc[-1] - sma5.iloc[-2]
+        slope_prev = sma5.iloc[-2] - sma5.iloc[-3]
+        
+        is_nano_banana = (latest['Pct_Change'] >= 15.0) and \
+                         (latest['volume'] >= 5.0 * avg_v50) and \
+                         (slope_today > slope_prev * 1.5) # 기울기 가속
+                         
+        if is_nano_banana: setups.append("🍌 Nano Banana")
 
         if setups:
             # RS 점수 계산 (최근 6개월(126일) 수익률 기반 - Bonde's Real RS)
@@ -112,7 +125,7 @@ class BondeStrategy(BaseStrategy):
                 stock_code=stock_code,
                 stock_name=stock_name,
                 action=Action.BUY,
-                strength=0.9 if rs_score > 120 else 0.7,
+                strength=1.0 if is_nano_banana else (0.9 if rs_score > 120 else 0.7),
                 reason=f"본데 셋업 포착 ({' | '.join(setups)}) | RS(6M): {rs_score:.1f} | TI65: {ti65:.3f}",
                 stop_loss=lod_price,
                 target_price=None  # 시장가 진입

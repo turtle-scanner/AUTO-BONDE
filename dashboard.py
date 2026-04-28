@@ -155,9 +155,64 @@ def dashboard_page():
             delta=f"{pnl_rate:+.2f}%"
         )
 
+    # 나노 바나나 긴급 알림 배너
+    st.markdown("---")
+    if os.path.exists(signals_path):
+        with open(signals_path, "r", encoding="utf-8") as f:
+            scan_data = json.load(f)
+            signals = scan_data.get("signals", [])
+            nano_bananas = [s for s in signals if "Banana" in s['reason'] or "나노" in s['reason']]
+            
+            if nano_bananas:
+                st.warning(f"🚨 **긴급: 나노 바나나(Nano Banana) 셋업 포착!** ({len(nano_bananas)}건)")
+                bcols = st.columns(len(nano_bananas) if len(nano_bananas) < 4 else 4)
+                for idx, nb in enumerate(nano_bananas[:4]):
+                    with bcols[idx]:
+                        st.markdown(f"**🍌 {nb['name']} ({nb['code']})**")
+                        st.caption(f"강력한 모멘텀 가속! ({nb['time']})")
+
     st.divider()
 
-    # 4. 보유 종목 리스트
+    # 4. 실시간 본데 스캐너 현황
+    st.subheader("🔍 실시간 본데 스캐너 (Full Market Scan)")
+    
+    signals_path = os.path.join(BASE_DIR, "bonde_signals.json")
+    if os.path.exists(signals_path):
+        import json
+        with open(signals_path, "r", encoding="utf-8") as f:
+            scan_data = json.load(f)
+            
+        progress = scan_data.get("progress", 0)
+        total = scan_data.get("total", 4341)
+        signals = scan_data.get("signals", [])
+        last_update = scan_data.get("last_update", "N/A")
+        
+        # 프로그래스 바
+        pct = progress / total if total > 0 else 0
+        st.progress(pct, text=f"전 종목 스캔 진행 중: {progress}/{total} ({pct*100:.1f}%) | 마지막 업데이트: {last_update}")
+        
+        # 포착된 신호 (가로형 카드로 표시)
+        if signals:
+            st.markdown(f"### 🚀 포착된 매수 신호 ({len(signals)}건)")
+            cols = st.columns(3)
+            for idx, sig in enumerate(reversed(signals)): # 최신순
+                with cols[idx % 3]:
+                    st.markdown(f"""
+                    <div style="background-color: #1e2130; padding: 15px; border-radius: 10px; border-left: 5px solid #28a745; margin-bottom: 10px;">
+                        <h4 style="margin:0;">{sig['name']} ({sig['code']})</h4>
+                        <p style="font-size: 0.8em; color: #8b949e;">포착 시간: {sig['time']}</p>
+                        <p style="font-weight: bold; color: #28a745;">Setup: {sig['reason']}</p>
+                        <p style="font-size: 0.9em;">손절가: {sig['stop_loss']:,}원</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+        else:
+            st.info("아직 포착된 매수 신호가 없습니다. 스캔이 진행됨에 따라 여기에 나타납니다.")
+    else:
+        st.warning("스캐너가 실행 중이 아닙니다. 터미널에서 scan_all_stocks.py를 실행해 주세요.")
+
+    st.divider()
+
+    # 5. 보유 종목 리스트
     st.subheader("📋 보유 종목 리스트")
     holdings_df = data_fetcher.get_holdings(env_dv=st.session_state.env_dv)
     
