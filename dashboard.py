@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import sys
+import json
 from datetime import datetime
 
 # 프로젝트 경로 설정
@@ -157,6 +158,7 @@ def dashboard_page():
 
     # 나노 바나나 긴급 알림 배너
     st.markdown("---")
+    signals_path = os.path.join(BASE_DIR, "bonde_signals.json")
     if os.path.exists(signals_path):
         with open(signals_path, "r", encoding="utf-8") as f:
             scan_data = json.load(f)
@@ -176,9 +178,7 @@ def dashboard_page():
     # 4. 실시간 본데 스캐너 현황
     st.subheader("🔍 실시간 본데 스캐너 (Full Market Scan)")
     
-    signals_path = os.path.join(BASE_DIR, "bonde_signals.json")
     if os.path.exists(signals_path):
-        import json
         with open(signals_path, "r", encoding="utf-8") as f:
             scan_data = json.load(f)
             
@@ -214,20 +214,44 @@ def dashboard_page():
 
     # 5. 보유 종목 리스트
     st.subheader("📋 보유 종목 리스트")
-    holdings_df = data_fetcher.get_holdings(env_dv=st.session_state.env_dv)
     
-    if not holdings_df.empty:
-        # 보기 좋게 포맷팅
-        display_df = holdings_df[['stock_name', 'quantity', 'avg_price', 'current_price', 'profit_rate', 'profit_loss']]
-        display_df.columns = ['종목명', '수량', '평균단가', '현재가', '수익률(%)', '평가손익']
-        st.dataframe(display_df.style.format({
-            '평균단가': '{:,}',
-            '현재가': '{:,}',
-            '수익률(%)': '{:+.2f}',
-            '평가손익': '{:+,}'
-        }), use_container_width=True)
-    else:
-        st.info("현재 보유 중인 종목이 없습니다.")
+    tab1, tab2 = st.tabs(["🇰🇷 국내 주식", "🇺🇸 해외 주식"])
+    
+    with tab1:
+        holdings_df = data_fetcher.get_holdings(env_dv=st.session_state.env_dv)
+        if not holdings_df.empty:
+            display_df = holdings_df[['stock_name', 'quantity', 'avg_price', 'current_price', 'profit_rate', 'profit_loss']]
+            display_df.columns = ['종목명', '수량', '평균단가', '현재가', '수익률(%)', '평가손익']
+            st.dataframe(display_df.style.format({
+                '평균단가': '{:,}',
+                '현재가': '{:,}',
+                '수익률(%)': '{:+.2f}',
+                '평가손익': '{:+,}'
+            }), use_container_width=True)
+        else:
+            st.info("현재 보유 중인 국내 종목이 없습니다.")
+
+    with tab2:
+        with st.spinner("해외 자산 정보를 불러오는 중..."):
+            f_holdings_df = data_fetcher.get_foreign_holdings(env_dv=st.session_state.env_dv)
+        
+        if not f_holdings_df.empty:
+            # 해외 주식은 달러 표시가 필요하므로 별도 포맷팅
+            f_display_df = f_holdings_df[['stock_name', 'quantity', 'avg_price', 'current_price', 'profit_rate', 'profit_loss']]
+            f_display_df.columns = ['종목명', '수량', '평균단가($)', '현재가($)', '수익률(%)', '평가손익($)']
+            
+            # 숫자형 변환 (이미 되어있을 수 있지만 안전하게)
+            for col in ['수량', '평균단가($)', '현재가($)', '수익률(%)', '평가손익($)']:
+                f_display_df[col] = pd.to_numeric(f_display_df[col], errors='coerce')
+
+            st.dataframe(f_display_df.style.format({
+                '평균단가($)': '{:,.2f}',
+                '현재가($)': '{:,.2f}',
+                '수익률(%)': '{:+.2f}',
+                '평가손익($)': '{:,.2f}'
+            }), use_container_width=True)
+        else:
+            st.info("현재 보유 중인 해외 종목이 없습니다.")
 
     # 하단 상태 바
     st.markdown("---")
