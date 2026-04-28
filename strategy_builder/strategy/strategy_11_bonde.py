@@ -77,9 +77,15 @@ class BondeStrategy(BaseStrategy):
             )
 
         # 1. 4% Momentum Burst (MB)
+        # 당일 고가 부근 마감 확인 (고가-저가 범위의 상위 25% 이내)
+        day_range = latest['high'] - latest['low']
+        close_location = (latest['close'] - latest['low']) / day_range if day_range > 0 else 0
+        
         is_mb = (latest['Pct_Change'] >= self.min_change_mb) and \
                 (latest['volume'] > latest['V1']) and \
-                (ti65 >= self.ti65_threshold)
+                (ti65 >= self.ti65_threshold) and \
+                (close_location >= 0.75) # 고가 부근 마감 (Stockbee Rule)
+                
         if is_mb: setups.append("4% MB")
         
         # 2. Classic EP
@@ -92,8 +98,12 @@ class BondeStrategy(BaseStrategy):
         if is_9m: setups.append("9M EP")
 
         if setups:
-            # RS 점수 계산 (최근 20일 수익률 기반)
-            df['RS_Score'] = df['close'] / df['close'].shift(20) * 100
+            # RS 점수 계산 (최근 6개월(126일) 수익률 기반 - Bonde's Real RS)
+            if len(df) >= 126:
+                df['RS_Score'] = df['close'] / df['close'].shift(126) * 100
+            else:
+                df['RS_Score'] = df['close'] / df['close'].iloc[0] * 100
+                
             rs_score = df['RS_Score'].iloc[-1]
             
             # LOD (당일 최저점)를 손절가로 설정
@@ -102,8 +112,8 @@ class BondeStrategy(BaseStrategy):
                 stock_code=stock_code,
                 stock_name=stock_name,
                 action=Action.BUY,
-                strength=0.9 if rs_score > 105 else 0.7, # RS가 5% 이상 높으면 강한 시그널
-                reason=f"본데 셋업 포착 ({' | '.join(setups)}) | RS: {rs_score:.1f} | TI65: {ti65:.3f}",
+                strength=0.9 if rs_score > 120 else 0.7,
+                reason=f"본데 셋업 포착 ({' | '.join(setups)}) | RS(6M): {rs_score:.1f} | TI65: {ti65:.3f}",
                 stop_loss=lod_price,
                 target_price=None  # 시장가 진입
             )
