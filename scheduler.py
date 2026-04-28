@@ -26,18 +26,29 @@ def job_scan():
     except Exception as e:
         logging.error(f"Trade cycle failed: {e}")
 
-# 스케줄 설정
-# 1. 매일 정해진 시간에 보고서 전송 (사용자 퇴근 시간 16:40 포함)
-schedule.every().day.at("09:00").do(job_report)
-schedule.every().day.at("15:30").do(job_report) # 국내장 마감 직후
-schedule.every().day.at("16:40").do(job_report) # 사용자 퇴근 시간 (요청)
-schedule.every().day.at("22:30").do(job_report) # 미국장 개장 직전
-schedule.every().day.at("23:30").do(job_report) 
+def job_monitor():
+    """보유 종목 실시간 감시 (매우 빠른 주기)"""
+    try:
+        bot = BondeProceduralBot(env_dv="prod")
+        bot.monitor_and_sell()
+    except Exception as e:
+        logging.error(f"Monitor job failed: {e}")
 
-# 2. 매매 사이클 스케줄
-schedule.every(1).hours.do(job_scan) # 기본 1시간 간격
-schedule.every().day.at("22:30").do(job_scan) # 미국장 개장 시 즉시 실행
-schedule.every().day.at("09:00").do(job_scan) # 국내장 개장 시 즉시 실행
+# 스케줄 설정
+# 1. 정기 보고서 (9:00, 15:30, 16:40, 22:30, 23:30)
+schedule.every().day.at("09:00").do(job_report)
+schedule.every().day.at("15:30").do(job_report)
+schedule.every().day.at("16:40").do(job_report)
+schedule.every().day.at("22:30").do(job_report)
+schedule.every().day.at("23:30").do(job_report)
+
+# 2. 실시간 감시 (1분 간격 - 엔비디아 등 즉시 대응용)
+schedule.every(1).minutes.do(job_monitor)
+
+# 3. 매매 사이클 (1시간 간격 - 신규 종목 스캔용)
+schedule.every(1).hours.do(job_scan)
+schedule.every().day.at("22:30").do(job_scan)
+schedule.every().day.at("09:00").do(job_scan)
 
 if __name__ == "__main__":
     logging.info("START: Auto report and scan scheduler started.")

@@ -253,19 +253,21 @@ class BondeProceduralBot:
                 entry_dt = datetime.strptime(pos['entry_date'], "%Y-%m-%d")
                 days_held = (now - entry_dt).days
 
-                # 1. 본데 LOD 손절 (실시간 이탈 시)
-                if curr_price <= pos['stop_price']:
-                    logger.info(f"STOP: {pos['name']} | LOD Stop triggered")
-                    signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason="본데 LOD 손절선 이탈")
+                # 1. 본데 LOD 또는 -3% 고정 손절 (실시간 이탈 시)
+                fixed_stop_price = pos['entry_price'] * 0.97 # -3% 손절선
+                
+                if curr_price <= pos['stop_price'] or curr_price <= fixed_stop_price:
+                    reason = "본데 LOD 손절선 이탈" if curr_price <= pos['stop_price'] else "진입가 대비 -3% 손절"
+                    logger.info(f"STOP: {pos['name']} | {reason} triggered")
+                    signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason=reason)
                     self.executor.execute_signal(signal)
                     
                     msg = f"🔴 [Bonde SELL] {pos['name']}\n"
-                    msg += f"- Reason: 손절선 이탈\n"
+                    msg += f"- Reason: {reason}\n"
                     msg += f"- Profit: {profit_rate:+.2f}%\n"
                     msg += f"- Hold Days: {days_held}일"
                     send_telegram_message(msg)
                     codes_to_remove.append(code)
-                    send_telegram_message(f"[Bonde STOP] {pos['name']}\n- Price: {curr_price}\n- Stop: {pos['stop_price']}\n- PnL: {profit_rate:.2f}%")
                     continue
 
                 # 2. 본데 분할 매도 (20% 수익 시 절반 매도)
