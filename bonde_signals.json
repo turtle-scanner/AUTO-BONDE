@@ -1,10 +1,6 @@
 {
-    "last_update": "2026-04-28 19:23:40",
-    "progress": 90,
-    "total": 4341,
-    "signals": [
-        {
-            "code": "000210",
-            "name": "DL",
-            "reason": "본데 셋업 포착 (4% MB) | RS(6M): 180.5 | TI65: 1.250",
-            "stop_loss": 
+    "last_update": "2026-04-28 20:18:00",
+    "progress": 0,
+    "total": 0,
+    "signals": []
+}

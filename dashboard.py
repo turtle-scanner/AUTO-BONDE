@@ -184,9 +184,13 @@ def dashboard_page():
 
     # 나노 바나나 전용 섹션 (더욱 강력한 시각화)
     if os.path.exists(signals_path):
-        with open(signals_path, "r", encoding="utf-8") as f:
-            scan_data = json.load(f)
-            signals = scan_data.get("signals", [])
+        try:
+            with open(signals_path, "r", encoding="utf-8") as f:
+                scan_data = json.load(f)
+        except (json.JSONDecodeError, ValueError):
+            scan_data = {"signals": []}
+            
+        signals = scan_data.get("signals", [])
             nano_bananas = [s for s in signals if "Banana" in s['reason'] or "나노" in s['reason']]
             
             if nano_bananas:
@@ -284,8 +288,11 @@ def dashboard_page():
     st.subheader("🔍 실시간 본데 스캐너 (Full Market Scan)")
     
     if os.path.exists(signals_path):
-        with open(signals_path, "r", encoding="utf-8") as f:
-            scan_data = json.load(f)
+        try:
+            with open(signals_path, "r", encoding="utf-8") as f:
+                scan_data = json.load(f)
+        except (json.JSONDecodeError, ValueError):
+            scan_data = {}
             
         progress = scan_data.get("progress", 0)
         total = scan_data.get("total", 4341)
