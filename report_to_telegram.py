@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 import logging
 from datetime import datetime
 import pandas as pd
@@ -62,11 +63,31 @@ def generate_report():
     else:
         report += f"💰 *통장 잔고*: 데이터 로드 실패\n\n"
 
-    # 📈 보유 종목 및 수익률
-    report += f"📈 *보유 종목 수익률*\n"
+    # 📈 보유 종목 및 수익률 (본데 상세 정보 포함)
+    report += f"📈 *보유 종목 상세 현황*\n"
+    
+    # 본데 관리 파일 로드
+    pos_file = "bonde_active_positions.json"
+    active_pos = {}
+    if os.path.exists(pos_file):
+        with open(pos_file, "r", encoding="utf-8") as f:
+            active_pos = json.load(f)
+
     if not holdings_df.empty:
         for _, row in holdings_df.iterrows():
-            report += f"• {row['stock_name']}: {row['profit_rate']:+.2f}% ({row['profit_loss']:,}원)\n"
+            code = row['stock_code']
+            pos_info = active_pos.get(code, {})
+            
+            report += f"• *{row['stock_name']}*\n"
+            report += f"  - 수익: {row['profit_rate']:+.2f}% ({row['profit_loss']:,}원)\n"
+            
+            if pos_info:
+                report += f"  - 이유: {pos_info.get('reason', 'N/A')}\n"
+                report += f"  - ROE: {pos_info.get('roe', 0)}%\n"
+                report += f"  - 목표: {pos_info.get('target_price', 0):,.0f}원\n"
+                report += f"  - 손절: {pos_info.get('stop_price', 0):,.0f}원\n"
+            else:
+                report += "  - (봇 관리 외 종목)\n"
     else:
         report += "• 현재 보유 종목이 없습니다.\n"
     report += "\n"
