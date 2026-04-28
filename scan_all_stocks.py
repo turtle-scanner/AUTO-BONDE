@@ -51,15 +51,26 @@ def scan_all():
     with open(watchlist_path, "r", encoding="utf-8") as f:
         watchlist = json.load(f)
     
-    # 한국 주식만 필터링
+    # 한국 주식 + 미국 주요 종목 (엔비디아, 마이크론 등)
     kr_watchlist = [s for s in watchlist if s['market'] in ['KOSPI', 'KOSDAQ']]
-    total = len(kr_watchlist)
-    logger.info(f"Loaded {total} KR stocks from watchlist.")
+    us_watchlist = [
+        {"code": "NVDA", "name": "NVIDIA", "market": "NAS"},
+        {"code": "MU", "name": "Micron", "market": "NAS"},
+        {"code": "TSLA", "name": "Tesla", "market": "NAS"},
+        {"code": "AAPL", "name": "Apple", "market": "NAS"},
+        {"code": "MSFT", "name": "Microsoft", "market": "NAS"},
+        {"code": "AMZN", "name": "Amazon", "market": "NAS"},
+        {"code": "META", "name": "Meta", "market": "NAS"}
+    ]
+    
+    combined_watchlist = kr_watchlist + us_watchlist
+    total = len(combined_watchlist)
+    logger.info(f"Scanning {total} stocks (KR: {len(kr_watchlist)}, US: {len(us_watchlist)})")
 
     # 4. 루프 시작
     found_count = 0
     signals_list = []
-    for i, stock in enumerate(kr_watchlist):
+    for i, stock in enumerate(combined_watchlist):
         code = stock['code']
         name = stock['name']
         
@@ -84,6 +95,7 @@ def scan_all():
                 new_signal = {
                     "code": code,
                     "name": name,
+                    "market": stock['market'], # 시장 정보 추가
                     "reason": signal.reason,
                     "stop_loss": signal.stop_loss,
                     "time": datetime.now().strftime('%H:%M:%S')

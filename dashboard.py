@@ -12,6 +12,7 @@ if STRATEGY_DIR not in sys.path:
     sys.path.append(STRATEGY_DIR)
 
 import kis_auth as ka
+import yfinance as yf
 from core import data_fetcher
 
 # 페이지 설정
@@ -46,6 +47,16 @@ st.markdown("""
     h1, h2, h3 {
         color: #f0f6fc;
         font-family: 'Inter', sans-serif;
+    }
+    .banana-card {
+        background: linear-gradient(135deg, #fff3b0 0%, #ca7e00 100%);
+        padding: 20px;
+        border-radius: 15px;
+        color: #1a1a1a;
+        font-weight: bold;
+        box-shadow: 0 10px 20px rgba(255, 243, 176, 0.2);
+        border: none;
+        margin-bottom: 20px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -156,9 +167,7 @@ def dashboard_page():
             delta=f"{pnl_rate:+.2f}%"
         )
 
-    # 나노 바나나 긴급 알림 배너
-    st.markdown("---")
-    signals_path = os.path.join(BASE_DIR, "bonde_signals.json")
+    # 나노 바나나 전용 섹션 (더욱 강력한 시각화)
     if os.path.exists(signals_path):
         with open(signals_path, "r", encoding="utf-8") as f:
             scan_data = json.load(f)
@@ -166,12 +175,93 @@ def dashboard_page():
             nano_bananas = [s for s in signals if "Banana" in s['reason'] or "나노" in s['reason']]
             
             if nano_bananas:
-                st.warning(f"🚨 **긴급: 나노 바나나(Nano Banana) 셋업 포착!** ({len(nano_bananas)}건)")
-                bcols = st.columns(len(nano_bananas) if len(nano_bananas) < 4 else 4)
-                for idx, nb in enumerate(nano_bananas[:4]):
-                    with bcols[idx]:
-                        st.markdown(f"**🍌 {nb['name']} ({nb['code']})**")
-                        st.caption(f"강력한 모멘텀 가속! ({nb['time']})")
+                st.markdown("### 🍌 Nano Banana Detective")
+                btab1, btab2 = st.tabs(["🇰🇷 국내 나노바나나", "🇺🇸 해외 나노바나나"])
+                
+                # 시장 구분 (market 필드가 없으면 종목코드 숫자로 판별)
+                kr_bananas = [s for s in nano_bananas if s.get('market') in ['KOSPI', 'KOSDAQ'] or (s.get('market') is None and s['code'].isdigit())]
+                us_bananas = [s for s in nano_bananas if s.get('market') not in ['KOSPI', 'KOSDAQ'] and not (s.get('market') is None and s['code'].isdigit())]
+
+                with btab1:
+                    if kr_bananas:
+                        for nb in kr_bananas:
+                            st.markdown(f"""
+                            <div class="banana-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <span style="font-size: 1.5em;">🚀 {nb['name']} ({nb['code']})</span><br>
+                                        <span style="font-size: 0.9em; opacity: 0.8;">{nb['reason']}</span>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <span style="font-size: 1.2em;">손절가: {nb['stop_loss']:,}원</span><br>
+                                        <span style="font-size: 0.8em;">포착: {nb['time']}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                    else:
+                        st.info("현재 국내 시장에 나노 바나나 셋업이 없습니다.")
+
+                with btab2:
+                    if us_bananas:
+                        for nb in us_bananas:
+                            # 해외 주식은 달러 표시
+                            st.markdown(f"""
+                            <div class="banana-card" style="background: linear-gradient(135deg, #e3f2fd 0%, #1976d2 100%); color: white;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <span style="font-size: 1.5em;">🇺🇸 {nb['name']} ({nb['code']})</span><br>
+                                        <span style="font-size: 0.9em; opacity: 0.8;">{nb['reason']}</span>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <span style="font-size: 1.2em;">손절가: ${nb['stop_loss']:.2f}</span><br>
+                                        <span style="font-size: 0.8em;">포착: {nb['time']}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                    else:
+                        st.info("현재 해외 시장에 나노 바나나 셋업이 없습니다.")
+            else:
+                st.info("현재 시장에 나노 바나나 셋업이 포착되지 않았습니다. 관망을 유지하세요.")
+
+    st.divider()
+
+    # 글로벌 마켓 인사이트 (뉴스 및 지수)
+    st.subheader("🌐 글로벌 마켓 인사이트")
+    mcol1, mcol2 = st.columns([1, 2])
+    
+    with mcol1:
+        st.markdown("#### 📈 주요 시장 지수")
+        indices = {
+            "^GSPC": "S&P 500",
+            "^IXIC": "Nasdaq",
+            "^KS11": "KOSPI",
+            "^KQ11": "KOSDAQ"
+        }
+        for ticker, name in indices.items():
+            try:
+                idx_data = yf.Ticker(ticker).history(period="2d")
+                if not idx_data.empty:
+                    current_val = idx_data['Close'].iloc[-1]
+                    prev_val = idx_data['Close'].iloc[-2]
+                    diff = current_val - prev_val
+                    pct = (diff / prev_val) * 100
+                    st.metric(name, f"{current_val:,.2f}", f"{pct:+.2f}%")
+            except:
+                st.caption(f"{name} 데이터를 불러올 수 없습니다.")
+
+    with mcol2:
+        st.markdown("#### 📰 최신 세계 시장 뉴스")
+        try:
+            news_list = yf.Ticker("^GSPC").news[:5]
+            for news in news_list:
+                with st.expander(f"📌 {news['content']['title']}"):
+                    st.write(news['content'].get('summary', '요약 정보가 없습니다.'))
+                    st.markdown(f"[기사 읽기]({news['content']['canonicalUrl']['url']})")
+                    st.caption(f"출처: {news['content']['provider']['displayName']} | {news['content']['displayTime']}")
+        except Exception as e:
+            st.info("뉴스를 불러오는 중입니다... 잠시만 기다려주세요.")
 
     st.divider()
 
