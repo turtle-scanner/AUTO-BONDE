@@ -98,11 +98,6 @@ def get_kospi_master_dataframe(base_dir):
     return df
 
 
-kospi_master_download(base_dir)
-df = get_kospi_master_dataframe(base_dir) 
-
-#df3 = df[df['KRX증권'] == 'Y']
-df3 = df
-# print(df3[['단축코드', '한글명', 'KRX', 'KRX증권', '기준가', '증거금비율', '상장일자', 'ROE']])
-df3.to_excel('kospi_code.xlsx',index=False) # 현재 위치에 엑셀파일로 저장
-df3
+# kospi_master_download(base_dir)
+# df = get_kospi_master_dataframe(base_dir) 
+# df.to_excel('kospi_code.xlsx',index=False)

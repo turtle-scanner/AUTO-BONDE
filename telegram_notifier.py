@@ -8,8 +8,15 @@ logger = logging.getLogger(__name__)
 def send_telegram_message(message: str):
     """
     텔레그램으로 메시지를 전송합니다.
-    .streamlit/secrets.toml 또는 환경 변수에서 설정을 읽어옵니다.
+    .env 파일 또는 환경 변수에서 설정을 읽어옵니다.
     """
+    if os.path.exists(".env"):
+        with open(".env", "r") as f:
+            for line in f:
+                if "=" in line:
+                    key, val = line.strip().split("=", 1)
+                    os.environ[key] = val
+
     token = os.environ.get("TELEGRAM_TOKEN", "")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
     
@@ -38,4 +45,4 @@ def send_telegram_message(message: str):
 
 if __name__ == "__main__":
     # 테스트 메시지
-    send_telegram_message("🚀 본데(Bonde) 자동매매 시스템이 시작되었습니다.")
+    send_telegram_message("Bonde Trading System started.")

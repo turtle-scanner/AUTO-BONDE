@@ -22,7 +22,7 @@ def get_market_status():
     return "현재 시장은 정상 운영 중입니다. (추후 상세 데이터 연결 가능)"
 
 def generate_report():
-    print("🚀 텔레그램 보고서 생성 중...")
+    print("Generating Telegram report...")
     
     # 1. KIS 인증
     try:
@@ -31,7 +31,7 @@ def generate_report():
         ka.auth(svr="prod", product="01")
     except Exception as e:
         logger.error(f"인증 실패: {e}")
-        return "❌ KIS API 인증 실패. 설정을 확인해주세요."
+        return "ERROR: KIS API Auth failed. Please check settings."
 
     # 2. 잔고 조회
     deposit_info = data_fetcher.get_deposit(env_dv="prod")
@@ -83,9 +83,9 @@ def main():
     report = generate_report()
     success = send_telegram_message(report)
     if success:
-        print("✅ 텔레그램 보고 완료!")
+        print("Telegram report sent successfully!")
     else:
-        print("❌ 텔레그램 보고 실패")
+        print("Telegram report failed.")
 
 if __name__ == "__main__":
     main()
