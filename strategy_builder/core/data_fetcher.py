@@ -813,3 +813,53 @@ def get_foreign_deposit(env_dv: str = "real") -> dict:
     except Exception as e:
         logging.error(f"해외 예수금 조회 에러: {e}")
         return {"usd_deposit": 0.0, "krw_equiv": 0}
+def get_foreign_holdings(env_dv: str = "real") -> pd.DataFrame:
+    """
+    해외 주식 보유 현황 조회
+    """
+    if not _assert_trenv_ready("해외 잔고 조회"):
+        return pd.DataFrame()
+
+    try:
+        trenv = ka.getTREnv()
+        is_real = env_dv in ("real", "prod")
+        tr_id = "CTRP6010R" if is_real else "VTRP6010R"
+        
+        params = {
+            "CANO": trenv.my_acct,
+            "ACNT_PRDT_CD": trenv.my_prod,
+            "WCRC_FRCR_DVSN_CD": "02",
+            "NATN_CD": "840",
+            "TR_OBJT_TP_CA": "0",
+            "INQR_DVSN_CD": "00"
+        }
+        
+        res = ka._url_fetch(
+            "/uapi/overseas-stock/v1/trading/inquire-present-balance",
+            tr_id, "", params
+        )
+        
+        if not res.isOK():
+            return pd.DataFrame()
+            
+        df = pd.DataFrame(res.getBody().output1)
+        if df.empty:
+            return pd.DataFrame()
+
+        # 컬럼명 매핑 (해외 주식 전용)
+        df = df.rename(columns={
+            "ovrs_pdno": "stock_code",
+            "ovrs_item_name": "stock_name",
+            "ccl_qty_11": "quantity",
+            "pchs_avg_pric": "avg_price",
+            "now_pric2": "current_price",
+            "frcr_evlu_amt2": "eval_amount",
+            "evlu_pfls_amt2": "profit_loss",
+            "evlu_pfls_rt1": "profit_rate"
+        })
+        
+        return df
+
+    except Exception as e:
+        logging.error(f"해외 잔고 조회 에러: {e}")
+        return pd.DataFrame()

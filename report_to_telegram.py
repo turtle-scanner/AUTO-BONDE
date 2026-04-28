@@ -37,6 +37,10 @@ def generate_report():
     # 2. 잔고 조회
     deposit_info = data_fetcher.get_deposit(env_dv="prod")
     holdings_df = data_fetcher.get_holdings(env_dv="prod")
+    
+    # 해외 잔고 추가
+    foreign_deposit = data_fetcher.get_foreign_deposit(env_dv="prod")
+    foreign_holdings_df = data_fetcher.get_foreign_holdings(env_dv="prod")
 
     # 3. 보고서 작성
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -44,26 +48,24 @@ def generate_report():
     report = f"📊 *[사령부] 실시간 자산 및 시장 보고서*\n"
     report += f"⏰ 일시: {now_str}\n\n"
     
-    # 💰 계좌 잔고
+    # 💰 계좌 잔고 (국내 + 해외 통합)
     if deposit_info:
-        deposit = deposit_info.get('deposit', 0)
-        total_eval = deposit_info.get('total_eval', 0)
-        profit_loss = deposit_info.get('profit_loss', 0)
+        dom_deposit = deposit_info.get('deposit', 0)
+        dom_eval = deposit_info.get('total_eval', 0)
         
-        # 수익률 계산
-        if total_eval - profit_loss > 0:
-            total_profit_rate = (profit_loss / (total_eval - profit_loss)) * 100
-        else:
-            total_profit_rate = 0.0
-
+        usd_deposit = foreign_deposit.get('usd_deposit', 0)
+        usd_krw_equiv = foreign_deposit.get('krw_equiv', 0)
+        
+        total_asset = dom_eval + usd_krw_equiv
+        
         report += f"💰 *통장 잔고*\n"
-        report += f"• 예수금: {deposit:,}원\n"
-        report += f"• 총 평가금액: {total_eval:,}원\n"
-        report += f"• 총 손익: {profit_loss:,}원 ({total_profit_rate:+.2f}%)\n\n"
+        report += f"• 총 자산: {total_asset:,}원\n"
+        report += f"• 국내 예수금: {dom_deposit:,}원\n"
+        report += f"• 해외 예수금: ${usd_deposit:.2f} ({usd_krw_equiv:,}원)\n\n"
     else:
         report += f"💰 *통장 잔고*: 데이터 로드 실패\n\n"
 
-    # 📈 보유 종목 및 수익률 (본데 상세 정보 포함)
+    # 📈 보유 종목 및 수익률 (국내 + 해외)
     report += f"📈 *보유 종목 상세 현황*\n"
     
     # 본데 관리 파일 로드
@@ -73,19 +75,27 @@ def generate_report():
         with open(pos_file, "r", encoding="utf-8") as f:
             active_pos = json.load(f)
 
+    # 통합 리스트 생성
+    all_holdings = []
     if not holdings_df.empty:
         for _, row in holdings_df.iterrows():
+            all_holdings.append(row)
+    if not foreign_holdings_df.empty:
+        for _, row in foreign_holdings_df.iterrows():
+            all_holdings.append(row)
+
+    if all_holdings:
+        for row in all_holdings:
             code = row['stock_code']
             pos_info = active_pos.get(code, {})
             
             report += f"• *{row['stock_name']}*\n"
-            report += f"  - 수익: {row['profit_rate']:+.2f}% ({row['profit_loss']:,}원)\n"
+            report += f"  - 수익: {float(row['profit_rate']):+.2f}% ({int(float(row['profit_loss'])):,}원)\n"
             
             if pos_info:
                 report += f"  - 이유: {pos_info.get('reason', 'N/A')}\n"
                 report += f"  - ROE: {pos_info.get('roe', 0)}%\n"
                 report += f"  - 목표: {pos_info.get('target_price', 0):,.0f}원\n"
-                report += f"  - 손절: {pos_info.get('stop_price', 0):,.0f}원\n"
             else:
                 report += "  - (봇 관리 외 종목)\n"
     else:
