@@ -41,7 +41,8 @@ def generate_full_watchlist():
             watchlist.append({
                 "code": str(row['단축코드']).zfill(6),
                 "name": row['한글명'],
-                "market": "KOSPI"
+                "market": "KOSPI",
+                "roe": float(row.get('ROE', 0))
             })
             
         # 2. KOSDAQ 마스터 다운로드 및 파싱
@@ -52,7 +53,8 @@ def generate_full_watchlist():
             watchlist.append({
                 "code": str(row['단축코드']).zfill(6),
                 "name": row['한글종목명'],
-                "market": "KOSDAQ"
+                "market": "KOSDAQ",
+                "roe": float(row.get('ROE(자기자본이익률)', 0))
             })
             
     except Exception as e:

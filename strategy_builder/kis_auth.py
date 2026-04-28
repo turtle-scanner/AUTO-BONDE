@@ -36,7 +36,7 @@ from requests.adapters import HTTPAdapter
 # SSL fix for KIS API (OpenSSL 3.0+ on Windows)
 class KISAdapter(HTTPAdapter):
     def init_poolmanager(self, *args, **kwargs):
-        context = ssl.create_default_context()
+        context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
         context.set_ciphers('DEFAULT@SECLEVEL=1')
         context.check_hostname = False
         kwargs['ssl_context'] = context

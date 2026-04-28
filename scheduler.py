@@ -16,10 +16,12 @@ def job_scan():
     run_bonde_trading()
 
 # 스케줄 설정
-# 1. 매일 오전 9시, 오후 4시, 오후 11시(미국장)에 보고서 전송
+# 1. 매일 정해진 시간에 보고서 전송 (사용자 퇴근 시간 16:40 포함)
 schedule.every().day.at("09:00").do(job_report)
-schedule.every().day.at("16:00").do(job_report)
-schedule.every().day.at("23:00").do(job_report)
+schedule.every().day.at("15:30").do(job_report) # 국내장 마감 직후
+schedule.every().day.at("16:40").do(job_report) # 사용자 퇴근 시간 (요청)
+schedule.every().day.at("22:30").do(job_report) # 미국장 개장 직전
+schedule.every().day.at("23:30").do(job_report) 
 
 # 2. 매 1시간마다 타점 스캔
 schedule.every(1).hours.do(job_scan)
