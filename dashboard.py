@@ -191,58 +191,58 @@ def dashboard_page():
             scan_data = {"signals": []}
             
         signals = scan_data.get("signals", [])
-            nano_bananas = [s for s in signals if "Banana" in s['reason'] or "나노" in s['reason']]
+        nano_bananas = [s for s in signals if "Banana" in s['reason'] or "나노" in s['reason']]
+        
+        if nano_bananas:
+            st.markdown("### 🍌 Nano Banana Detective")
+            btab1, btab2 = st.tabs(["🇰🇷 국내 나노바나나", "🇺🇸 해외 나노바나나"])
             
-            if nano_bananas:
-                st.markdown("### 🍌 Nano Banana Detective")
-                btab1, btab2 = st.tabs(["🇰🇷 국내 나노바나나", "🇺🇸 해외 나노바나나"])
-                
-                # 시장 구분 (market 필드가 없으면 종목코드 숫자로 판별)
-                kr_bananas = [s for s in nano_bananas if s.get('market') in ['KOSPI', 'KOSDAQ'] or (s.get('market') is None and s['code'].isdigit())]
-                us_bananas = [s for s in nano_bananas if s.get('market') not in ['KOSPI', 'KOSDAQ'] and not (s.get('market') is None and s['code'].isdigit())]
+            # 시장 구분 (market 필드가 없으면 종목코드 숫자로 판별)
+            kr_bananas = [s for s in nano_bananas if s.get('market') in ['KOSPI', 'KOSDAQ'] or (s.get('market') is None and s['code'].isdigit())]
+            us_bananas = [s for s in nano_bananas if s.get('market') not in ['KOSPI', 'KOSDAQ'] and not (s.get('market') is None and s['code'].isdigit())]
 
-                with btab1:
-                    if kr_bananas:
-                        for nb in kr_bananas:
-                            st.markdown(f"""
-                            <div class="banana-card">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <span style="font-size: 1.5em;">🚀 {nb['name']} ({nb['code']})</span><br>
-                                        <span style="font-size: 0.9em; opacity: 0.8;">{nb['reason']}</span>
-                                    </div>
-                                    <div style="text-align: right;">
-                                        <span style="font-size: 1.2em;">손절가: {nb['stop_loss']:,}원</span><br>
-                                        <span style="font-size: 0.8em;">포착: {nb['time']}</span>
-                                    </div>
+            with btab1:
+                if kr_bananas:
+                    for nb in kr_bananas:
+                        st.markdown(f"""
+                        <div class="banana-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <span style="font-size: 1.5em;">🚀 {nb['name']} ({nb['code']})</span><br>
+                                    <span style="font-size: 0.9em; opacity: 0.8;">{nb['reason']}</span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-size: 1.2em;">손절가: {nb['stop_loss']:,}원</span><br>
+                                    <span style="font-size: 0.8em;">포착: {nb['time']}</span>
                                 </div>
                             </div>
-                            """, unsafe_allow_html=True)
-                    else:
-                        st.info("현재 국내 시장에 나노 바나나 셋업이 없습니다.")
+                        </div>
+                        """, unsafe_allow_html=True)
+                else:
+                    st.info("현재 국내 시장에 나노 바나나 셋업이 없습니다.")
 
-                with btab2:
-                    if us_bananas:
-                        for nb in us_bananas:
-                            # 해외 주식은 달러 표시
-                            st.markdown(f"""
-                            <div class="banana-card" style="background: linear-gradient(135deg, #e3f2fd 0%, #1976d2 100%); color: white;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <span style="font-size: 1.5em;">🇺🇸 {nb['name']} ({nb['code']})</span><br>
-                                        <span style="font-size: 0.9em; opacity: 0.8;">{nb['reason']}</span>
-                                    </div>
-                                    <div style="text-align: right;">
-                                        <span style="font-size: 1.2em;">손절가: ${nb['stop_loss']:.2f}</span><br>
-                                        <span style="font-size: 0.8em;">포착: {nb['time']}</span>
-                                    </div>
+            with btab2:
+                if us_bananas:
+                    for nb in us_bananas:
+                        # 해외 주식은 달러 표시
+                        st.markdown(f"""
+                        <div class="banana-card" style="background: linear-gradient(135deg, #e3f2fd 0%, #1976d2 100%); color: white;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <span style="font-size: 1.5em;">🇺🇸 {nb['name']} ({nb['code']})</span><br>
+                                    <span style="font-size: 0.9em; opacity: 0.8;">{nb['reason']}</span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-size: 1.2em;">손절가: ${nb['stop_loss']:.2f}</span><br>
+                                    <span style="font-size: 0.8em;">포착: {nb['time']}</span>
                                 </div>
                             </div>
-                            """, unsafe_allow_html=True)
-                    else:
-                        st.info("현재 해외 시장에 나노 바나나 셋업이 없습니다.")
-            else:
-                st.info("현재 시장에 나노 바나나 셋업이 포착되지 않았습니다. 관망을 유지하세요.")
+                        </div>
+                        """, unsafe_allow_html=True)
+                else:
+                    st.info("현재 해외 시장에 나노 바나나 셋업이 없습니다.")
+        else:
+            st.info("현재 시장에 나노 바나나 셋업이 포착되지 않았습니다. 관망을 유지하세요.")
 
     st.divider()
 
