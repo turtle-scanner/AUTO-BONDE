@@ -8,11 +8,11 @@ from run_bonde_trading import run_bonde_trading
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
 def job_report():
-    logging.info("정기 보고서 전송 중...")
+    logging.info("Sending regular report...")
     send_report()
 
 def job_scan():
-    logging.info("본데 타점 스캔 중...")
+    logging.info("Scanning for Bonde setups...")
     run_bonde_trading()
 
 # 스케줄 설정
@@ -25,7 +25,7 @@ schedule.every().day.at("23:00").do(job_report)
 schedule.every(1).hours.do(job_scan)
 
 if __name__ == "__main__":
-    logging.info("⏰ 자동 보고 및 스캔 스케줄러가 시작되었습니다.")
+    logging.info("START: Auto report and scan scheduler started.")
     # 시작 시 한 번 실행
     job_report()
     

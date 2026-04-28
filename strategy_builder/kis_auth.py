@@ -13,6 +13,8 @@ from collections import namedtuple
 from collections.abc import Callable
 from datetime import datetime
 from io import StringIO
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 import pandas as pd
 
@@ -28,6 +30,20 @@ from Crypto.Cipher import AES
 
 # pip install pycryptodome
 from Crypto.Util.Padding import unpad
+import ssl
+from requests.adapters import HTTPAdapter
+
+# SSL fix for KIS API (OpenSSL 3.0+ on Windows)
+class KISAdapter(HTTPAdapter):
+    def init_poolmanager(self, *args, **kwargs):
+        context = ssl.create_default_context()
+        context.set_ciphers('DEFAULT@SECLEVEL=1')
+        context.check_hostname = False
+        kwargs['ssl_context'] = context
+        return super().init_poolmanager(*args, **kwargs)
+
+_session = requests.Session()
+_session.mount('https://', KISAdapter())
 
 
 def clearConsole():
@@ -251,7 +267,7 @@ def auth(svr="prod", product=_cfg["my_prod"], url=None):
     # print("saved_token: ", saved_token)
     if saved_token is None:  # 기존 발급 토큰 확인이 안되면 발급처리
         url = f"{_cfg[svr]}/oauth2/tokenP"
-        res = requests.post(
+        res = _session.post(
             url, data=json.dumps(p), headers=_getBaseHeader()
         )  # 토큰 발급
         rescode = res.status_code
@@ -313,7 +329,7 @@ def getTREnv():
 def set_order_hash_key(h, p):
     url = f"{getTREnv().my_url}/uapi/hashkey"  # hashkey 발급 API URL
 
-    res = requests.post(url, data=json.dumps(p), headers=h)
+    res = _session.post(url, data=json.dumps(p), headers=h)
     rescode = res.status_code
     if rescode == 200:
         h["hashkey"] = _getResultObject(res.json()).HASH
@@ -493,9 +509,9 @@ def _url_fetch(
 
     if postFlag:
         if hashFlag: set_order_hash_key(headers, params)
-        res = requests.post(url, headers=headers, data=json.dumps(params))
+        res = _session.post(url, headers=headers, data=json.dumps(params))
     else:
-        res = requests.get(url, headers=headers, params=params)
+        res = _session.get(url, headers=headers, params=params)
 
     if res.status_code == 200:
         ar = APIResp(res)
@@ -538,7 +554,7 @@ def auth_ws(svr="prod", product=_cfg["my_prod"]):
     p["secretkey"] = _cfg[ak2]
 
     url = f"{_cfg[svr]}/oauth2/Approval"
-    res = requests.post(url, data=json.dumps(p), headers=_getBaseHeader())  # 토큰 발급
+    res = _session.post(url, data=json.dumps(p), headers=_getBaseHeader())  # 토큰 발급
     rescode = res.status_code
     if rescode == 200:  # 토큰 정상 발급
         approval_key = _getResultObject(res.json()).approval_key

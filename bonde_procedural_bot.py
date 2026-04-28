@@ -6,6 +6,7 @@ import logging
 import argparse
 from datetime import datetime
 import pandas as pd
+import math
 
 # 프로젝트 경로 추가
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -66,7 +67,7 @@ class BondeProceduralBot:
             
             # 자산이 0으로 조회될 경우를 대비한 기본값 (최소 100만원 가정)
             if total_equity < 1000000:
-                logger.warning(f"⚠️ 조회된 총 자산({total_equity:,}원)이 너무 적습니다. 기본값을 사용하거나 잔고를 확인하세요.")
+                logger.warning(f"WARN: Equity ({total_equity:,} KRW) is too low.")
                 return max(total_equity, 10000000) # 기본 1000만원 기준
                 
             return total_equity
@@ -76,7 +77,7 @@ class BondeProceduralBot:
 
     def scan_and_buy(self):
         """Watchlist를 스캔하여 새로운 진입 기회 포착"""
-        logger.info("🔍 [스캔] 본데 셋업 탐색 중...")
+        logger.info("[SCAN] Searching for Bonde setups...")
         
         if not os.path.exists(self.watchlist_file):
             return
@@ -103,7 +104,7 @@ class BondeProceduralBot:
         logger.info(f"📊 현재 자산: {equity:,}원 | 리스크(1%): {risk_amount:,}원 | 보유 한도: {current_pos_count}/{max_positions}")
 
         if current_pos_count >= max_positions:
-            logger.info(f"⚠️ 보유 종목 한도 초과 ({current_pos_count}/{max_positions}). 스캔을 건너뜁니다.")
+            logger.info(f"WARN: Position limit reached ({current_pos_count}/{max_positions}).")
             return
 
         # 시장 환경 체크 (Market Filter)
@@ -117,7 +118,7 @@ class BondeProceduralBot:
                 
                 # 1. 지수 이평선 필터
                 if m_curr < m_sma50 or m_curr < m_sma200:
-                    logger.warning(f"⚠️ [지수 필터] QQQ({m_curr:.2f})가 이평선 아래에 있음. 매매 중단.")
+                    logger.warning(f"WARN: QQQ({m_curr:.2f}) below MA. Trading paused.")
                     market_ok = False
                 
                 # 2. 시장 폭(Market Breadth) 필터: 와치리스트 중 50일선 위 종목 비율
@@ -135,10 +136,10 @@ class BondeProceduralBot:
                 logger.info(f"📊 시장 폭(Breadth): {breadth_pct:.1f}% ({above_50ma_count}/{sample_size})")
                 
                 if breadth_pct < 40: # 40% 미만이면 시장이 극도로 불안정함
-                    logger.warning(f"⚠️ [시장 폭 필터] 상승 종목 비중이 너무 낮음({breadth_pct:.1f}%). 매매 중단.")
+                    logger.warning(f"WARN: Breadth low ({breadth_pct:.1f}%). Trading paused.")
                     market_ok = False
         except Exception as e:
-            logger.warning(f"⚠️ 시장 필터 계산 중 오류({e}). 보수적으로 진행합니다.")
+            logger.warning(f"WARN: Error calculating market filter ({e}). Proceeding cautiously.")
 
         # 1단계: 모든 종목 스캔하여 신호 수집
         buy_signals = []
@@ -173,10 +174,10 @@ class BondeProceduralBot:
                         "code": code,
                         "name": name
                     })
-                    logger.info(f"✨ 신호 포착: {name} (RS: {rs_score})")
+                    logger.info(f"Signal found: {name} (RS: {rs_score})")
 
             except Exception as e:
-                logger.error(f"❌ {name} 스캔 중 오류: {e}")
+                logger.error(f"Error scanning {name}: {e}")
 
         # 2단계: RS 점수 순으로 내림차순 정렬
         buy_signals.sort(key=lambda x: x['rs_score'], reverse=True)
@@ -204,7 +205,7 @@ class BondeProceduralBot:
                 qty = int(math.floor(risk_amount / price_risk))
                 if qty <= 0: continue
 
-                logger.info(f"🔥 [매수 집행] {name} (RS: {item['rs_score']}) | 진입가: {entry_price} | 손절가: {lod_stop}")
+                logger.info(f"BUY: {name} (RS: {item['rs_score']}) | Entry: {entry_price} | Stop: {lod_stop}")
                 
                 res = self.executor.execute_signal(signal, risk_amount=risk_amount)
                 
@@ -218,10 +219,10 @@ class BondeProceduralBot:
                         "status": "active"
                     }
                     self._save_positions()
-                    send_telegram_message(f"🚀 *[본데 진입]* {name}\n• RS 점수: {item['rs_score']}\n• 수량: {qty}주\n• 진입가: {entry_price}\n• 손절가: {lod_stop}")
+                    send_telegram_message(f"[Bonde ENTRY] {name}\n- RS Score: {item['rs_score']}\n- Qty: {qty}\n- Entry: {entry_price}\n- Stop: {lod_stop}")
             
             except Exception as e:
-                logger.error(f"❌ {name} 매수 처리 중 오류: {e}")
+                logger.error(f"Error processing buy for {name}: {e}")
 
     def monitor_and_sell(self):
         """보유 종목 모니터링 및 본데 원칙(분할 매도 & SMA 7) 매도"""
@@ -243,25 +244,25 @@ class BondeProceduralBot:
 
                 # 1. 본데 LOD 손절 (실시간 이탈 시)
                 if curr_price <= pos['stop_price']:
-                    logger.info(f"💥 [손절] {pos['name']} | LOD 손절선 이탈")
+                    logger.info(f"STOP: {pos['name']} | LOD Stop triggered")
                     signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason="본데 LOD 손절선 이탈")
                     self.executor.execute_signal(signal)
                     codes_to_remove.append(code)
-                    send_telegram_message(f"💥 *[본데 손절]* {pos['name']}\n• 현재가: {curr_price:,}\n• 손절가(LOD): {pos['stop_price']:,}\n• 수익률: {profit_rate:.2f}%")
+                    send_telegram_message(f"[Bonde STOP] {pos['name']}\n- Price: {curr_price}\n- Stop: {pos['stop_price']}\n- PnL: {profit_rate:.2f}%")
                     continue
 
                 # 2. 본데 분할 매도 (20% 수익 시 절반 매도)
                 if profit_rate >= 20.0 and pos.get('status') == "active":
                     half_qty = int(pos['qty'] / 2)
                     if half_qty > 0:
-                        logger.info(f"💰 [분할 매도] {pos['name']} | 20% 수익 달성! 절반 매도.")
+                        logger.info(f"PROFIT: {pos['name']} | 20% Profit reached! Partial sell.")
                         signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason="20% 수익 분할 매도", quantity=half_qty)
                         self.executor.execute_signal(signal)
                         pos['qty'] -= half_qty
                         pos['status'] = "partial_sold"
                         pos['stop_price'] = pos['entry_price'] * 1.05 # 본전 위로 상향 (Free trade)
                         self._save_positions()
-                        send_telegram_message(f"💰 *[본데 분할익절]* {pos['name']}\n• 현재가: {curr_price:,}\n• 수익률: {profit_rate:.2f}%\n• 결과: 물량 50% 매도 후 추세 추종")
+                        send_telegram_message(f"[Bonde PARTIAL SELL] {pos['name']}\n- Price: {curr_price}\n- PnL: {profit_rate:.2f}%\n- Result: 50% Sold, Trend following.")
                         continue
 
                 # 3. 본데 추세 익절 (7일선 하향 돌파 시 - 남은 물량 전량 매도)
@@ -269,15 +270,15 @@ class BondeProceduralBot:
                 if not df.empty and len(df) >= 7:
                     sma7 = indicators.calc_ma(df, 7).iloc[-1]
                     if curr_price < sma7 * 0.99:
-                        logger.info(f"✨ [전량 익절] {pos['name']} | 7일선 이탈로 추세 종료.")
+                        logger.info(f"EXIT: {pos['name']} | Trend ended (SMA7 cross)")
                         signal = Signal(code, pos['name'], Action.SELL, strength=1.0, reason="7일선 이탈 추세 종료")
                         self.executor.execute_signal(signal)
                         codes_to_remove.append(code)
-                        send_telegram_message(f"✨ *[본데 추세종료]* {pos['name']}\n• 현재가: {curr_price:,}\n• 7일선: {sma7:.2f}\n• 최종 수익률: {profit_rate:.2f}%")
+                        send_telegram_message(f"[Bonde TREND EXIT] {pos['name']}\n- Price: {curr_price}\n- SMA7: {sma7:.2f}\n- PnL: {profit_rate:.2f}%")
                         continue
 
             except Exception as e:
-                logger.error(f"❌ {pos['name']} 모니터링 중 오류: {e}")
+                logger.error(f"Error monitoring {pos['name']}: {e}")
 
         for code in codes_to_remove:
             if code in self.active_positions:
@@ -286,7 +287,7 @@ class BondeProceduralBot:
             self._save_positions()
 
     def run_forever(self):
-        logger.info("🟢 본데 기계적 자동매매 엔진 가동 (24시간 모니터링 모드)")
+        logger.info("START: Bonde Engine active (24H Monitoring Mode)")
         ka.auth(svr=self.env_dv, product="01")
         
         while True:

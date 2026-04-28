@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def run_bonde_trading():
     print("="*60)
-    print("🚀 본데(Bonde/Stockbee) 방식 자동 탐색 엔진 v1.0")
+    print("RUN: Bonde/Stockbee Auto Scan Engine v1.0")
     print("="*60)
     
     # 1. KIS API 인증
@@ -26,17 +26,17 @@ def run_bonde_trading():
     # 초기에는 안전을 위해 모의투자(vps)로 설정합니다.
     try:
         ka.auth(svr="vps", product="01")
-        logger.info("KIS API 인증 성공 (모의투자)")
+        logger.info("KIS API Auth Success (Paper Trading)")
     except Exception as e:
         logger.error(f"인증 실패: {e}")
         return
 
     # 2. 본데 전략 초기화
-    # 한국장(KR)용 본데 전략 (최소가격 5000원)
-    bonde_kr = BondeStrategy(min_change=4.0, volume_ratio=2.0, min_price=5000)
+    # 한국장(KR)용 본데 전략
+    bonde_kr = BondeStrategy(min_change_mb=4.0)
     
-    # 미국장(US)용 본데 전략 (최소가격 $5)
-    bonde_us = BondeStrategy(min_change=4.0, volume_ratio=2.0, min_price=5.0)
+    # 미국장(US)용 본데 전략
+    bonde_us = BondeStrategy(min_change_mb=4.0)
 
     # 3. 감시 종목 설정 (예시)
     kr_stocks = [
@@ -56,36 +56,36 @@ def run_bonde_trading():
     ]
 
     # 4. 국내장 스캔
-    print("\n[ 🇰🇷 국내 시장 본데 타점 스캔 ]")
+    print("\n[ KR Market Bonde Scan ]")
     for code, name in kr_stocks:
         try:
             signal = bonde_kr.generate_signal(code, name)
-            status = "✨ BUY" if signal.action.value == "buy" else "─ HOLD"
+            status = "BUY" if signal.action.value == "buy" else "HOLD"
             print(f"[{code}] {name:10} | {status} | {signal.reason}")
             
             # BUY 신호 시 텔레그램 알림
             if signal.action.value == "buy":
                 from telegram_notifier import send_telegram_message
-                send_telegram_message(f"🚀 *[국내] 본데 매수 타점 포착*\n• 종목: {name} ({code})\n• 근거: {signal.reason}")
+                send_telegram_message(f"[KR] Bonde Buy Signal\n- Stock: {name} ({code})\n- Reason: {signal.reason}")
                 
         except Exception as e:
-            print(f"[{code}] {name:10} | ❌ 오류: {e}")
+            print(f"[{code}] {name:10} | ERROR: {e}")
 
     # 5. 미국장 스캔
-    print("\n[ 🇺🇸 미국 시장 본데 타점 스캔 ]")
+    print("\n[ US Market Bonde Scan ]")
     for code, name in us_stocks:
         try:
             signal = bonde_us.generate_signal(code, name)
-            status = "✨ BUY" if signal.action.value == "buy" else "─ HOLD"
+            status = "BUY" if signal.action.value == "buy" else "HOLD"
             print(f"[{code:5}] {name:10} | {status} | {signal.reason}")
             
             # BUY 신호 시 텔레그램 알림
             if signal.action.value == "buy":
                 from telegram_notifier import send_telegram_message
-                send_telegram_message(f"🚀 *[미국] 본데 매수 타점 포착*\n• 종목: {name} ({code})\n• 근거: {signal.reason}")
+                send_telegram_message(f"[US] Bonde Buy Signal\n- Stock: {name} ({code})\n- Reason: {signal.reason}")
 
         except Exception as e:
-            print(f"[{code:5}] {name:10} | ❌ 오류: {e}")
+            print(f"[{code:5}] {name:10} | ERROR: {e}")
 
     print("\n" + "="*60)
     print(f"스캔 완료 시간: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
