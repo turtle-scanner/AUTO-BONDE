@@ -51,7 +51,7 @@ def generate_full_watchlist():
         for _, row in df_kosdaq.iterrows():
             watchlist.append({
                 "code": str(row['단축코드']).zfill(6),
-                "name": row['한글명'],
+                "name": row['한글종목명'],
                 "market": "KOSDAQ"
             })
             
