@@ -7,149 +7,104 @@ from datetime import datetime, timedelta
 import logging
 import urllib3
 import ssl
+import requests
+from concurrent.futures import ThreadPoolExecutor
 
 # SSL 보안 인증서 검증 우회 설정
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 ssl._create_default_https_context = ssl._create_unverified_context
 
 # yfinance용 세션 강제 설정 (인증서 검증 안함)
-import requests
 old_merge_environment_settings = requests.Session.merge_environment_settings
-
 def new_merge_environment_settings(self, url, proxies, stream, verify, cert):
     settings = old_merge_environment_settings(self, url, proxies, stream, verify, cert)
     settings['verify'] = False
     return settings
-
 requests.Session.merge_environment_settings = new_merge_environment_settings
-
-# 프로젝트 경로 설정
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-STRATEGY_DIR = os.path.join(BASE_DIR, "strategy_builder")
-STOCKS_INFO_DIR = os.path.join(BASE_DIR, "stocks_info")
-
-if STRATEGY_DIR not in sys.path:
-    sys.path.append(STRATEGY_DIR)
-if STOCKS_INFO_DIR not in sys.path:
-    sys.path.append(STOCKS_INFO_DIR)
-
-import kis_kospi_code_mst as kospi
-import kis_kosdaq_code_mst as kosdaq
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def get_kr_top_rs(limit=400):
-    logger.info("Fetching KR Stock Master...")
-    STOCKS_INFO_DIR = os.path.join(BASE_DIR, "stocks_info")
-    
-    # KOSPI/KOSDAQ 마스터 로드
-    kospi.kospi_master_download(STOCKS_INFO_DIR)
-    df_kospi = kospi.get_kospi_master_dataframe(STOCKS_INFO_DIR)
-    kosdaq.kosdaq_master_download(STOCKS_INFO_DIR)
-    df_kosdaq = kosdaq.get_kosdaq_master_dataframe(STOCKS_INFO_DIR)
-    
-    codes = []
-    for _, row in df_kospi.iterrows():
-        codes.append({"code": str(row['단축코드']).zfill(6), "name": row['한글명'], "market": "KOSPI", "yf_code": str(row['단축코드']).zfill(6) + ".KS"})
-    for _, row in df_kosdaq.iterrows():
-        codes.append({"code": str(row['단축코드']).zfill(6), "name": row['한글종목명'], "market": "KOSDAQ", "yf_code": str(row['단축코드']).zfill(6) + ".KQ"})
-    
-    logger.info(f"Total KR stocks: {len(codes)}. Fetching performance...")
-    
-    # yfinance로 한 번에 조회 (청크 단위로)
-    yf_codes = [c['yf_code'] for c in codes]
-    chunk_size = 100
-    perf_data = {}
-    
-    for i in range(0, len(yf_codes), chunk_size):
-        chunk = yf_codes[i:i+chunk_size]
-        try:
-            data = yf.download(chunk, period="1y", interval="1d", group_by='ticker', threads=True, progress=False)
-            for ticker in chunk:
-                try:
-                    if ticker in data and not data[ticker].empty:
-                        close = data[ticker]['Close'].dropna()
-                        if len(close) > 200:
-                            ret = (close.iloc[-1] / close.iloc[0]) - 1
-                            perf_data[ticker] = ret
-                except:
-                    continue
-        except:
-            continue
-        logger.info(f"Progress: {i+len(chunk)}/{len(yf_codes)}")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-    # 정렬 및 필터링
-    for c in codes:
-        c['rs_score'] = perf_data.get(c['yf_code'], -1.0)
-    
-    top_400 = sorted([c for c in codes if c['rs_score'] > -1], key=lambda x: x['rs_score'], reverse=True)[:limit]
-    return top_400
-
-def get_us_top_rs(limit=400):
-    logger.info("Fetching US Stock List...")
-    # US는 주요 지수 구성 종목 + 거래량 상위 종목 위주로 샘플링 (전체는 너무 많음)
-    # 실제로는 nasmst.cod 등을 파싱해야 함. 여기서는 주요 기술주 및 인기 종목 리스트를 사용하거나 yfinance로 검색
-    
-    # 간단하게 S&P 500 + Nasdaq 100 리스트를 가져오는 방식 (실제로는 더 넓게 잡는 게 좋음)
-    # 여기서는 예시로 많이 거래되는 종목 리스트를 직접 정의하거나 외부 소스 활용
+def calculate_rs_score(ticker_symbol):
+    """6개월(40%) 및 3개월(60%) 가중치 RS 점수 계산"""
     try:
-        # S&P 500 리스트 위키피디아에서 가져오기
-        table = pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
-        df_sp500 = table[0]
-        tickers = df_sp500['Symbol'].tolist()
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=200)
         
-        # Nasdaq 100 추가
-        table_ndx = pd.read_html('https://en.wikipedia.org/wiki/Nasdaq-100')
-        df_ndx = table_ndx[4] # 위키피디아 구조에 따라 다를 수 있음
-        tickers.extend(df_ndx['Ticker'].tolist())
-        tickers = list(set(tickers)) # 중복 제거
+        # 데이터 다운로드 (최대한 가볍게)
+        df = yf.download(ticker_symbol, start=start_date, end=end_date, progress=False)
+        if df.empty or len(df) < 120: return 0
+        
+        curr_price = float(df['Close'].iloc[-1])
+        price_3m = float(df['Close'].iloc[-60]) if len(df) >= 60 else float(df['Close'].iloc[0])
+        price_6m = float(df['Close'].iloc[0])
+        
+        rs_3m = (curr_price / price_3m - 1) * 100
+        rs_6m = (curr_price / price_6m - 1) * 100
+        
+        # 3개월 가중치 60%, 6개월 가중치 40%
+        rs_score = (rs_3m * 0.6) + (rs_6m * 0.4)
+        return round(rs_score, 2)
     except:
-        logger.warning("Failed to fetch US indices. Using fallback list.")
-        tickers = ["NVDA", "AAPL", "MSFT", "AMZN", "META", "TSLA", "GOOGL", "AVGO", "COST", "NFLX", "AMD", "MU"]
+        return 0
 
-    logger.info(f"Total US stocks to check: {len(tickers)}. Fetching performance...")
+def update_watchlist():
+    logger.info("START: Generating Optimized RS Watchlist (Top 300 KR / 300 US)...")
     
-    perf_data = {}
-    chunk_size = 50
-    for i in range(0, len(tickers), chunk_size):
-        chunk = tickers[i:i+chunk_size]
-        data = yf.download(chunk, period="1y", interval="1d", group_by='ticker', threads=True, progress=False)
-        for ticker in chunk:
-            try:
-                if ticker in data and not data[ticker].empty:
-                    close = data[ticker]['Close'].dropna()
-                    if len(close) > 200:
-                        ret = (close.iloc[-1] / close.iloc[0]) - 1
-                        perf_data[ticker] = ret
-            except:
-                continue
+    # 1. 한국 시장 (KOSDAQ 중심)
+    import FinanceDataReader as fdr
+    df_krx = fdr.StockListing('KRX')
+    # 코스닥 종목 우선 필터링 (사용자 요청)
+    df_kosdaq = df_krx[df_krx['Market'] == 'KOSDAQ'].copy()
     
-    us_codes = []
-    for ticker, ret in perf_data.items():
-        us_codes.append({"code": ticker, "name": ticker, "market": "NAS", "rs_score": ret})
+    # RS 계산 (병렬 처리로 속도 향상)
+    logger.info(f"Calculating RS for {len(df_kosdaq)} KOSDAQ stocks...")
+    tickers = [f"{row['Code']}.KQ" for _, row in df_kosdaq.iterrows()]
+    
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        rs_scores = list(executor.map(calculate_rs_score, tickers))
+    
+    df_kosdaq['rs_score'] = rs_scores
+    top_kr = df_kosdaq.sort_values(by='rs_score', ascending=False).head(300)
+    
+    # 2. 미국 시장 (NASDAQ 중심)
+    logger.info("Fetching US NASDAQ stocks...")
+    # 나스닥 상위 종목 리스트 (가져오기 어려울 경우 QQQ 구성 종목 등 주요 종목 사용)
+    # 여기서는 상위 500개 중 RS 300개 추출
+    df_nasdaq = fdr.StockListing('NASDAQ').head(500)
+    logger.info(f"Calculating RS for {len(df_nasdaq)} NASDAQ stocks...")
+    
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        us_rs_scores = list(executor.map(calculate_rs_score, df_nasdaq['Symbol'].tolist()))
         
-    top_400 = sorted(us_codes, key=lambda x: x['rs_score'], reverse=True)[:limit]
-    return top_400
-
-def main():
-    kr_top = get_kr_top_rs(400)
-    us_top = get_us_top_rs(400)
+    df_nasdaq['rs_score'] = us_rs_scores
+    top_us = df_nasdaq.sort_values(by='rs_score', ascending=False).head(300)
     
-    # 합치기
+    # 3. 통합 및 저장
     watchlist = []
-    for s in kr_top:
-        watchlist.append({"code": s['code'], "name": s['name'], "market": s['market'], "rs_1y": s['rs_score']})
-    for s in us_top:
-        watchlist.append({"code": s['code'], "name": s['name'], "market": s['market'], "rs_1y": s['rs_score']})
+    for _, row in top_kr.iterrows():
+        watchlist.append({
+            "code": row['Code'],
+            "name": row['Name'],
+            "market": "KOSDAQ",
+            "rs_score": row['rs_score']
+        })
+    for _, row in top_us.iterrows():
+        watchlist.append({
+            "code": row['Symbol'],
+            "name": row['Name'],
+            "market": "NASDAQ",
+            "rs_score": row['rs_score']
+        })
         
-    # 저장
     output_path = os.path.join(BASE_DIR, "bonde_watchlist.json")
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(watchlist, f, ensure_ascii=False, indent=4)
         
-    logger.info(f"Watchlist updated with {len(watchlist)} stocks (Top 400 KR, Top 400 US by RS)")
+    logger.info(f"SUCCESS: Optimized Watchlist saved ({len(watchlist)} stocks).")
 
 if __name__ == "__main__":
-    main()
+    update_watchlist()
