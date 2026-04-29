@@ -32,7 +32,8 @@ def send_telegram_message(message: str):
     }
     
     try:
-        response = requests.post(url, json=payload)
+        # SSL 인증서 검증 오류 방지를 위해 verify=False 추가
+        response = requests.post(url, json=payload, verify=False)
         if response.status_code == 200:
             logger.info("텔레그램 메시지 전송 성공")
             return True
