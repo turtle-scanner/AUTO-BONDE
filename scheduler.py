@@ -2,7 +2,7 @@ import time
 import schedule
 import logging
 from report_to_telegram import main as send_report
-from bonde_procedural_bot import BondeProceduralBot
+from bonde_procedural_bot import BondeProceduralBotV3 as BondeProceduralBot
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
@@ -15,7 +15,7 @@ def job_scan():
     logging.info("Starting automated trade cycle (Scan/Buy/Sell)...")
     try:
         # 실전 계좌(prod)로 봇 초기화
-        bot = BondeProceduralBot(env_dv="prod", risk_pct=0.01)
+        bot = BondeProceduralBot(env_dv="prod")
         
         # 1. 감시 및 매도 실행
         bot.monitor_and_sell()
@@ -45,7 +45,11 @@ schedule.every().day.at("23:30").do(job_report)
 # 2. 실시간 감시 (1분 간격 - 엔비디아 등 즉시 대응용)
 schedule.every(1).minutes.do(job_monitor)
 
-# 3. 매매 사이클 (1시간 간격 - 신규 종목 스캔용)
+# 3. 15분 단위 집중 리포트 및 스캔 (개장 초기 대응용)
+schedule.every(15).minutes.do(job_report)
+schedule.every(15).minutes.do(job_scan)
+
+# 4. 정기 매매 사이클 (1시간 간격 - 전체 스캔용)
 schedule.every(1).hours.do(job_scan)
 schedule.every().day.at("22:30").do(job_scan)
 schedule.every().day.at("09:00").do(job_scan)

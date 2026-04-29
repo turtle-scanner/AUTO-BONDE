@@ -26,6 +26,53 @@ def check_password():
     return True
 
 if check_password():
+    # --- [ THEME INJECTION ] ---
+    st.markdown("""
+        <style>
+            /* 전체 배경을 블랙으로 설정 */
+            .stApp {
+                background-color: #050505;
+                color: #FFFFFF;
+            }
+            /* 사이드바 배경 및 텍스트 */
+            [data-testid="stSidebar"] {
+                background-color: #0E0E0E;
+                border-right: 1px solid #333;
+            }
+            /* 메트릭 카드 디자인 */
+            [data-testid="stMetricValue"] {
+                color: #00FFCC !important;
+                font-family: 'Courier New', monospace;
+            }
+            /* 테이블 스타일 조정 */
+            .stTable {
+                background-color: #111111;
+                border: 1px solid #333;
+                border-radius: 10px;
+                overflow: hidden;
+            }
+            th {
+                background-color: #1A1A1A !important;
+                color: #FFFFFF !important;
+            }
+            td {
+                color: #E0E0E0 !important;
+            }
+            /* 구분선 색상 */
+            hr {
+                border: 0;
+                height: 1px;
+                background-image: linear-gradient(to right, rgba(0, 255, 204, 0), rgba(0, 255, 204, 0.75), rgba(0, 255, 204, 0));
+            }
+            /* 제목 폰트 및 색상 */
+            h1, h2, h3 {
+                color: #00FFCC !important;
+                font-family: 'Inter', sans-serif;
+                font-weight: 800;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
     # 데이터 경로
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     POSITIONS_PATH = os.path.join(BASE_DIR, "bonde_active_positions.json")
