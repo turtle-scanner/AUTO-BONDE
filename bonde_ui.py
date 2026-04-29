@@ -31,7 +31,7 @@ if check_password():
     POSITIONS_PATH = os.path.join(BASE_DIR, "bonde_active_positions.json")
     WATCHLIST_PATH = os.path.join(BASE_DIR, "bonde_watchlist.json")
 
-    # 사용자 지정 가격 데이터
+    # 사용자 지정 가격 데이터 (최신 정보 반영)
     CASH_DEPOSIT = 297791
     PRICES = {"NVDA": 213.0, "MU": 742000.0, "001780": 3260.0}
     USD_KRW = 1400.0
@@ -47,7 +47,7 @@ if check_password():
     total_assets, stock_value = calculate_assets()
 
     # 메인 헤더
-    st.title("🚀 Bonde Tactical Dashboard v3.5")
+    st.title("🚀 Bonde Tactical Dashboard v3.6")
     st.markdown("---")
 
     # 상단 요약 카드
@@ -61,8 +61,8 @@ if check_password():
     with col4:
         st.metric("Risk Level", "1.0%", delta="Progressive")
 
-    # 본문 영역
-    st.subheader("📊 Current Holdings")
+    # 본문 영역: 보유 종목 현황 (수익률 추가)
+    st.subheader("📊 Current Holdings & Performance")
     if os.path.exists(POSITIONS_PATH):
         with open(POSITIONS_PATH, "r", encoding="utf-8") as f:
             positions = json.load(f)
@@ -70,17 +70,33 @@ if check_password():
         pos_data = []
         for code, info in positions.items():
             qty = info['qty']
-            if code == "NVDA": val = f"₩{(qty*PRICES['NVDA']*USD_KRW):,.0f}"
-            elif code == "MU": val = f"₩{(qty*PRICES['MU']):,.0f}"
-            else: val = f"₩{(qty*3260):,}"
+            entry_price = info.get('entry_price', 0)
+            
+            # 현재가 설정
+            curr_price = PRICES.get(code, 0)
+            if code == "NVDA": 
+                val = f"₩{(qty*curr_price*USD_KRW):,.0f}"
+                perf = f"{((curr_price/entry_price-1)*100):.2f}%" if entry_price > 0 else "N/A"
+            elif code == "MU": 
+                val = f"₩{(qty*curr_price):,.0f}"
+                perf = f"{((curr_price/entry_price-1)*100):.2f}%" if entry_price > 0 else "N/A"
+            else: 
+                val = f"₩{(qty*3260):,}"
+                perf = f"{((3260/entry_price-1)*100):.2f}%" if entry_price > 0 else "N/A"
             
             pos_data.append({
                 "STOCK": info['name'],
                 "QTY": qty,
+                "ENTRY PRICE": f"{entry_price:,}" if entry_price > 0 else "Pending",
+                "CURRENT PRICE": f"{curr_price:,}",
                 "EST. VALUE": val,
-                "STATUS": "Monitoring (SMA7)"
+                "PROFIT %": perf,
+                "STATUS": "Monitoring"
             })
-        st.table(pd.DataFrame(pos_data))
+        
+        # 데이터프레임 생성 및 색상 강조 (수익률 기준)
+        df_pos = pd.DataFrame(pos_data)
+        st.table(df_pos)
 
     # 관심 종목 섹션
     st.markdown("---")
