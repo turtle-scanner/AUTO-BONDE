@@ -33,12 +33,14 @@ from Crypto.Util.Padding import unpad
 import ssl
 from requests.adapters import HTTPAdapter
 
-# SSL fix for KIS API (OpenSSL 3.0+ on Windows)
+# SSL fix for KIS API (Windows OpenSSL 3.0+ 대응 및 인증서 우회)
 class KISAdapter(HTTPAdapter):
     def init_poolmanager(self, *args, **kwargs):
-        context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-        context.set_ciphers('DEFAULT@SECLEVEL=1')
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        context.set_ciphers('DEFAULT@SECLEVEL=1')
+        context.options |= 0x4  # OP_LEGACY_SERVER_CONNECT
         kwargs['ssl_context'] = context
         return super().init_poolmanager(*args, **kwargs)
 
@@ -268,7 +270,7 @@ def auth(svr="prod", product=_cfg["my_prod"], url=None):
     if saved_token is None:  # 기존 발급 토큰 확인이 안되면 발급처리
         url = f"{_cfg[svr]}/oauth2/tokenP"
         res = _session.post(
-            url, data=json.dumps(p), headers=_getBaseHeader()
+            url, data=json.dumps(p), headers=_getBaseHeader(), verify=False, timeout=30
         )  # 토큰 발급
         rescode = res.status_code
         if rescode == 200:  # 토큰 정상 발급
@@ -509,9 +511,9 @@ def _url_fetch(
 
     if postFlag:
         if hashFlag: set_order_hash_key(headers, params)
-        res = _session.post(url, headers=headers, data=json.dumps(params))
+        res = _session.post(url, headers=headers, data=json.dumps(params), verify=False, timeout=30)
     else:
-        res = _session.get(url, headers=headers, params=params)
+        res = _session.get(url, headers=headers, params=params, verify=False, timeout=30)
 
     if res.status_code == 200:
         ar = APIResp(res)

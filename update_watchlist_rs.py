@@ -5,6 +5,23 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
 import logging
+import urllib3
+import ssl
+
+# SSL 보안 인증서 검증 우회 설정
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+ssl._create_default_https_context = ssl._create_unverified_context
+
+# yfinance용 세션 강제 설정 (인증서 검증 안함)
+import requests
+old_merge_environment_settings = requests.Session.merge_environment_settings
+
+def new_merge_environment_settings(self, url, proxies, stream, verify, cert):
+    settings = old_merge_environment_settings(self, url, proxies, stream, verify, cert)
+    settings['verify'] = False
+    return settings
+
+requests.Session.merge_environment_settings = new_merge_environment_settings
 
 # 프로젝트 경로 설정
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

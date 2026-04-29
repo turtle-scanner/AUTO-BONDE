@@ -126,7 +126,7 @@ class BondeStrategy(BaseStrategy):
                 stock_name=stock_name,
                 action=Action.BUY,
                 strength=1.0 if is_nano_banana else (0.9 if rs_score > 120 else 0.7),
-                reason=f"본데 셋업 포착 ({' | '.join(setups)}) | RS(6M): {rs_score:.1f} | TI65: {ti65:.3f}",
+                reason=f"본데 셋업 포착 ({' | '.join(setups)}) | RS: {rs_score:.1f} | TI65: {ti65:.3f}",
                 stop_loss=lod_price,
                 target_price=None  # 시장가 진입
             )

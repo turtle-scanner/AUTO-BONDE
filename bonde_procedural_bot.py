@@ -164,7 +164,12 @@ class BondeProceduralBot:
                 if signal.action == Action.BUY:
                     # RS 점수 추출 (reason 문자열에서 파싱)
                     try:
-                        rs_score = float(signal.reason.split("RS: ")[1].split(" | ")[0])
+                        if "RS: " in signal.reason:
+                            rs_score = float(signal.reason.split("RS: ")[1].split(" | ")[0])
+                        elif "RS(6M): " in signal.reason:
+                            rs_score = float(signal.reason.split("RS(6M): ")[1].split(" | ")[0])
+                        else:
+                            rs_score = 0.0
                     except:
                         rs_score = 0.0
                     
