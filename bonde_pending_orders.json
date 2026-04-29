@@ -1,0 +1,11 @@
+{
+    "pending_orders": [
+        {
+            "code": "001780",
+            "name": "알루코",
+            "qty": 2,
+            "type": "MARKET",
+            "reason": "사용자 예약 추가 매수"
+        }
+    ]
+}
