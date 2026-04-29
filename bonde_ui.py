@@ -1,90 +1,108 @@
-import os
+import streamlit as st
 import json
-import tkinter as tk
-from tkinter import ttk, messagebox
+import os
+import pandas as pd
 
-class BondeDashboardApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Bonde Bot Tactical Dashboard v3.3")
-        self.root.geometry("950x750")
-        self.root.configure(bg="#0b0e14")
-        
-        # 보안 설정
-        self.target_id = "cntfed"
-        self.target_pw = "cntfed"
-        
-        # 사용자 지정 가격 데이터 (최종)
-        self.cash_deposit = 297791
-        self.prices = {
-            "NVDA": 213.0,      # $213
-            "MU": 742000.0,     # 742,000원
-            "001780": 3260.0    # 3,260원
-        }
-        self.usd_krw = 1400.0   # 환율
-        
-        # 데이터 경로
-        self.base_dir = os.path.dirname(os.path.abspath(__file__))
-        self.watchlist_path = os.path.join(self.base_dir, "bonde_watchlist.json")
-        self.positions_path = os.path.join(self.base_dir, "bonde_active_positions.json")
-        
-        self.setup_login()
+# 페이지 설정
+st.set_page_config(page_title="Bonde Bot Web Dashboard", layout="wide")
 
-    def setup_login(self):
-        self.login_frame = tk.Frame(self.root, bg="#171c26", padx=50, pady=50)
-        self.login_frame.place(relx=0.5, rely=0.5, anchor="center")
-        tk.Label(self.login_frame, text="BONDE SECURE GATEWAY", font=("Outfit", 18, "bold"), fg="#00d2ff", bg="#171c26").pack(pady=(0, 30))
-        self.id_entry = tk.Entry(self.login_frame, font=("Outfit", 12), width=25, bg="#0b0e14", fg="white")
-        self.id_entry.insert(0, "cntfed"); self.id_entry.pack(pady=5)
-        self.pw_entry = tk.Entry(self.login_frame, font=("Outfit", 12), width=25, show="*", bg="#0b0e14", fg="white")
-        self.pw_entry.pack(pady=15)
-        tk.Button(self.login_frame, text="ENTER", command=self.check_login, bg="#00ff88", width=20).pack()
+# 보안 설정 (ID/PW: cntfed)
+def check_password():
+    if "authenticated" not in st.session_state:
+        st.session_state["authenticated"] = False
 
-    def check_login(self):
-        if self.id_entry.get() == "cntfed" and self.pw_entry.get() == "cntfed":
-            self.login_frame.destroy(); self.setup_dashboard()
-        else: messagebox.showerror("Error", "Login Failed")
+    if not st.session_state["authenticated"]:
+        with st.sidebar:
+            st.title("🔒 Secure Access")
+            user_id = st.text_input("ID", value="cntfed")
+            user_pw = st.text_input("Password", type="password")
+            if st.button("Login"):
+                if user_id == "cntfed" and user_pw == "cntfed":
+                    st.session_state["authenticated"] = True
+                    st.rerun()
+                else:
+                    st.error("Invalid ID or Password")
+        return False
+    return True
 
-    def _calculate_total(self):
-        # NVDA: 17주 * $213 * 1400
-        nvda_val = 17 * self.prices["NVDA"] * self.usd_krw
-        # MU: 1주 * 742000
-        mu_val = 1 * self.prices["MU"]
-        # Aluko: 2주 * 3260
-        aluko_val = 2 * self.prices["001780"]
-        return int(nvda_val + mu_val + aluko_val + self.cash_deposit)
+if check_password():
+    # 데이터 경로
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    POSITIONS_PATH = os.path.join(BASE_DIR, "bonde_active_positions.json")
+    WATCHLIST_PATH = os.path.join(BASE_DIR, "bonde_watchlist.json")
 
-    def setup_dashboard(self):
-        total = self._calculate_total()
-        header = tk.Frame(self.root, bg="#171c26", height=70)
-        header.pack(fill="x")
-        tk.Label(header, text=f"TOTAL ASSETS: ₩{total:,}", font=("Outfit", 18, "bold"), fg="#00ff88", bg="#171c26", padx=20).pack(side="left")
+    # 사용자 지정 가격 데이터
+    CASH_DEPOSIT = 297791
+    PRICES = {"NVDA": 213.0, "MU": 742000.0, "001780": 3260.0}
+    USD_KRW = 1400.0
 
-        content = tk.Frame(self.root, bg="#0b0e14", padx=30, pady=20)
-        content.pack(fill="both", expand=True)
+    # 자산 계산 로직
+    def calculate_assets():
+        nvda_val = 17 * PRICES["NVDA"] * USD_KRW
+        mu_val = 1 * PRICES["MU"]
+        aluko_val = 2 * PRICES["001780"]
+        total = int(nvda_val + mu_val + aluko_val + CASH_DEPOSIT)
+        return total, int(nvda_val + mu_val + aluko_val)
 
-        # 요약 카드
-        summary = tk.Frame(content, bg="#0b0e14")
-        summary.pack(fill="x", pady=10)
-        self.create_card(summary, "Cash", f"₩{self.cash_deposit:,}", "#00d2ff").grid(row=0, column=0, padx=5)
-        self.create_card(summary, "Stock Value", f"₩{(total-self.cash_deposit):,}", "#ff4d4d").grid(row=0, column=1, padx=5)
+    total_assets, stock_value = calculate_assets()
 
-        # 보유 목록
-        tk.Label(content, text="PORTFOLIO", fg="#94a3b8", bg="#0b0e14", font=("Outfit", 10, "bold")).pack(anchor="w", pady=10)
-        tree = ttk.Treeview(content, columns=["NAME", "QTY", "PRICE", "TOTAL"], show="headings", height=5)
-        tree.pack(fill="x")
-        for col in ["NAME", "QTY", "PRICE", "TOTAL"]: tree.heading(col, text=col); tree.column(col, width=100, anchor="center")
-        
-        # 데이터 삽입
-        tree.insert("", "end", values=("NVIDIA", "17", f"${self.prices['NVDA']}", f"₩{(17*self.prices['NVDA']*self.usd_krw):,.0f}"))
-        tree.insert("", "end", values=("Micron", "1", f"₩{self.prices['MU']:,}", f"₩{self.prices['MU']:,}"))
-        tree.insert("", "end", values=("Aluko", "2", f"₩{self.prices['001780']:,}", f"₩{(2*self.prices['001780']):,}"))
+    # 메인 헤더
+    st.title("🚀 Bonde Tactical Dashboard v3.5")
+    st.markdown("---")
 
-    def create_card(self, parent, t, v, c):
-        f = tk.Frame(parent, bg="#171c26", padx=20, pady=10, highlightthickness=1, highlightbackground="#334155")
-        tk.Label(f, text=t, fg="#94a3b8", bg="#171c26").pack()
-        tk.Label(f, text=v, fg=c, bg="#171c26", font=("Outfit", 14, "bold")).pack()
-        return f
+    # 상단 요약 카드
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Total Assets", f"₩{total_assets:,}")
+    with col2:
+        st.metric("Cash Deposit", f"₩{CASH_DEPOSIT:,}")
+    with col3:
+        st.metric("Stock Value", f"₩{stock_value:,}")
+    with col4:
+        st.metric("Risk Level", "1.0%", delta="Progressive")
 
-if __name__ == "__main__":
-    root = tk.Tk(); app = BondeDashboardApp(root); root.mainloop()
+    # 본문 영역
+    st.subheader("📊 Current Holdings")
+    if os.path.exists(POSITIONS_PATH):
+        with open(POSITIONS_PATH, "r", encoding="utf-8") as f:
+            positions = json.load(f)
+            
+        pos_data = []
+        for code, info in positions.items():
+            qty = info['qty']
+            if code == "NVDA": val = f"₩{(qty*PRICES['NVDA']*USD_KRW):,.0f}"
+            elif code == "MU": val = f"₩{(qty*PRICES['MU']):,.0f}"
+            else: val = f"₩{(qty*3260):,}"
+            
+            pos_data.append({
+                "STOCK": info['name'],
+                "QTY": qty,
+                "EST. VALUE": val,
+                "STATUS": "Monitoring (SMA7)"
+            })
+        st.table(pd.DataFrame(pos_data))
+
+    # 관심 종목 섹션
+    st.markdown("---")
+    left_col, right_col = st.columns(2)
+
+    with left_col:
+        st.subheader("🇰🇷 Watchlist Top 5 (KR)")
+        if os.path.exists(WATCHLIST_PATH):
+            with open(WATCHLIST_PATH, "r", encoding="utf-8") as f:
+                watchlist = json.load(f)
+            kr_stocks = [s for s in watchlist if s.get('market') == 'KOSDAQ'][:5]
+            st.dataframe(pd.DataFrame(kr_stocks)[['name', 'code', 'rs_score']])
+
+    with right_col:
+        st.subheader("🇺🇸 Watchlist Top 5 (US)")
+        if os.path.exists(WATCHLIST_PATH):
+            us_stocks = [s for s in watchlist if s.get('market') == 'NASDAQ'][:5]
+            st.dataframe(pd.DataFrame(us_stocks)[['name', 'code', 'rs_score']])
+
+    # 푸터
+    st.sidebar.markdown("---")
+    st.sidebar.info(f"Last Sync: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    if st.sidebar.button("Logout"):
+        st.session_state["authenticated"] = False
+        st.rerun()
