@@ -142,4 +142,3 @@ class PositionManager:
         """캐시 갱신"""
         self._holdings_cache = None
         self.get_positions(refresh=True)
-
