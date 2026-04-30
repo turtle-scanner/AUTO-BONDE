@@ -13,8 +13,8 @@ my_paper_future: "46546713"
 my_prod: "01"
 
 # Domain info
-prod: "https://openapi.koreainvestment.com:443"
-vps: "https://openapivts.koreainvestment.com:443"
+prod: "https://openapi.koreainvestment.com:9443"
+vps: "https://openapivts.koreainvestment.com:29443"
 ops: "ws://ops.koreainvestment.com:21000"
 vops: "ws://ops.koreainvestment.com:31000"
 

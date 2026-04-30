@@ -2,8 +2,8 @@ name: Bonde Trading Bot
 
 on:
   schedule:
-    # 한국 시간 기준 평일 밤 11시 00분에 시작 (UTC 14:00)
-    - cron: '0 14 * * 1-5'
+    # 한국 시간 기준 평일 밤 10시 30분에 시작 (UTC 13:30, 미국 시장 개장 시간)
+    - cron: '30 13 * * 1-5'
   workflow_dispatch: # 수동 실행 가능
 
 jobs:
