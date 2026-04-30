@@ -313,8 +313,8 @@ def get_holdings(env_dv: str = "real") -> pd.DataFrame:
         raw = _get_balance_cached(env_dv)
 
         if raw is None:
-            logging.warning("잔고 조회 실패")
-            return pd.DataFrame()
+            logging.warning("국내 잔고 조회 실패")
+            return None
 
         df = pd.DataFrame(raw["output1"])
 
@@ -350,8 +350,8 @@ def get_holdings(env_dv: str = "real") -> pd.DataFrame:
         return df.reset_index(drop=True)
 
     except Exception as e:
-        logging.error(f"잔고 조회 에러: {e}")
-        return pd.DataFrame()
+        logging.error(f"국내 잔고 조회 에러: {e}")
+        return None
 
 
 # =============================================================================
@@ -840,7 +840,8 @@ def get_foreign_holdings(env_dv: str = "real") -> pd.DataFrame:
         )
         
         if not res.isOK():
-            return pd.DataFrame()
+            logging.error(f"해외 잔고 조회 API 실패: {res.getMsg1()}")
+            return None
             
         df = pd.DataFrame(res.getBody().output1)
         if df.empty:
@@ -862,4 +863,4 @@ def get_foreign_holdings(env_dv: str = "real") -> pd.DataFrame:
 
     except Exception as e:
         logging.error(f"해외 잔고 조회 에러: {e}")
-        return pd.DataFrame()
+        return None

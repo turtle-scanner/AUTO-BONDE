@@ -173,16 +173,20 @@ class BondeProceduralBotV3:
             kr_holdings = data_fetcher.get_holdings(self.env_dv)
             us_holdings = data_fetcher.get_foreign_holdings(self.env_dv)
             
+            # API 에러 발생 시 동기화 중단 (포지션 보호)
+            if kr_holdings is None or us_holdings is None:
+                logger.error("[SYNC] 잔고 조회 API 에러가 발생하여 동기화를 중단합니다. (포지션 보호)")
+                return
+            
             # DataFrame 통합
             all_holdings = []
             if not kr_holdings.empty: all_holdings.append(kr_holdings)
             if not us_holdings.empty: all_holdings.append(us_holdings)
             
             if not all_holdings:
-                # API 호출 자체가 실패했거나 결과가 없는 경우, 
-                # 함부로 기존 포지션을 지우지 않고 일단 유지합니다 (방어적 설계).
+                # 모든 잔고 조회가 성공했으나 결과가 실제로 비어있는 경우
                 if self.active_positions:
-                    logger.warning("[SYNC] 계좌 잔고 데이터가 비어 있습니다. API 오류 가능성이 있어 기존 포지션 정보를 유지합니다.")
+                    logger.warning("[SYNC] 현재 계좌에 보유 종목이 없습니다. API 오류가 아닌 실제 상황인지 확인이 필요할 수 있습니다.")
                 return
 
             holdings_df = pd.concat(all_holdings, ignore_index=True)
