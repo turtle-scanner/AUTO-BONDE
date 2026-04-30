@@ -840,7 +840,7 @@ def get_foreign_holdings(env_dv: str = "real") -> pd.DataFrame:
         )
         
         if not res.isOK():
-            logging.error(f"해외 잔고 조회 API 실패: {res.getMsg1()}")
+            logging.error(f"해외 잔고 조회 API 실패: {res.getBody().msg1 if hasattr(res.getBody(), 'msg1') else '알 수 없는 에러'}")
             return None
             
         df = pd.DataFrame(res.getBody().output1)
