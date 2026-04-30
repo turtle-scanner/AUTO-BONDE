@@ -1,0 +1,75 @@
+:root {
+    --tac-blue: #00f3ff; --tac-green: #39ff14; --tac-red: #ff3131; 
+    --glass: rgba(0, 243, 255, 0.05); --border: rgba(0, 243, 255, 0.2);
+}
+
+/* Base Body Update */
+body { 
+    background: radial-gradient(circle at center, #001500 0%, #000 100%);
+    perspective: 1000px;
+}
+
+/* Premium Border Animation */
+@keyframes border-flow {
+    0% { border-color: var(--tac-blue); box-shadow: 0 0 5px var(--tac-blue); }
+    50% { border-color: var(--tac-green); box-shadow: 0 0 15px var(--tac-green); }
+    100% { border-color: var(--tac-blue); box-shadow: 0 0 5px var(--tac-blue); }
+}
+
+#game-container {
+    animation: border-flow 4s infinite alternate;
+    border-radius: 10px;
+}
+
+/* Glassmorphism Screens */
+.screen {
+    backdrop-filter: blur(10px);
+    background: rgba(0, 5, 0, 0.85);
+    border: 1px solid var(--border);
+    transition: opacity 0.5s ease-in-out;
+}
+
+/* Character Card Upgrade */
+.char-card {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 20px;
+    transform-style: preserve-3d;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.char-card:hover {
+    background: rgba(0, 243, 255, 0.15);
+    border-color: var(--tac-blue);
+    transform: translateZ(30px) rotateY(10deg);
+    box-shadow: 0 20px 40px rgba(0, 243, 255, 0.3);
+}
+
+/* Tactical Buttons with Neon Glow */
+.tactical-btn {
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+    border: 1px solid var(--tac-blue);
+    border-radius: 5px;
+    font-weight: 700;
+    transition: 0.3s;
+}
+.tactical-btn::before {
+    content: ''; position: absolute; top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: 0.5s;
+}
+.tactical-btn:hover::before { left: 100%; }
+
+/* HUD Header Glow */
+.tactical-header {
+    background: linear-gradient(to bottom, rgba(0, 243, 255, 0.1), transparent);
+    padding: 20px;
+    border-bottom: 2px solid var(--tac-blue);
+}
+.game-logo {
+    letter-spacing: 15px;
+    text-shadow: 0 0 20px var(--tac-blue), 0 0 40px var(--tac-blue);
+}

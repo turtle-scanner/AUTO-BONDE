@@ -126,6 +126,18 @@ class PositionManager:
 
         return int(position.get("avg_price", 0))
 
+    def get_current_positions(self) -> pd.DataFrame:
+        """
+        현재 보유 종목 목록 조회 (get_positions의 별칭)
+        """
+        return self.get_positions(refresh=True)
+
+    def get_detailed_account_status(self) -> dict:
+        """
+        상세 계좌 상태 조회 (예수금, 평가금액 등)
+        """
+        return data_fetcher.get_deposit(self.env_dv)
+
     def refresh(self) -> None:
         """캐시 갱신"""
         self._holdings_cache = None

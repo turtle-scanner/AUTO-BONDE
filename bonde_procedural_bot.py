@@ -179,10 +179,10 @@ class BondeProceduralBotV3:
             if not us_holdings.empty: all_holdings.append(us_holdings)
             
             if not all_holdings:
+                # API 호출 자체가 실패했거나 결과가 없는 경우, 
+                # 함부로 기존 포지션을 지우지 않고 일단 유지합니다 (방어적 설계).
                 if self.active_positions:
-                    logger.info("[SYNC] 계좌에 보유 종목이 없어 관리 목록을 초기화합니다.")
-                    self.active_positions = {}
-                    self._save_positions()
+                    logger.warning("[SYNC] 계좌 잔고 데이터가 비어 있습니다. API 오류 가능성이 있어 기존 포지션 정보를 유지합니다.")
                 return
 
             holdings_df = pd.concat(all_holdings, ignore_index=True)
