@@ -1,32 +1,92 @@
 {
     "001780": {
         "name": "알루코",
-        "entry_price": 3260.0,
-        "stop_price": 3160.0,
-        "atr": 100.0,
-        "qty": 2,
-        "entry_date": "2026-04-29",
-        "reason": "보유 자산 동기화",
+        "entry_price": 0,
+        "stop_price": 0,
+        "atr": 0,
+        "qty": 221,
+        "entry_date": "2026-04-30",
+        "reason": "Manual Sync (User Requested)",
         "status": "active"
     },
-    "NVDA": {
-        "name": "NVIDIA",
-        "entry_price": 0.0,
-        "stop_price": 0.0,
-        "atr": 0.0,
-        "qty": 17,
-        "entry_date": "2026-04-29",
-        "reason": "보유 자산 동기화",
+    "FANG": {
+        "name": "Diamondback Energy",
+        "entry_price": 0,
+        "stop_price": 0,
+        "atr": 0,
+        "qty": 3,
+        "entry_date": "2026-04-30",
+        "reason": "Manual Sync (User Requested)",
+        "status": "active"
+    },
+    "ARM": {
+        "name": "ARM",
+        "entry_price": 0,
+        "stop_price": 0,
+        "atr": 0,
+        "qty": 2,
+        "entry_date": "2026-04-30",
+        "reason": "Manual Sync (User Requested)",
+        "status": "active"
+    },
+    "SMCI": {
+        "name": "Super Micro Computer",
+        "entry_price": 0,
+        "stop_price": 0,
+        "atr": 0,
+        "qty": 3,
+        "entry_date": "2026-04-30",
+        "reason": "Manual Sync (User Requested)",
         "status": "active"
     },
     "MU": {
         "name": "Micron Technology",
-        "entry_price": 0.0,
-        "stop_price": 0.0,
-        "atr": 0.0,
+        "entry_price": 0,
+        "stop_price": 0,
+        "atr": 0,
         "qty": 1,
-        "entry_date": "2026-04-29",
-        "reason": "보유 자산 동기화",
+        "entry_date": "2026-04-30",
+        "reason": "Manual Sync (User Requested)",
+        "status": "active"
+    },
+    "NVDA": {
+        "name": "NVIDIA",
+        "entry_price": 0,
+        "stop_price": 0,
+        "atr": 0,
+        "qty": 17,
+        "entry_date": "2026-04-30",
+        "reason": "Manual Sync (User Requested)",
+        "status": "active"
+    },
+    "CEG": {
+        "name": "Constellation Energy",
+        "entry_price": 0,
+        "stop_price": 0,
+        "atr": 0,
+        "qty": 1,
+        "entry_date": "2026-04-30",
+        "reason": "Manual Sync (User Requested)",
+        "status": "active"
+    },
+    "COIN": {
+        "name": "Coinbase",
+        "entry_price": 0,
+        "stop_price": 0,
+        "atr": 0,
+        "qty": 1,
+        "entry_date": "2026-04-30",
+        "reason": "Manual Sync (User Requested)",
+        "status": "active"
+    },
+    "MSTR": {
+        "name": "MicroStrategy",
+        "entry_price": 0,
+        "stop_price": 0,
+        "atr": 0,
+        "qty": 1,
+        "entry_date": "2026-04-30",
+        "reason": "Manual Sync (User Requested)",
         "status": "active"
     }
 }

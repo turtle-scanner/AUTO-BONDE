@@ -152,7 +152,7 @@ yarn-error.log*
 # ===== Lock files =====
 *.lock
 
-# ===== KIS (ÎØºÍ∞ê Ï†ïÎ≥¥) =====
+# ===== KIS (ÎØºÍ∞ê ?ïÎ≥¥) =====
 KIS/
 .master/
 .kis_token*.json
@@ -179,6 +179,6 @@ settings.local.json
 # ===== KIS Secrets (∫∏æ» ∞≠»≠) =====
 kis_devlp.yaml
 .streamlit/
-bonde_active_positions.json
-bonde_watchlist.json
+
+
 .env
