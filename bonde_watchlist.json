@@ -1,0 +1,62 @@
+[
+    {
+        "code": "460930",
+        "name": "현대힘스",
+        "market": "KOSDAQ",
+        "rs_score": 98.5
+    },
+    {
+        "code": "001780",
+        "name": "알루코",
+        "market": "KOSDAQ",
+        "rs_score": 92.1
+    },
+    {
+        "code": "042700",
+        "name": "한미반도체",
+        "market": "KOSDAQ",
+        "rs_score": 89.4
+    },
+    {
+        "code": "028300",
+        "name": "HLB",
+        "market": "KOSDAQ",
+        "rs_score": 85.7
+    },
+    {
+        "code": "089030",
+        "name": "테크윙",
+        "market": "KOSDAQ",
+        "rs_score": 82.3
+    },
+    {
+        "code": "NVDA",
+        "name": "NVIDIA",
+        "market": "NASDAQ",
+        "rs_score": 99.2
+    },
+    {
+        "code": "SMCI",
+        "name": "Super Micro Computer",
+        "market": "NASDAQ",
+        "rs_score": 97.8
+    },
+    {
+        "code": "MSTR",
+        "name": "MicroStrategy",
+        "market": "NASDAQ",
+        "rs_score": 95.4
+    },
+    {
+        "code": "ARM",
+        "name": "ARM Holdings",
+        "market": "NASDAQ",
+        "rs_score": 91.2
+    },
+    {
+        "code": "COIN",
+        "name": "Coinbase",
+        "market": "NASDAQ",
+        "rs_score": 88.9
+    }
+]

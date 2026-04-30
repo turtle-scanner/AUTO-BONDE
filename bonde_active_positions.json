@@ -1,0 +1,32 @@
+{
+    "001780": {
+        "name": "알루코",
+        "entry_price": 3260.0,
+        "stop_price": 3160.0,
+        "atr": 100.0,
+        "qty": 2,
+        "entry_date": "2026-04-29",
+        "reason": "보유 자산 동기화",
+        "status": "active"
+    },
+    "NVDA": {
+        "name": "NVIDIA",
+        "entry_price": 0.0,
+        "stop_price": 0.0,
+        "atr": 0.0,
+        "qty": 17,
+        "entry_date": "2026-04-29",
+        "reason": "보유 자산 동기화",
+        "status": "active"
+    },
+    "MU": {
+        "name": "Micron Technology",
+        "entry_price": 0.0,
+        "stop_price": 0.0,
+        "atr": 0.0,
+        "qty": 1,
+        "entry_date": "2026-04-29",
+        "reason": "보유 자산 동기화",
+        "status": "active"
+    }
+}

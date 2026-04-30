@@ -166,7 +166,72 @@ class BondeProceduralBotV3:
                 self._save_positions()
                 send_telegram_message(f"🚀 [Advanced Bonde BUY]\n종목: {sig['item']['name']}\n진입가: {entry_price:,}원\n이유: {sig['signal'].reason}")
 
+    def sync_positions(self):
+        """실제 계좌 잔고(국내/해외)와 봇의 관리 종목을 동기화합니다."""
+        try:
+            # 1. 국내/해외 잔고 통합 조회
+            kr_holdings = data_fetcher.get_holdings(self.env_dv)
+            us_holdings = data_fetcher.get_foreign_holdings(self.env_dv)
+            
+            # DataFrame 통합
+            all_holdings = []
+            if not kr_holdings.empty: all_holdings.append(kr_holdings)
+            if not us_holdings.empty: all_holdings.append(us_holdings)
+            
+            if not all_holdings:
+                if self.active_positions:
+                    logger.info("[SYNC] 계좌에 보유 종목이 없어 관리 목록을 초기화합니다.")
+                    self.active_positions = {}
+                    self._save_positions()
+                return
+
+            holdings_df = pd.concat(all_holdings, ignore_index=True)
+            real_codes = set(holdings_df['stock_code'].tolist())
+            managed_codes = set(self.active_positions.keys())
+
+            # 2. 제거된 종목 처리 (매도 완료)
+            for code in managed_codes - real_codes:
+                logger.info(f"[SYNC] {self.active_positions[code]['name']} ({code}) 종목이 계좌에 없어 관리 목록에서 제거합니다.")
+                del self.active_positions[code]
+
+            # 3. 추가/업데이트 처리
+            for _, row in holdings_df.iterrows():
+                code = row['stock_code']
+                qty = int(float(row['quantity']))
+                avg_price = float(row['avg_price'])
+                name = row['stock_name']
+
+                if code in self.active_positions:
+                    if self.active_positions[code]['qty'] != qty:
+                        logger.info(f"[SYNC] {name} ({code}) 수량 변경: {self.active_positions[code]['qty']} -> {qty}")
+                        self.active_positions[code]['qty'] = qty
+                else:
+                    logger.info(f"[SYNC] 새로운 보유 종목 발견: {name} ({code}). 관리 목록에 추가합니다.")
+                    
+                    # ATR 기반 손절가 자동 설정 (국내/해외 자동 판별)
+                    df = self._fetch_with_backoff(data_fetcher.get_daily_prices, code, days=30)
+                    atr = indicators.calc_atr(df).iloc[-1] if df is not None and not df.empty else avg_price * 0.05
+                    stop_loss = avg_price - (atr * 2)
+
+                    self.active_positions[code] = {
+                        "name": name,
+                        "entry_price": avg_price,
+                        "stop_price": stop_loss,
+                        "atr": atr,
+                        "qty": qty,
+                        "entry_date": datetime.now().strftime("%Y-%m-%d"),
+                        "reason": "Account Sync (Manual Buy or Prior Session)",
+                        "status": "active"
+                    }
+            
+            self._save_positions()
+        except Exception as e:
+            logger.error(f"[SYNC] 계좌 동기화 중 오류 발생: {e}")
+
     def monitor_and_sell(self):
+        # 0. 계좌와 동기화
+        self.sync_positions()
+        
         if not self.active_positions: return
         codes_to_remove = []
         for code, pos in self.active_positions.items():

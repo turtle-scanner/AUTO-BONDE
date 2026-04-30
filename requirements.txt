@@ -2,3 +2,9 @@ streamlit
 pandas
 numpy
 yfinance
+requests
+PyYAML
+pycryptodome
+websockets
+psutil
+schedule

@@ -21,12 +21,10 @@ def run_bonde_trading():
     print("RUN: Bonde/Stockbee Auto Scan Engine v1.0")
     print("="*60)
     
-    # 1. KIS API 인증
-    # svr="vps"는 모의투자, svr="prod"는 실전투자입니다.
-    # 초기에는 안전을 위해 모의투자(vps)로 설정합니다.
+    # 1. KIS API 인증 (실전 투자 모드)
     try:
-        ka.auth(svr="vps", product="01")
-        logger.info("KIS API Auth Success (Paper Trading)")
+        ka.auth(svr="prod", product="01")
+        logger.info("KIS API Auth Success (Production/Real Trading)")
     except Exception as e:
         logger.error(f"인증 실패: {e}")
         return
