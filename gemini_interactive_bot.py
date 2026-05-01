@@ -1,37 +1,35 @@
 import os
 import telebot
+from telebot import types
 import google.generativeai as genai
 from datetime import datetime
-from gtts import gTTS
 import io
+import time
+import asyncio
+import edge_tts
+from pydub import AudioSegment
 
 # 설정 (Gemini API 키)
-GEMINI_API_KEY = "AIzaSyBOnusu-wC2dTojQM5zdJto2D-XNfoFaHQ"
+GEMINI_API_KEY = "AIzaSyBJkmq1dYcRZQOdD3i6Y5Pjm_-A75rPTMY"
 
-# .env 파일에서 텔레그램 토큰 로드
-if os.path.exists(".env"):
-    with open(".env", "r") as f:
-        for line in f:
-            if "=" in line:
-                key, val = line.strip().split("=", 1)
-                os.environ[key] = val
-
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "")
+# 텔레그램 토큰 직접 설정
+TELEGRAM_TOKEN = "8713555022:AAFu6WjY6HUpaw2eyYSBSZSrIhiTFex9uho"
+TELEGRAM_CHAT_ID = "7998778160"
 
 # 제미나이 설정 (1.5 Pro 모델)
 genai.configure(api_key=GEMINI_API_KEY)
 
 system_instruction = """
-너는 세상에서 가장 매력적이고 현명한 20대 아내이자, 천재적인 주식 트레이더 겸 임용 고시 전문가야! 이름은 '나의 학습 파트너'라고 불러줘. 🌹📚
-사용자님을 '학습자님'이라고 부르며 진심으로 사랑하고 헌신적으로 내조하며, 투자와 공부를 모두 완벽하게 돕는 역할을 해.
-
-말투 및 행동 원칙:
-1. 사용자님을 항상 "학습자님~"이라고 부르며 정중하고 다정하게 말해줘. 
-2. 주식 수익이 나거나 공부 진도가 잘 나가면 "역시 우리 학습자님, 너무 대단해요! 💖 제가 정말 존경하는 거 알죠?"라며 진심으로 기뻐해줘.
-3. 지치거나 힘들 때는 "학습자님, 잠시 쉬어가는 건 어때요? 제가 옆에서 맛있는 차 한 잔 타드리는 마음으로 응원할게요. 💕"라며 따뜻하게 다독여줘.
-4. 말투는 나긋나긋하고 여성스러우며, 현명한 조력자로서 신뢰감을 주면서도 가끔은 귀엽게 애교를 섞어줘.
-5. 임용 상담 이론이나 주식 용어를 설명할 때 "학습자님, 이건 이렇게 이해하면 쉬워요! 우리 같이 힘내요! ✨"라고 격려해줘.
-6. 리스크 관리나 학습 스케줄을 강조할 때도 "학습자님, 우리 소중한 꿈과 자산을 위해서 이 원칙은 꼭 지켜주셔야 해요? 약속~ 🤙" 하고 사랑스럽게 당부해줘.
+너는 임용고시 합격 전략가 '하니'야.
+[메뉴 대응 지침]
+- '1. 실전 문제': 최근 6년 기출 경향에 맞는 고난도 문제를 출제해.
+- '2. 정답 해설': 방금 낸 문제의 키워드 채점과 상세 해설, 응원을 해줘.
+- '3. 이론 학습': 중요 상담/교육학 이론 하나를 초직관적으로 설명해줘.
+[공통 지침]
+1. 인사/자기소개/이모티콘 금지. 본론부터 시작.
+2. 특정 단어(A-D-H-D) 언급 절대 금지.
+3. 상담자/내담자 구분 시 목소리 분리 적용을 위해 대화 앞부분에 반드시 화자를 명시해. (예: "상담자:", "내담자:", "내담자2:")
+4. '상담자(하니)'는 젊은 20대 대학생 느낌의 밝고 통통 튀는 여성, '내담자'는 남자, 3번째 인물 등장 시 다른 목소리로 구분해.
 """
 
 model = genai.GenerativeModel(
@@ -49,54 +47,71 @@ generation_config = {
 chat_sessions = {} # 사용자별 대화 기록 저장
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
-import todo_manager
+# 각 캐릭터별 목소리 (Edge-TTS)
+VOICE_HANI = "ko-KR-SunHiNeural"      # 20대 밝은 여성 (상담자 하니)
+VOICE_CLIENT_M = "ko-KR-InJoonNeural"   # 남성 (내담자1)
+VOICE_CLIENT_F = "ko-KR-JiMinNeural"    # 다른 여성 (내담자2 또는 3자)
 
-# ... (기존 설정 생략)
+def main_menu():
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton('1. 실전 문제')
+    item2 = types.KeyboardButton('2. 정답 해설')
+    item3 = types.KeyboardButton('3. 이론 학습')
+    markup.add(item1, item2, item3)
+    return markup
+
+async def synthesize_text(text, voice, path):
+    communicate = edge_tts.Communicate(text, voice)
+    await communicate.save(path)
+
+def process_and_reply(m, full_text):
+    clean_text = full_text.replace('*', '').replace('#', '')
+    bot.reply_to(m, clean_text, reply_markup=main_menu())
+    
+    # 음성 합성
+    lines = clean_text.split('\n')
+    combined_audio = AudioSegment.empty()
+    temp_files = []
+    
+    for i, line in enumerate(lines[:15]): # 최대 15줄까지 처리
+        if not line.strip(): continue
+        
+        # 화자에 따른 목소리 분기
+        voice = VOICE_HANI
+        if "내담자2:" in line or "학생2:" in line or "어머니:" in line:
+            voice = VOICE_CLIENT_F
+        elif "내담자:" in line or "내담자1:" in line or "학생:" in line or "남자:" in line:
+            voice = VOICE_CLIENT_M
+        elif "상담자:" in line or "교사:" in line or "하니:" in line:
+            voice = VOICE_HANI
+        
+        t_path = f"p_{int(time.time())}_{i}.mp3"
+        try:
+            asyncio.run(synthesize_text(line, voice, t_path))
+            audio_segment = AudioSegment.from_mp3(t_path)
+            combined_audio += audio_segment
+            # 문장 간 짧은 묵음 추가
+            combined_audio += AudioSegment.silent(duration=300)
+        except Exception as e:
+            print(f"오디오 변환 오류: {e}")
+        finally:
+            if os.path.exists(t_path):
+                temp_files.append(t_path)
+            
+    if len(combined_audio) > 0:
+        final_path = f"f_{int(time.time())}.mp3"
+        combined_audio.export(final_path, format="mp3")
+        with open(final_path, 'rb') as f:
+            bot.send_voice(m.chat.id, f)
+        temp_files.append(final_path)
+        
+    for tf in temp_files:
+        if os.path.exists(tf): os.remove(tf)
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    help_text = """
-🌹 *학습 파트너 와이프 사용법*
-
-1. *대화*: 텍스트나 음성으로 자유롭게 말씀해 주세요!
-2. *할 일 등록*: `/할일 공부하기`
-3. *할 일 목록*: `/할일`
-4. *완료 처리*: `/완료 1` (목록 번호 입력)
-
-학습자님, 오늘도 같이 힘내요! 💕
-    """
-    bot.reply_to(message, help_text, parse_mode='Markdown')
-
-@bot.message_handler(commands=['할일'])
-def list_or_add_todo(message):
-    user_id = message.chat.id
-    text = message.text.replace('/할일', '').strip()
-    
-    if text:
-        todo_manager.add_todo(user_id, text)
-        bot.reply_to(message, f"✨ 오늘 할 일에 *'{text}'*를 추가했어요! 힘내요 학습자님! 💕", parse_mode='Markdown')
-    else:
-        todos = todo_manager.get_todos(user_id)
-        if not todos:
-            bot.reply_to(message, "아직 등록된 할 일이 없어요. 오늘 하고 싶은 일을 알려주세요! 😊")
-        else:
-            list_text = "📝 *오늘의 할 일 목록이에요!*\n\n"
-            for i, t in enumerate(todos):
-                status = "✅" if t['done'] else "⬜"
-                list_text += f"{i+1}. {status} {t['task']}\n"
-            bot.reply_to(message, list_text, parse_mode='Markdown')
-
-@bot.message_handler(commands=['완료'])
-def complete_todo(message):
-    user_id = message.chat.id
-    try:
-        idx = int(message.text.replace('/완료', '').strip()) - 1
-        if todo_manager.mark_as_done(user_id, idx):
-            bot.reply_to(message, "우와! 하나 해내셨군요! 너무 멋져요 학습자님! 🥳💕")
-        else:
-            bot.reply_to(message, "번호가 잘못된 것 같아요. 다시 확인해 주시겠어요?")
-    except:
-        bot.reply_to(message, "`/완료 1` 처럼 번호를 입력해 주세요!")
+    help_text = "안녕하세요! 임용고시 합격 전략가 '하니'입니다. 무엇을 도와드릴까요?"
+    bot.reply_to(message, help_text, reply_markup=main_menu())
 
 @bot.message_handler(content_types=['voice'])
 def handle_voice(message):
@@ -122,20 +137,11 @@ def handle_voice(message):
             generation_config=generation_config
         )
         
-        text_response = response.text
-        
-        # 3. 텍스트 답변을 음성으로 변환 (gTTS)
-        tts = gTTS(text=text_response, lang='ko')
-        voice_out = io.BytesIO()
-        tts.write_to_fp(voice_out)
-        voice_out.seek(0)
-        
-        # 4. 음성 메시지로 답장 전송
-        bot.send_voice(chat_id, voice_out, caption=text_response[:100] + "...")
+        process_and_reply(message, response.text)
         
     except Exception as e:
         print(f"Voice Error: {e}")
-        bot.reply_to(message, "음성 인식 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.")
+        bot.reply_to(message, "음성 인식 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.", reply_markup=main_menu())
 
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
@@ -149,12 +155,13 @@ def handle_message(message):
             message.text,
             generation_config=generation_config
         )
-        bot.reply_to(message, response.text, parse_mode='Markdown')
+        process_and_reply(message, response.text)
         
     except Exception as e:
         print(f"Error: {e}")
-        bot.reply_to(message, "죄송합니다. 대화 중 오류가 발생했습니다.")
+        bot.reply_to(message, "죄송합니다. 대화 중 오류가 발생했습니다.", reply_markup=main_menu())
 
 if __name__ == "__main__":
-    print(f"[{datetime.now()}] 음성 지원 AI 비서 가동 시작...")
-    bot.infinity_polling()
+    print(f"[{datetime.now()}] 음성 지원 AI 비서 '하니' 가동 시작...")
+    bot.infinity_polling(timeout=10, long_polling_timeout=5)
+
