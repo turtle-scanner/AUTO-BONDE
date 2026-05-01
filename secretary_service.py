@@ -6,7 +6,7 @@ from telegram_notifier import send_telegram_message
 import todo_manager
 
 # 설정 로드
-GEMINI_API_KEY = "AIzaSyBOnusu-wC2dTojQM5zdJto2D-XNfoFaHQ"
+GEMINI_API_KEY = "AIzaSyBJkmq1dYcRZQOdD3i6Y5Pjm_-A75rPTMY"
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-pro')
 
@@ -37,7 +37,7 @@ def get_news_briefing():
         return "뉴스 정보를 가져오는 중 오류가 발생했습니다."
 
 def send_daily_briefing():
-    chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
+    chat_id = "7998778160"
     weather = get_weather()
     news = get_news_briefing()
     todos = todo_manager.get_todos(chat_id)

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRAGONFLY - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body class="dashboard-body">
+    <div class="background-animation"></div>
+    <div class="dashboard-container">
+        <header class="dashboard-header" style="flex-direction: column; align-items: center; border-bottom: none; margin-bottom: 20px;">
+            <div class="brand-logo" style="margin-bottom: 10px;">
+                <img src="../StockDragonfly.png" alt="DRAGONFLY" style="height: 80px; filter: drop-shadow(0 0 15px rgba(254, 240, 27, 0.3));">
+            </div>
+            <h1 style="font-size: 42px; font-weight: 800; color: #fef01b; letter-spacing: -1px; text-shadow: 0 5px 15px rgba(0,0,0,0.5); margin-bottom: 5px;">
+                DRAGONFLY <span style="color: white; font-weight: 300;">WORKSPACE</span>
+            </h1>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">실시간 주식 정보 및 퀀트 자동매매 사령부</p>
+            
+            <div class="user-profile" style="width: 100%; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <div class="user-info">
+                    <span id="user-role" class="badge role-admin">관리자</span>
+                    <span id="user-name" style="font-weight: 800; font-size: 16px;">cntfed (정예요원)</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="admin-btn" class="btn-small" style="display: none; border-color: #ef4444; color: #ef4444;">관리자 모드</button>
+                    <button id="logout-btn" class="btn-small" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">로그아웃</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 사령부 고정 공지 -->
+        <div class="hq-notice" style="background: linear-gradient(90deg, rgba(239,68,68,0.2), rgba(0,0,0,0)); border-left: 4px solid #ef4444; padding: 15px 20px; border-radius: 4px; margin-bottom: 30px; display: flex; align-items: center; gap: 15px;">
+            <i class="fa-solid fa-bullhorn" style="color: #ef4444; font-size: 20px;"></i>
+            <div>
+                <strong style="color: #ef4444; display: block; font-size: 13px; margin-bottom: 2px;">[ 사령부 고정 공지 ]</strong>
+                <span style="font-size: 14px; color: #e2e8f0;">현재 M7(매그니피센트 7) 데이터가 실시간으로 동기화 중입니다. 시장 변동성에 주의하세요.</span>
+            </div>
+        </div>
+
+        <main class="dashboard-main">
+            <!-- 실시간 시장 지수 -->
+            <section class="market-indices">
+                <div class="index-card" id="card-dow">
+                    <div class="index-header">
+                        <span class="index-name">DOW</span>
+                        <span class="index-time">[USA] --:--</span>
+                    </div>
+                    <div class="index-price">0.00</div>
+                    <div class="index-change up">▲ +0.00%</div>
+                </div>
+                <div class="index-card" id="card-sp500">
+                    <div class="index-header">
+                        <span class="index-name">S&P500</span>
+                        <span class="index-time">[USA] --:--</span>
+                    </div>
+                    <div class="index-price">0.00</div>
+                    <div class="index-change up">▲ +0.00%</div>
+                </div>
+                <div class="index-card" id="card-nasdaq">
+                    <div class="index-header">
+                        <span class="index-name">NASDAQ</span>
+                        <span class="index-time">[USA] --:--</span>
+                    </div>
+                    <div class="index-price">0.00</div>
+                    <div class="index-change up">▲ +0.00%</div>
+                </div>
+                <div class="index-card" id="card-kospi">
+                    <div class="index-header">
+                        <span class="index-name">KOSPI</span>
+                        <span class="index-time">[KOR] --:--</span>
+                    </div>
+                    <div class="index-price">0.00</div>
+                    <div class="index-change up">▲ +0.00%</div>
+                </div>
+                <div class="index-card" id="card-kosdaq">
+                    <div class="index-header">
+                        <span class="index-name">KOSDAQ</span>
+                        <span class="index-time">[KOR] --:--</span>
+                    </div>
+                    <div class="index-price">0.00</div>
+                    <div class="index-change up">▲ +0.00%</div>
+                </div>
+            </section>
+
+
+            <!-- 🎯 사령부 1~9번 전술 배너 섹션 -->
+            <section class="tactical-banners" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px;">
+                <div class="banner-item" title="주도주 타점 스캐너">
+                    <div class="banner-icon"><i class="fa-solid fa-crosshairs"></i></div>
+                    <div class="banner-text">
+                        <span class="num">01</span>
+                        <span class="title">타점 스캐너</span>
+                    </div>
+                </div>
+                <div class="banner-item" title="소통 대화방">
+                    <div class="banner-icon"><i class="fa-solid fa-comments"></i></div>
+                    <div class="banner-text">
+                        <span class="num">02</span>
+                        <span class="title">소통 대화방</span>
+                    </div>
+                </div>
+                <div class="banner-item" title="프로 분석 리포트">
+                    <div class="banner-icon"><i class="fa-solid fa-gem"></i></div>
+                    <div class="banner-text">
+                        <span class="num">03</span>
+                        <span class="title">분석 리포트</span>
+                    </div>
+                </div>
+                <div class="banner-item" title="주도주 랭킹 TOP 50">
+                    <div class="banner-icon"><i class="fa-solid fa-rocket"></i></div>
+                    <div class="banner-text">
+                        <span class="num">04</span>
+                        <span class="title">주도주 랭킹</span>
+                    </div>
+                </div>
+                <div class="banner-item" title="리스크 계산기">
+                    <div class="banner-icon"><i class="fa-solid fa-calculator"></i></div>
+                    <div class="banner-text">
+                        <span class="num">05</span>
+                        <span class="title">리스크 계산</span>
+                    </div>
+                </div>
+                <div class="banner-item" title="마켓 트렌드 요약">
+                    <div class="banner-icon"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="banner-text">
+                        <span class="num">06</span>
+                        <span class="title">트렌드 요약</span>
+                    </div>
+                </div>
+                <div class="banner-item" title="본데 감시 리스트">
+                    <div class="banner-icon"><i class="fa-solid fa-eye"></i></div>
+                    <div class="banner-text">
+                        <span class="num">07</span>
+                        <span class="title">감시 리스트</span>
+                    </div>
+                </div>
+                <div class="banner-item" title="관리자 승인 센터">
+                    <div class="banner-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="banner-text">
+                        <span class="num">08</span>
+                        <span class="title">승인 센터</span>
+                    </div>
+                </div>
+                <div class="banner-item" title="본데는 누구인가?">
+                    <div class="banner-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div class="banner-text">
+                        <span class="num">09</span>
+                        <span class="title">본데 철학</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 실시간 히트맵 -->
+            <section class="heatmap-section">
+                <div class="heatmap-header">
+                    <span><i class="fa-solid fa-table-cells" style="color:#a855f7;"></i> [ RUN ] 실시간 히트맵 데이터 동기화 (M7)</span>
+                    <button id="refresh-heatmap" class="btn-small"><i class="fa-solid fa-rotate-right"></i> 동기화</button>
+                </div>
+                <div id="heatmap-error" style="display:none; color: #ef4444; background: rgba(239,68,68,0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid rgba(239,68,68,0.2);"></div>
+                <div class="heatmap-grid" id="heatmap-container">
+                    <div style="color:var(--text-muted); padding:20px; text-align:center; grid-column: 1 / -1;"><i class="fa-solid fa-spinner fa-spin"></i> 데이터를 불러오는 중입니다...</div>
+                </div>
+            </section>
+
+            <!-- Asset Card exactly like the user's screenshot -->
+
+            <div class="asset-card">
+                <div class="card-header">
+                    <h3>[ ASSET ] KIS 실시간 통합 잔고</h3>
+                    <!-- Privacy Toggle Button -->
+                    <button id="privacy-toggle" class="icon-btn" title="잔고/계좌번호 숨기기">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                
+                <div class="card-content">
+                    <div class="account-info">
+                        <span class="highlight-yellow">한국투자증권 (통합증거금)</span>
+                        <span class="account-num privacy-mask">4654-****-01</span>
+                    </div>
+
+                    <div class="balance-section">
+                        <p class="label">보유 원화 (KRW)</p>
+                        <h2 class="amount privacy-mask">5,229,001 <span class="unit">원</span></h2>
+                    </div>
+
+                    <div class="balance-section">
+                        <p class="label">보유 외화 (USD Cash)</p>
+                        <h3 class="amount privacy-mask">$ 0.00</h3>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="power-section">
+                        <p class="power-label">[ TOTAL POWER ] 미주 매수 가능액</p>
+                        <h1 class="power-amount privacy-mask">$ 3,735.00</h1>
+                        <p class="exchange-rate">* 실시간 환율 1,400.0원 기준 환산</p>
+                    </div>
+
+                    <div class="status-footer">
+                        <span class="status-dot green"></span>
+                        <span class="status-text">전술 엔진 정상</span>
+                        <span class="separator">|</span>
+                        <span class="mode-text">실전</span>
+                    </div>
+                </div>
+            </div>
+
+            
+            <!-- 주식 공부방 (차트 & 이론) -->
+            <section class="study-section" style="margin-top: 30px; width: 100%; max-width: 800px; margin-bottom: 30px;">
+                <div class="chat-header" style="color: #fef01b; font-size: 20px; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                    <i class="fa-solid fa-layer-group" style="color: #6366f1;"></i> [ STUDY ] 주식공부방 (차트 & 이론)
+                </div>
+                <div class="study-content" style="padding: 25px; background: rgba(10,10,15,0.8); border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 15px 35px rgba(0,0,0,0.4);">
+                    <p style="color: var(--text-main); font-weight: 600; margin-bottom: 25px;">본데의 철학과 매매 기법을 매일 점검하는 훈련소입니다.</p>
+                    
+                    <h3 style="margin-bottom: 15px; color: white; display:flex; justify-content:space-between; align-items:center;">
+                        <span>📈 실제 차트 돌파(Breakout) 학습</span>
+                        <span id="study-ticker" style="color: #ef4444; background:rgba(239,68,68,0.1); padding:4px 12px; border-radius:20px; font-size:14px; font-weight: 800;">NVDA 실시간 연동</span>
+                    </h3>
+                    <div id="study-chart" style="width: 100%; height: 400px; margin-bottom: 20px; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); background: #131722;"></div>
+                    <div id="study-desc" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.6; color: #e2e8f0;">
+                        <strong><i class="fa-solid fa-lightbulb" style="color:#fef01b;"></i> 브레이크 아웃(돌파)란?</strong><br>
+                        특정 저항선(노란 점선)을 강한 매수세와 함께 뚫고 올라가는 핵심 패턴입니다. 백엔드에서 <b>NVDA(엔비디아)</b>의 최근 6개월 차트를 분석하여 주요 저항선과 돌파 지점을 자동으로 마킹했습니다.
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.1); margin: 30px 0;">
+                    
+                    <h3 style="margin-bottom: 20px; color: white; display:flex; align-items:center; gap:10px;">
+                        <i class="fa-solid fa-file-pen" style="color: #a855f7;"></i> 2026-05-01 오늘의 주식 모의고사 (10제)
+                    </h3>
+                    
+                    <div class="quiz-box" style="background: rgba(255,255,255,0.02); padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <p style="font-weight: 800; margin-bottom: 15px; font-size: 16px;">Q1. 본데가 말하는 절대 손절 라인은 몇 퍼센트인가?</p>
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; color: var(--text-muted);">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s;"><input type="radio" name="q1" checked style="accent-color: #ef4444; width:16px; height:16px;"> -3% 이내</label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s;"><input type="radio" name="q1" style="accent-color: #ef4444; width:16px; height:16px;"> -5%</label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s;"><input type="radio" name="q1" style="accent-color: #ef4444; width:16px; height:16px;"> -10%</label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s;"><input type="radio" name="q1" style="accent-color: #ef4444; width:16px; height:16px;"> 버틴다</label>
+                        </div>
+
+                        <p style="font-weight: 800; margin-bottom: 15px; font-size: 16px;">Q2. 마크 미너비니의 핵심 트레이딩 전략 이름은?</p>
+                        <div style="display: flex; flex-direction: column; gap: 12px; color: var(--text-muted);">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s;"><input type="radio" name="q2" style="accent-color: #ef4444; width:16px; height:16px;"> CAN SLIM</label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s;"><input type="radio" name="q2" checked style="accent-color: #ef4444; width:16px; height:16px;"> SEPA</label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s;"><input type="radio" name="q2" style="accent-color: #ef4444; width:16px; height:16px;"> MACD</label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 소통 대화방 (카카오톡 스타일) -->
+
+            <section class="chat-section">
+                <div class="chat-header">
+                    <i class="fa-solid fa-comments"></i> DRAGONFLY 대화방 (HQ Free Talk)
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <div class="msg-row other">
+                        <div class="msg-profile" style="background:#ef4444;">A</div>
+                        <div class="msg-info">
+                            <div class="msg-sender"><span class="badge role-admin" style="font-size:10px;padding:2px 6px;">관리자</span> Mint Soft</div>
+                            <div class="msg-bubble">비트코인 흐름이 주식시장에도 영향을 주고 있습니다. 다들 주목해주세요.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="자유롭게 대화에 참여하세요. (Enter로 전송)">
+                    <button id="chat-send">[ EXEC ] 전송</button>
+                </div>
+            </section>
+        </main>
+
+    </div>
+    <script src="script.js?v=5"></script>
+</body>
+</html>
