@@ -11,6 +11,7 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 import requests
+import re
 import base64
 import time
 import io
@@ -1490,7 +1491,7 @@ if not st.session_state["password_correct"]:
         with tab2:
             st.markdown("### [ ACCESS ] 사령부 정예 요원 입성 자격 시험")
             st.info(
-                "개인 정보와 자격 시험 만점(5/5)을 획득해야 사령부 승인이 완료됩니다."
+                "사령부의 철학을 이해하는 정예 요원만 합류할 수 있습니다. (30문제 중 25개 이상 / 제한시간 15분)"
             )
 
             c1, c2 = st.columns(2)
@@ -1531,8 +1532,8 @@ if not st.session_state["password_correct"]:
             )
 
             st.divider()
-            st.markdown("#### [ EXAM ] [필수] 사령부 정예 요원 자격 시험 (15문항)")
-            st.info("기초 10문제 + 전술 5문제 중 13문제 이상 맞혀야 승인이 완료됩니다.")
+            st.markdown("#### [ EXAM ] [필수] 사령부 정예 요원 자격 시험 (30문항)")
+            st.info("기초 10제 + 전술 10제 + 심화 10제 중 25문제 이상 맞혀야 승인이 완료됩니다.")
 
             # 기초 10문제 (Q1-Q10)
             # 기초 10문제 (Q1-Q10)
@@ -2314,25 +2315,40 @@ def get_top_indices():
         "KOSDAQ": "^KQ11",
     }
     try:
-        data = yf.download(list(symbols.values()), period="5d", progress=False)
-        close_data = data["Close"]
-        high_data = data["High"]
-        low_data = data["Low"]
-
+        # 1. 일괄 다운로드 시도 (5d, 1d로 더 안정적인 데이터 확보)
+        data = yf.download(list(symbols.values()), period="5d", interval="1d", progress=False)
+        
+        if not data.empty and "Close" in data.columns:
+            close_data = data["Close"]
+            for name, ticker in symbols.items():
+                try:
+                    if ticker in close_data.columns:
+                        s_data = close_data[ticker].dropna()
+                        if len(s_data) >= 2:
+                            curr = s_data.iloc[-1]
+                            prev = s_data.iloc[-2]
+                            pct = ((curr / prev) - 1) * 100
+                            high = data["High"][ticker].iloc[-1] if "High" in data.columns else curr
+                            low = data["Low"][ticker].iloc[-1] if "Low" in data.columns else curr
+                            res[name] = [float(curr), float(pct), float(high), float(low)]
+                except: continue
+        
+        # 2. 누락된 항목에 대해 개별 재시도
         for name, ticker in symbols.items():
-            try:
-                c_series = close_data[ticker].dropna()
-                if len(c_series) >= 2:
-                    curr = c_series.iloc[-1]
-                    prev = c_series.iloc[-2]
-                    pct = ((curr / prev) - 1) * 100
-                    h_val = float(high_data[ticker].dropna().iloc[-1])
-                    l_val = float(low_data[ticker].dropna().iloc[-1])
-                    res[name] = [float(curr), float(pct), h_val, l_val]
-            except:
-                continue
-    except:
-        pass
+            if name not in res:
+                try:
+                    tk = yf.Ticker(ticker)
+                    df = tk.history(period="5d")
+                    if not df.empty:
+                        curr = df['Close'].iloc[-1]
+                        prev = df['Close'].iloc[-2] if len(df) >= 2 else curr
+                        pct = ((curr / prev) - 1) * 100 if curr != prev else 0
+                        res[name] = [float(curr), float(pct), float(df['High'].max()), float(df['Low'].min())]
+                except: continue
+        return res
+    except Exception as e:
+        print(f"Index Fetch Error: {e}")
+        return res
     return res
 
 
@@ -2919,7 +2935,7 @@ elif page.startswith("6-b."):
                                 <time style='font-size: 0.6rem; opacity: 0.6;'>{row["시간"]}</time>
                             </div>
                             <div style='background: {bg}; border: {border}; border-radius: {border_radius}; padding: 15px; color: #FFF; line-height: 1.6; box-shadow: 0 8px 25px rgba(0,0,0,0.3);'>
-                                {row["내용"]}
+                                {re.sub(r'<[^>]*>', '', str(row["내용"]))}
                             </div>
                         </div>
                     </div>
