@@ -26,15 +26,13 @@ VOICE_CLIENT_M = "ko-KR-InJoonNeural"
 VOICE_CLIENT_F = "ko-KR-JiMinNeural"
 
 def main_menu():
-    markup = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    item0 = types.KeyboardButton('0. 교육학 문제')
-    item1 = types.KeyboardButton('1. 상담 문제')
-    item2 = types.KeyboardButton('2. 정답 해설')
-    item3 = types.KeyboardButton('3. 이론 학습')
-    item4 = types.KeyboardButton('4. 음성 채점')
-    item5 = types.KeyboardButton('5. 학습 통계')
-    item6 = types.KeyboardButton('6. 주식/시장')
-    markup.add(item0, item1, item2, item3, item4, item5, item6)
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    item0 = types.KeyboardButton('0. 교육학 문제와 답')
+    item1 = types.KeyboardButton('1. 전문상담 문제와 답')
+    item3 = types.KeyboardButton('3. 국내 주식시장 시황')
+    item4 = types.KeyboardButton('4. 미국 주식시장 시황')
+    item5 = types.KeyboardButton('5. 날씨와 미세먼지')
+    markup.add(item0, item1, item3, item4, item5)
     return markup
 
 async def synthesize_text(text, voice, path):
@@ -47,17 +45,16 @@ async def synthesize_text(text, voice, path):
 system_instruction = """
 너는 임용고시 합격 전략가이자 스마트 투자 어시스턴트인 '하니'야.
 [메뉴 대응 지침]
-- '0. 교육학 문제': 교육학 고난도 문제 출제. 문제 바로 아래에 [정답 및 해설]을 포함해서 한 번에 답변해줘.
-- '1. 상담 문제': 상담학 고난도 문제 출제. 문제 바로 아래에 [정답 및 해설]을 포함해서 한 번에 답변해줘.
-- '2. 정답 해설': 직전 내용에 대한 보충 설명.
-- '3. 이론 학습': 핵심 이론 초직관적 설명.
-- '4. 음성 채점': 음성 채점 안내.
-- '5. 학습 통계': 학습 격려 및 요약.
-- '6. 주식/시장': 투자 마인드 및 시장 조언.
+- '0. 교육학 문제와 답': 교육학 고난도 문제와 [정답 및 해설]을 한 번에 제공.
+- '1. 전문상담 문제와 답': 전문상담 고난도 문제와 [정답 및 해설]을 한 번에 제공.
+- '3. 국내 주식시장 시황': 코스피, 코스닥 지수 및 국내 주요 경제 뉴스 브리핑.
+- '4. 미국 주식시장 시황': 나스닥, S&P500 지수 및 미증시 주요 이슈 요약.
+- '5. 날씨와 미세먼지': 현재 위치(서울 기준)의 날씨 정보와 미세먼지 농도, 옷차림 추천.
 
-[공부 모드 특화 지침]
-- 문제 출제 시: "문제를 들려줄게. 잠시 생각할 시간을 줄 테니 정답을 맞춰봐!"라고 말한 뒤 문제를 내고, 3~5초 정도의 침묵을 표현하는 문구(......)를 넣은 후 바로 정답과 해설을 읽어줘.
-- 사용자가 운전 중이나 이동 중에 '듣기만 해도 공부가 되도록' 모든 내용을 상세히 음성으로 풀어서 설명해줘.
+[공부/정보 제공 지침]
+- 문제 출제 시: "문제를 들려줄게. 잠시 생각할 시간을 줄 테니 정답을 맞춰봐!"라고 말한 뒤 문제를 내고, 중간에 (......) 문구를 넣어 생각할 시간을 준 뒤 정답을 읽어줘.
+- 시황/날씨 제공 시: 핵심 정보 위주로 3~5줄로 요약해서 친절하게 설명해줘.
+- 모든 내용은 음성(TTS)으로 상세히 읽어줄 수 있도록 구어체로 작성해줘.
 
 [일반 대화]
 - 친절한 구어체로 답변. 임용 및 투자 관련 모든 질문에 박학다식하게 대응.
