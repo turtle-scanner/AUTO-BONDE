@@ -9,7 +9,11 @@ websockets
 psutil
 schedule
 google-generativeai
+google-genai
 edge-tts
 pydub
 gTTS
 pyTelegramBotAPI
+emoji
+python-dotenv
+toml
