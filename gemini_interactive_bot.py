@@ -13,9 +13,9 @@ import emoji
 GEMINI_API_KEY = "AIzaSyClXLYgRwll8sO4qwOD6tTUulcx_1V29VM"
 TELEGRAM_TOKEN = "8713555022:AAFu6WjY6HUpaw2eyYSBSZSrIhiTFex9uho"
 
-# Gemini 설정
+# Gemini 설정 (안정성이 검증된 1.5-pro 모델 사용)
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('models/gemini-1.5-pro')
 
 VOICE_HANI = "ko-KR-SunHiNeural"
 VOICE_CLIENT_M = "ko-KR-InJoonNeural"
