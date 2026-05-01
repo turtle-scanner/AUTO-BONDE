@@ -82,6 +82,9 @@ def send_theory_summary():
         message = f"💡 *임용 상담 핵심 이론 정리*\n\n{text}"
         send_telegram_message(message)
         save_to_study_bank("THEORY", text)
+    except Exception as e:
+        print(f"Error generating theory summary: {e}")
+
 def send_pedagogy_problem():
     """임용 교육학 지문형 문제 생성 및 전송"""
     prompt = """

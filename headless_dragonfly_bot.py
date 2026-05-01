@@ -7,7 +7,15 @@ import numpy as np
 import yfinance as yf
 import pytz
 import re
+import sys
 from datetime import datetime, timedelta
+
+# Windows 환경에서 이모지 출력 시 cp949 인코딩 에러 방지
+if sys.stdout.encoding != 'utf-8':
+    try:
+        import io
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    except: pass
 
 # --- [ CONFIG LOAD ] ---
 def load_config():
@@ -59,7 +67,9 @@ def log_combat(msg, type="INFO"):
     print(f"[{timestamp}] [{type}] {msg}")
     if type == "ERROR" or "성공" in msg or "포착" in msg or "브리핑" in msg:
         prefix = "🚨 " if type == "ERROR" else ("🚀 " if "성공" in msg else ("🎯 " if "포착" in msg else "📊 "))
-        send_telegram_msg(f"{prefix}<b>[HEADLESS]</b> {msg}")
+        try:
+            send_telegram_msg(f"{prefix}<b>[HEADLESS]</b> {msg}")
+        except: pass
 
 # --- [ KIS API AUTH ] ---
 def call_kis_api(method, url, headers, params=None, json_body=None, retries=3):

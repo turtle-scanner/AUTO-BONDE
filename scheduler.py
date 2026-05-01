@@ -86,7 +86,12 @@ schedule.every().day.at("23:50").do(export_daily_data)
 
 if __name__ == "__main__":
     logging.info("START: All-in-one scheduler started.")
-    # 시작 시 한 번 실행
+    # 시작 시 테스트용 즉시 실행
+    try:
+        send_counseling_problem()
+    except Exception as e:
+        logging.error(f"Initial test failed: {e}")
+        
     # job_report()
     # export_daily_data() # 테스트용
     
