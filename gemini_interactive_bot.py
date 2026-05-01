@@ -8,6 +8,10 @@ import time
 from pydub import AudioSegment
 import re
 import emoji
+from dotenv import load_dotenv
+
+# .env 파일 로드
+load_dotenv()
 
 # ▼ 설정 (환경 변수에서 로드)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")

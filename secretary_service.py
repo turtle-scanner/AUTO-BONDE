@@ -4,6 +4,10 @@ import requests
 from datetime import datetime
 from telegram_notifier import send_telegram_message
 import todo_manager
+from dotenv import load_dotenv
+
+# .env 파일 로드
+load_dotenv()
 
 # 설정 로드
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")

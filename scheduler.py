@@ -3,6 +3,10 @@ import schedule
 import logging
 from report_to_telegram import main as send_report
 from bonde_procedural_bot import BondeProceduralBotV3 as BondeProceduralBot
+from dotenv import load_dotenv
+
+# .env 파일 로드
+load_dotenv()
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
