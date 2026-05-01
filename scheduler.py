@@ -51,13 +51,44 @@ schedule.every(15).minutes.do(job_scan)
 
 # 4. 정기 매매 사이클 (1시간 간격 - 전체 스캔용)
 schedule.every(1).hours.do(job_scan)
-schedule.every().day.at("22:30").do(job_scan)
-schedule.every().day.at("09:00").do(job_scan)
+from secretary_service import (
+    send_daily_briefing, 
+    send_counseling_problem, 
+    send_theory_summary,
+    send_pedagogy_problem,
+    send_pedagogy_summary
+)
+
+# ... (기존 코드 생략)
+
+# 5. 비서 서비스 (뉴스, 날씨, 공부)
+schedule.every().day.at("08:30").do(send_daily_briefing) # 아침 브리핑
+
+# 9시부터 23시까지 순환 학습 (상담문제 -> 교육학문제 -> 상담이론 -> 교육학이론)
+study_tasks = [
+    send_counseling_problem,
+    send_pedagogy_problem,
+    send_theory_summary,
+    send_pedagogy_summary
+]
+
+for hour in range(9, 24):
+    time_str = f"{hour:02d}:00"
+    task = study_tasks[(hour - 9) % len(study_tasks)]
+    schedule.every().day.at(time_str).do(task)
+
+from notebook_exporter import export_daily_data
+
+# ... (기존 설정 생략)
+
+# 6. NotebookLM 연동용 데이터 내보내기 (23:50)
+schedule.every().day.at("23:50").do(export_daily_data)
 
 if __name__ == "__main__":
-    logging.info("START: Auto report and scan scheduler started.")
+    logging.info("START: All-in-one scheduler started.")
     # 시작 시 한 번 실행
-    job_report()
+    # job_report()
+    # export_daily_data() # 테스트용
     
     while True:
         schedule.run_pending()
