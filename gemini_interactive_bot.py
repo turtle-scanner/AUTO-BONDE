@@ -9,11 +9,11 @@ from pydub import AudioSegment
 import re
 import emoji
 
-# ▼ 설정
-GEMINI_API_KEY = "AIzaSyClXLYgRwll8sO4qwOD6tTUulcx_1V29VM"
-TELEGRAM_TOKEN = "8713555022:AAFu6WjY6HUpaw2eyYSBSZSrIhiTFex9uho"
+# ▼ 설정 (환경 변수에서 로드)
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "")
 
-# Gemini 설정 (안정성이 검증된 1.5-pro 모델 사용)
+# Gemini 설정 로드
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('models/gemini-1.5-pro')
 

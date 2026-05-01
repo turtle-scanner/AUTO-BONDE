@@ -6,7 +6,7 @@ from telegram_notifier import send_telegram_message
 import todo_manager
 
 # 설정 로드
-GEMINI_API_KEY = "AIzaSyBJkmq1dYcRZQOdD3i6Y5Pjm_-A75rPTMY"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-pro')
 
