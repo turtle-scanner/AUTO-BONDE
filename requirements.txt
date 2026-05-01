@@ -8,3 +8,8 @@ pycryptodome
 websockets
 psutil
 schedule
+google-generativeai
+edge-tts
+pydub
+gTTS
+pyTelegramBotAPI

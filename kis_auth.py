@@ -232,8 +232,9 @@ def auth(svr="prod", product=_cfg["my_prod"], url=None):
     saved_token = read_token()
     if saved_token is None:
         url = f"{_cfg[svr]}/oauth2/tokenP"
+        # _getBaseHeader() 대신 _base_headers를 직접 사용하여 재귀 방지
         res = _session.post(
-            url, data=json.dumps(p), headers=_getBaseHeader(), verify=False, timeout=30
+            url, data=json.dumps(p), headers=_base_headers, verify=False, timeout=30
         )
         rescode = res.status_code
         if rescode == 200:
