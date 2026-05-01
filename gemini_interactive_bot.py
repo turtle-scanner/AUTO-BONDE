@@ -19,7 +19,7 @@ TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "")
 
 # Gemini 설정 로드
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('models/gemini-1.5-pro')
+model = genai.GenerativeModel('models/gemini-3-flash-preview')
 
 VOICE_HANI = "ko-KR-SunHiNeural"
 VOICE_CLIENT_M = "ko-KR-InJoonNeural"

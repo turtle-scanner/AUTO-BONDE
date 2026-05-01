@@ -12,7 +12,7 @@ load_dotenv()
 # 설정 로드
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-pro')
+model = genai.GenerativeModel('gemini-3-flash-preview')
 
 STUDY_BANK_FILE = "counseling_study_bank.txt"
 

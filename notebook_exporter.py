@@ -15,7 +15,7 @@ for d in [INVEST_DIR, STUDY_DIR]:
 # 제미나이 설정
 GEMINI_API_KEY = "AIzaSyBOnusu-wC2dTojQM5zdJto2D-XNfoFaHQ"
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-pro')
+model = genai.GenerativeModel('gemini-3-flash-preview')
 
 def load_study_bank():
     today = datetime.now().strftime("%Y-%m-%d")

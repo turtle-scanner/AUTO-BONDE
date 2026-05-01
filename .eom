@@ -1,0 +1,17 @@
+[시스템 점검 리포트]
+1. 원인 분석:
+   - 기존에 사용하던 `gemini-1.5-pro` 모델 명칭이 현재 API 환경(2026년 기준)에서 유효하지 않아 404 에러가 발생함을 확인했습니다.
+
+2. 조치 사항:
+   - 정상 작동이 확인된 최신 모델인 `gemini-3-flash-preview`로 모든 관련 코드를 업데이트했습니다.
+   - 대상 파일 및 수정 사항:
+     - `gemini_interactive_bot.py`: 모델명을 `gemini-3-flash-preview`로 변경
+     - `secretary_service.py`: 모델명을 `gemini-3-flash-preview`로 변경
+     - `notebook_exporter.py`: 모델명을 `gemini-3-flash-preview`로 변경
+
+3. 결과 및 권장 사항:
+   - 테스트 스크립트 실행 결과, 새로운 모델에서 정상적으로 응답을 수신했습니다.
+   - 이제 텔레그램 봇과 스케줄러를 다시 가동하시면 정상적으로 작동할 것입니다.
+
+[조치 완료]
+.eom
