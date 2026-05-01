@@ -1,63 +1,85 @@
 import os
 import json
 from datetime import datetime
+import google.generativeai as genai
 
-# 저장 경로 설정 (구글 드라이브 동기화 폴더)
-EXPORT_DIR = "notebook_sources"
-if not os.path.exists(EXPORT_DIR):
-    os.makedirs(EXPORT_DIR)
+# 저장 경로 설정 (투자 및 공부 폴더 분리)
+BASE_DIR = "notebook_sources"
+INVEST_DIR = os.path.join(BASE_DIR, "investment")
+STUDY_DIR = os.path.join(BASE_DIR, "study")
+
+for d in [INVEST_DIR, STUDY_DIR]:
+    if not os.path.exists(d):
+        os.makedirs(d)
+
+# 제미나이 설정
+GEMINI_API_KEY = "AIzaSyBOnusu-wC2dTojQM5zdJto2D-XNfoFaHQ"
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel('gemini-1.5-pro')
+
+def load_study_bank():
+    today = datetime.now().strftime("%Y-%m-%d")
+    counseling_data = []
+    pedagogy_data = []
+    if os.path.exists("counseling_study_bank.txt"):
+        with open("counseling_study_bank.txt", "r", encoding="utf-8") as f:
+            content = f.read()
+            blocks = content.split("="*50)
+            for block in blocks:
+                if today in block:
+                    if "[QUESTION]" in block or "[THEORY]" in block:
+                        counseling_data.append(block.strip())
+                    elif "[PEDAGOGY_QUESTION]" in block or "[PEDAGOGY_THEORY]" in block:
+                        pedagogy_data.append(block.strip())
+    return "\n\n".join(counseling_data), "\n\n".join(pedagogy_data)
+
+def generate_ai_review(positions):
+    prompt = f"너는 현명한 주식 트레이더 아내야. 아래 주식 포지션을 보고 본데와 미너비니의 관점에서 따뜻하고 날카로운 조언을 해줘.\n\n{json.dumps(positions, indent=2, ensure_ascii=False)}"
+    try:
+        response = model.generate_content(prompt)
+        return response.text
+    except: return "진단 실패"
+
+def generate_flashcards(study_text):
+    prompt = f"아래 내용을 바탕으로 Anki용 플래시카드(질문;답변) 10개를 만들어줘.\n\n{study_text}"
+    try:
+        response = model.generate_content(prompt)
+        return response.text
+    except: return "생성 실패"
 
 def export_daily_data():
-    """오늘의 모든 활동 데이터를 NotebookLM용 텍스트 파일로 내보냅니다."""
     today = datetime.now().strftime("%Y-%m-%d")
-    file_path = os.path.join(EXPORT_DIR, f"daily_report_{today}.txt")
     
-    # 1. 매매 기록 가져오기 (예시: active_positions.json 활용)
+    # --- 1. 투자(Investment) 데이터 내보내기 ---
     positions = {}
     if os.path.exists("bonde_active_positions.json"):
         with open("bonde_active_positions.json", "r", encoding="utf-8") as f:
             positions = json.load(f)
-
-    # 2. 할 일 목록 가져오기
-    todos = []
-    if os.path.exists("todo.json"):
-        with open("todo.json", "r", encoding="utf-8") as f:
-            all_todos = json.load(f)
-            # 여기서는 편의상 첫 번째 사용자의 할 일을 가져옵니다.
-            if all_todos:
-                todos = list(all_todos.values())[0]
-
-    # 3. 리포트 내용 구성
-    content = f"""
-=========================================
-[DAILY REPORT] {today} - 나의 학습 및 투자 기록
-=========================================
-
-📍 1. 오늘의 포트폴리오 상태
-{json.dumps(positions, indent=2, ensure_ascii=False) if positions else "진행 중인 포지션이 없습니다."}
-
-📍 2. 오늘의 할 일 및 성과
-{chr(10).join([f"- [{'✅' if t['done'] else ' '}] {t['task']}" for t in todos]) if todos else "등록된 할 일이 없습니다."}
-
-📍 3. AI 비서의 종합 의견
-오늘 학습자님은 임용 상담 이론 공부와 주식 매매를 병행하며 아주 알찬 하루를 보냈습니다. 
-특히 리스크 관리 측면에서 원칙을 잘 지켰으며, 상담 이론 중 '아들러' 부분에 대해 집중적으로 학습했습니다.
-
-📍 4. NotebookLM에게 주는 질문 가이드
-- 이 기록을 바탕으로 나의 이번 주 매매 패턴에서 고쳐야 할 점 3가지를 알려줘.
-- 오늘 공부한 상담 이론의 핵심 개념을 내가 얼마나 잘 이해했는지 퀴즈를 내줘.
-- 나의 하루 일과 중 가장 효율적이었던 시간대는 언제인지 분석해줘.
-
-=========================================
-이 리포트는 오라클 서버에서 자동 생성되었습니다.
-    """
-
-    # 파일 저장
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write(content)
     
-    print(f"[{datetime.now()}] NotebookLM용 리포트 생성 완료: {file_path}")
-    return file_path
+    ai_review = generate_ai_review(positions)
+    stock_content = f"=== STOCK REPORT & AI REVIEW {today} ===\n\n{ai_review}\n\n[RAW DATA]\n{json.dumps(positions, indent=2, ensure_ascii=False)}"
+    with open(os.path.join(INVEST_DIR, f"stock_report_{today}.txt"), "w", encoding="utf-8") as f:
+        f.write(stock_content)
+
+    # --- 2. 공부(Study) 데이터 내보내기 ---
+    counseling_text, pedagogy_text = load_study_bank()
+    
+    # 상담 리포트
+    with open(os.path.join(STUDY_DIR, f"counseling_report_{today}.txt"), "w", encoding="utf-8") as f:
+        f.write(f"=== COUNSELING REPORT {today} ===\n\n{counseling_text}")
+    
+    # 교육학 리포트
+    with open(os.path.join(STUDY_DIR, f"pedagogy_report_{today}.txt"), "w", encoding="utf-8") as f:
+        f.write(f"=== PEDAGOGY REPORT {today} ===\n\n{pedagogy_text}")
+    
+    # 플래시카드
+    full_study_text = counseling_text + "\n" + pedagogy_text
+    if full_study_text.strip():
+        flashcards = generate_flashcards(full_study_text)
+        with open(os.path.join(STUDY_DIR, f"flashcards_{today}.txt"), "w", encoding="utf-8") as f:
+            f.write(f"=== FLASHCARDS {today} ===\n\n{flashcards}")
+
+    print(f"[{datetime.now()}] 투자/공부 데이터 분리 내보내기 완료!")
 
 if __name__ == "__main__":
     export_daily_data()
