@@ -18,31 +18,43 @@ export default function AdminCenter() {
   const [members, setMembers] = useState<Member[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const SHEET_ID = '1xjbe9SF0HsxwY_Uy3NC2tT92BqK0nhArUaYU16Q0p9M';
+
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const response = await fetch('/api/members');
-        const data = await response.json();
-        setMembers(data);
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=1499398020`;
+        const res = await fetch(url);
+        const text = await res.text();
+        const json = JSON.parse(text.substring(47, text.length - 2));
+        const rows = json.table.rows;
+        const parsed: Member[] = rows.map((r: any) => ({
+          id: r.c[0]?.v || '-',
+          rank: r.c[3]?.v || '회원',
+          location: r.c[4]?.v || '-',
+          experience: r.c[6]?.v || '-',
+          age: r.c[5]?.v || '-',
+          motivation: r.c[7]?.v || '-',
+          joined_at: r.c[8]?.f || r.c[8]?.v || '-',
+        }));
+        setMembers(parsed);
       } catch (error) {
-        console.error("Failed to fetch members:", error);
-        // Fallback data if API not ready
+        console.error("구글 시트 연동 실패, 폴백 데이터 사용:", error);
         setMembers([
           { id: "cntfed", rank: "방장", location: "-", experience: "-", age: "-", motivation: "-", joined_at: "2026-04-19 2:46" },
           { id: "fire33", rank: "회원", location: "서울", experience: "1-3년", age: "30대", motivation: "경제적자유 열심히공부할게요", joined_at: "2026-04-19 2:46" },
           { id: "sebinhi", rank: "회원", location: "인천", experience: "5-10년", age: "40대", motivation: "경제적 자유", joined_at: "2026-04-19 2:57" },
           { id: "popsong98", rank: "회원", location: "서울", experience: "1-3년", age: "20대 이하", motivation: "파이어족 되고 싶습니다!!", joined_at: "2026-04-19 3:16" },
           { id: "MoneySnipper", rank: "회원", location: "서울", experience: "3-5년", age: "30대", motivation: "빠른 은퇴", joined_at: "2026-04-19 3:26" },
-          { id: "wlgh8654", rank: "회원", location: "서울", experience: "5-10년", age: "40대", motivation: "미국주식 을 통하여 경제적 자유를 얻고자 가입희망합니다 적극 활동하겠습니다.", joined_at: "2026-04-19 3:49" },
-          { id: "hjrubbi", rank: "회원", location: "청주", experience: "-", age: "40대", motivation: "기존회원 정보 잘 저장해줘", joined_at: "2026-04-19 3:49" },
-          { id: "dkdkqldy78", rank: "회원", location: "경기", experience: "1년 미만", age: "30대", motivation: "결혼준비하는 예비 신랑입니다. 이제는 가장으로서 주식 투자를 하고자 합니다.", joined_at: "2026-05-01 22:28" },
-          { id: "rice4657", rank: "회원", location: "서울", experience: "1년 미만", age: "30대", motivation: "경제적 자유를 얻기 위해 주식을 시작했습니다.", joined_at: "2026-05-01 23:42" }
+          { id: "wlgh8654", rank: "회원", location: "서울", experience: "5-10년", age: "40대", motivation: "미국주식을 통하여 경제적 자유를 얻고자 가입", joined_at: "2026-04-19 3:49" },
+          { id: "hjrubbi", rank: "회원", location: "청주", experience: "-", age: "40대", motivation: "-", joined_at: "2026-04-19 3:49" },
+          { id: "dkdkqldy78", rank: "회원", location: "경기", experience: "1년 미만", age: "30대", motivation: "가장으로서 주식 투자 시작", joined_at: "2026-05-01 22:28" },
+          { id: "rice4657", rank: "회원", location: "서울", experience: "1년 미만", age: "30대", motivation: "경제적 자유", joined_at: "2026-05-01 23:42" },
         ]);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchMembers();
   }, []);
 

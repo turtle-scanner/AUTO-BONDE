@@ -20,25 +20,28 @@ import {
   Globe
 } from 'lucide-react';
 
-const LiveTickerTape = ({ data, isConnected }: { data: any[], isConnected: boolean }) => (
-  <div className="ticker-tape glass">
-    <div className="connection-status">
-      {isConnected ? <Wifi size={12} className="status-up" /> : <WifiOff size={12} className="status-down" />}
-      <span>{isConnected ? "LIVE STREAM" : "OFFLINE"}</span>
+const LiveTickerTape = ({ data, isConnected }: { data: any[], isConnected: boolean }) => {
+  const safeData = Array.isArray(data) ? data : [];
+  return (
+    <div className="ticker-tape glass">
+      <div className="connection-status">
+        {isConnected ? <Wifi size={12} className="status-up" /> : <WifiOff size={12} className="status-down" />}
+        <span>{isConnected ? "LIVE STREAM" : "OFFLINE"}</span>
+      </div>
+      <div className="ticker-scroll">
+        {safeData.length > 0 ? safeData.map((item, i) => (
+          <div key={i} className="ticker-item">
+            <span className="ticker-name">{item.ticker}</span>
+            <span className="ticker-price">{item.price}</span>
+            <span className={`ticker-change ${item.is_up ? 'status-up' : 'status-down'}`}>
+              {item.is_up ? '▲' : '▼'} {item.change_pct}%
+            </span>
+          </div>
+        )) : <span style={{color:'#888', padding:'0 20px'}}>실시간 데이터 동기화 중...</span>}
+      </div>
     </div>
-    <div className="ticker-scroll">
-      {data.map((item, i) => (
-        <div key={i} className="ticker-item">
-          <span className="ticker-name">{item.ticker}</span>
-          <span className="ticker-price">{item.price}</span>
-          <span className={`ticker-change ${item.is_up ? 'status-up' : 'status-down'}`}>
-            {item.is_up ? '▲' : '▼'} {item.change_pct}%
-          </span>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+  );
+};
 
 export default function PlatinumDashboard() {
   const { data: liveMarket, isConnected } = useMarketData();
