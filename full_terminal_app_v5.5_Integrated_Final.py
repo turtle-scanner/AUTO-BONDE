@@ -1965,6 +1965,7 @@ with st.sidebar:
         "<p style='font-weight:bold; font-size:0.8rem; color:#888;'>[ AUDIO ] TACTICAL BGM PLAYER</p>",
         unsafe_allow_html=True,
     )
+    
     bgm_options = {
         "[ MUTE ] Silence": None,
         "[ MIX ] Random Mix": "shuffle",
@@ -1976,65 +1977,58 @@ with st.sidebar:
         "[ BGM ] Forest Bird": "audio/bird.mp3",
         "[ BGM ] Petty": "audio/petty.mp3",
         "[ BGM ] Full Power": "audio/full.mp3",
-    }
-    # 외부 URL 옵션 추가 (필요시)
-    bgm_options.update({
         "[ BGM ] Tactical Force": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-        "[ BGM ] Synthwave": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
-    })
+    }
 
-    sel_bgm_v9 = st.selectbox(
-        "Radio Select", list(bgm_options.keys()), label_visibility="collapsed"
-    )
+    sel_bgm_v9 = st.selectbox("BGM Select", list(bgm_options.keys()), index=0, label_visibility="collapsed")
     vol_v9 = st.slider("[ VOL ] Volume", 0.0, 1.0, 0.4, step=0.05)
 
     target_bgm_v9 = bgm_options[sel_bgm_v9]
-
+    
     # 랜덤 믹스 처리
     if target_bgm_v9 == "shuffle":
         if "shuffled_bgm" not in st.session_state:
-            valid_files = [
-                f
-                for f in list(bgm_options.values())
-                if f and f != "shuffle" and (f.startswith("http") or os.path.exists(f))
-            ]
-            st.session_state.shuffled_bgm = (
-                random.choice(valid_files) if valid_files else None
-            )
+            valid_files = [f for f in bgm_options.values() if f and f != "shuffle"]
+            st.session_state.shuffled_bgm = random.choice(valid_files) if valid_files else None
         target_bgm_v9 = st.session_state.shuffled_bgm
-    else:
-        if "shuffled_bgm" in st.session_state:
-            del st.session_state.shuffled_bgm
 
     if target_bgm_v9:
-        audio_src = target_bgm_v9
-        # 로컬 파일인 경우 base64 변환
-        if not target_bgm_v9.startswith("http"):
+        audio_html = ""
+        if target_bgm_v9.startswith("http"):
+            audio_src = target_bgm_v9
+        else:
+            # 로컬 파일 존재 확인 및 인코딩
             if os.path.exists(target_bgm_v9):
-                @st.cache_data(show_spinner=False, ttl=3600)
-                def get_base64_audio(file_path):
-                    try:
-                        with open(file_path, "rb") as f:
-                            data = f.read()
-                            return base64.b64encode(data).decode()
-                    except: return ""
-                
-                b64 = get_base64_audio(target_bgm_v9)
-                if b64:
+                with open(target_bgm_v9, "rb") as f:
+                    data = f.read()
+                    b64 = base64.b64encode(data).decode()
                     audio_src = f"data:audio/mp3;base64,{b64}"
+            else:
+                audio_src = ""
 
-        st.components.v1.html(
-            f"""
-            <audio id='aud' autoplay loop>
-                <source src='{audio_src}' type='audio/mp3'>
-            </audio>
-            <script>
-                var audio = document.getElementById('aud');
-                audio.volume = {vol_v9};
-            </script>
-        """,
-            height=0,
-        )
+        if audio_src:
+            st.components.v1.html(f"""
+                <div style="display:none;">
+                    <audio id="bgm-audio" loop autoplay>
+                        <source src="{audio_src}" type="audio/mp3">
+                    </audio>
+                </div>
+                <script>
+                    var audio = document.getElementById("bgm-audio");
+                    audio.volume = {vol_v9};
+                    
+                    // 브라우저 자동 재생 정책 대응: 클릭 시 재생 트리거
+                    document.addEventListener('click', function() {{
+                        if (audio.paused) {{
+                            audio.play().catch(e => console.log("Autoplay blocked"));
+                        }}
+                    }}, {{ once: true }});
+                    
+                    // 전역 볼륨 제어 지원
+                    window.parent.postMessage({{type: 'set_volume', value: {vol_v9}}}, '*');
+                </script>
+            """, height=0)
+            st.caption(f"🎵 Now Playing: {sel_bgm_v9}")
 
     # --- [ GLOBAL ] 실시간 AI 요원 매매 상황 중계 (전역 팝업 알림) ---
     if st.session_state.get("password_correct") and random.random() < 0.05:
