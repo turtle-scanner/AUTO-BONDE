@@ -37,23 +37,13 @@ jobs:
           sudo pkill -9 -f node || true
           sleep 2
 
-      - name: Start Next.js Terminal
+      - name: Start/Restart Next.js Terminal (PM2)
         run: |
           cd v6_terminal
-          # 백그라운드에서 실행 (로그는 terminal.log에 저장)
-          nohup npm run start -- -p 80 > ../terminal.log 2>&1 &
-          sleep 5
-
-      - name: Launch Next.js Terminal (Port 80)
-        run: |
-          cd v6_terminal
-          # 80번 포트로 Next.js 실행 (관리자 권한 필요)
-          sudo nohup npm run start -- -p 80 > ../terminal.log 2>&1 &
-
-      - name: Launch Gemini Telegram Bot
-        run: |
-          nohup python gemini_interactive_bot.py > bot.log 2>&1 &
-          disown
+          # PM2로 터미널 가동 (포트 80)
+          /usr/bin/pm2 delete v6-terminal || true
+          /usr/bin/pm2 start npm --name "v6-terminal" -- start -- -p 80
+          /usr/bin/pm2 save
 
       - name: Final Verification
         run: |
