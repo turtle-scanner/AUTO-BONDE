@@ -41,6 +41,7 @@ class BondeProceduralBotV3:
         self.positions_path = os.path.join(BASE_DIR, "bonde_active_positions.json")
         self.pending_path = os.path.join(BASE_DIR, "bonde_pending_orders.json")
         self.history_path = os.path.join(BASE_DIR, "bonde_trade_history.json")
+        self.scan_results_path = os.path.join(BASE_DIR, "bonde_scan_results.json")
         
         self.active_positions = self._load_positions()
         self.trade_history = self._load_history()
@@ -122,8 +123,20 @@ class BondeProceduralBotV3:
         with ThreadPoolExecutor(max_workers=8) as executor:
             futures = [executor.submit(self.scan_task, item) for item in watchlist]
             for future in as_completed(futures):
-                res = future.result()
                 if res: signals.append(res)
+
+        # [NEW] 스캔 결과 저장 (UI 연동용)
+        scan_output = []
+        for s in signals:
+            scan_output.append({
+                "code": s['item']['code'],
+                "name": s['item']['name'],
+                "reason": s['signal'].reason,
+                "strength": s['signal'].strength,
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            })
+        with open(self.scan_results_path, "w", encoding="utf-8") as f:
+            json.dump(scan_output, f, ensure_ascii=False, indent=4)
 
         if not signals: return
         
@@ -248,6 +261,16 @@ class BondeProceduralBotV3:
                 price_info = self._fetch_with_backoff(data_fetcher.get_current_price, code)
                 curr = float(price_info.get('price', 0))
                 if curr == 0: continue
+                
+                # [NEW] 실시간 데이터 업데이트 (UI 연동용)
+                self.active_positions[code]['current_price'] = curr
+                
+                # SMA7 계산 및 저장
+                df = self._fetch_with_backoff(data_fetcher.get_daily_prices, code, days=20)
+                if df is not None and len(df) >= 7:
+                    sma7 = indicators.calc_ma(df, 7).iloc[-1]
+                    self.active_positions[code]['sma7'] = sma7
+                    self.active_positions[code]['trend_status'] = "BULL" if curr > sma7 else "BEAR"
 
                 # 0. 엔비디아(NVDA) 예외 처리: 사용자 요청에 따라 강제 보유
                 if code == "NVDA":

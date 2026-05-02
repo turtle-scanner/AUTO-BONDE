@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+import asyncio
+import random
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import sqlite3
@@ -137,3 +139,31 @@ def get_heatmap():
         except:
             continue
     return {"data": results}
+
+@app.websocket("/ws/market")
+async def market_websocket(websocket: WebSocket):
+    await websocket.accept()
+    tickers = ["NVDA", "TSLA", "AAPL", "005930", "000660"]
+    try:
+        while True:
+            # 실시간 시세 시뮬레이션 데이터 생성
+            updates = []
+            for ticker in tickers:
+                price_change = random.uniform(-1, 1)
+                updates.append({
+                    "ticker": ticker,
+                    "price": f"{random.uniform(100, 1000):,.2f}",
+                    "change_pct": round(price_change, 2),
+                    "is_up": price_change > 0
+                })
+            
+            await websocket.send_json({
+                "type": "MARKET_UPDATE",
+                "data": updates,
+                "timestamp": datetime.now().strftime("%H:%M:%S")
+            })
+            await asyncio.sleep(2) # 2초마다 전송
+    except WebSocketDisconnect:
+        print("Client disconnected from WebSocket")
+    except Exception as e:
+        print(f"WebSocket Error: {e}")
