@@ -1,0 +1,34 @@
+name: Deploy V6.0 Terminal
+
+on:
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Sync Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Kill Existing Terminal
+        run: |
+          # Kill any existing streamlit process running app.py
+          pkill -f "streamlit run app.py" || true
+          sleep 2
+
+      - name: Launch Platinum V6.0 Terminal
+        run: |
+          # Run streamlit in the background
+          # We use port 8501 by default unless the user has a reverse proxy
+          # Given the Cloudflare error, it might be expecting port 80 or 8501
+          nohup streamlit run app.py --server.port 8501 --server.headless true > terminal.log 2>&1 &
+          disown
+          
+      - name: Verification
+        run: |
+          sleep 5
+          ps aux | grep streamlit
