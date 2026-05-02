@@ -1995,44 +1995,47 @@ with st.sidebar:
     try:
         if target_bgm_v9:
             # [ ACTION ] 스트리밍 경로를 절대 경로(/static/)로 명확히 지정
-            audio_src = target_bgm_v9 if target_bgm_v9.startswith("http") else f"static/{target_bgm_v9.split('/')[-1]}"
+            audio_filename = target_bgm_v9.split('/')[-1]
+            audio_url = f"/static/{audio_filename}" if not target_bgm_v9.startswith("http") else target_bgm_v9
 
-            # 로컬 파일의 경우 존재 여부 최종 확인
-            if not target_bgm_v9.startswith("http") and not os.path.exists(target_bgm_v9):
-                st.error(f"⚠️ [ BGM ] 파일을 찾을 수 없습니다: {target_bgm_v9}")
+            # 로컬 파일 존재 여부 확인 (서버 측)
+            if not target_bgm_v9.startswith("http") and not os.path.exists(f"static/{audio_filename}"):
+                st.error(f"⚠️ [ BGM ] 파일을 찾을 수 없습니다: static/{audio_filename}")
             else:
-                st.components.v1.html(f"""
-                    <div style="text-align: center; background: rgba(0,255,0,0.05); padding: 12px; border-radius: 10px; border: 1px solid #00FF0033;">
-                        <p style="color: #00FF00; font-size: 0.8rem; margin: 0 0 10px 0; font-weight: bold; text-shadow: 0 0 5px #00FF00;">📡 BGM 엔진 고속 스트리밍 모드 가동 중</p>
-                        <button id="play-btn" style="background: linear-gradient(135deg, #00FF00, #008800); color: #000; border: none; padding: 8px 20px; border-radius: 6px; font-weight: 900; cursor: pointer; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(0,255,0,0.3);">[ 🔊 SOUND ACTIVATE ]</button>
-                        <audio id="bgm-audio" loop>
-                            <source src="{audio_src}" type="audio/mp3">
+                # [ REVOLUTION ] st.components 대신 st.markdown으로 직접 주입하여 iframe 보안 이슈 해결
+                st.markdown(f"""
+                    <div id="bgm-container" style="text-align: center; background: rgba(0,255,0,0.05); padding: 12px; border-radius: 10px; border: 1px solid #00FF0033; margin-top: 10px;">
+                        <p style="color: #00FF00; font-size: 0.8rem; margin: 0 0 10px 0; font-weight: bold; text-shadow: 0 0 5px #00FF00;">📡 TACTICAL AUDIO STREAMING ACTIVE</p>
+                        <button id="bgm-play-btn" style="background: linear-gradient(135deg, #00FF00, #008800); color: #000; border: none; padding: 8px 20px; border-radius: 6px; font-weight: 900; cursor: pointer; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(0,255,0,0.3);">[ 🔊 SOUND START ]</button>
+                        <audio id="main-bgm-audio" loop>
+                            <source src="{audio_url}" type="audio/mp3">
                         </audio>
                     </div>
                     <script>
-                        var audio = document.getElementById("bgm-audio");
-                        var btn = document.getElementById("play-btn");
-                        audio.volume = {vol_v9};
+                        var audio = document.getElementById("main-bgm-audio");
+                        var btn = document.getElementById("bgm-play-btn");
                         
-                        btn.addEventListener('click', function() {{
-                            audio.play().then(() => {{
-                                btn.innerText = "🔊 AUDIO ACTIVE";
-                                btn.style.background = "#222";
-                                btn.style.color = "#00FF00";
-                                btn.style.border = "1px solid #00FF00";
-                            }}).catch(e => {{
-                                alert("재생 실패: 서버에서 파일을 찾을 수 없거나 브라우저 문제입니다.");
-                            }});
-                        }});
-
-                        // 자동 재생 시도
-                        setTimeout(() => {{
+                        if (audio) {{
+                            audio.volume = {vol_v9};
+                            
+                            btn.onclick = function() {{
+                                audio.play().then(() => {{
+                                    btn.innerText = "🔊 AUDIO FLOWING";
+                                    btn.style.background = "#111";
+                                    btn.style.color = "#00FF00";
+                                    btn.style.border = "1px solid #00FF00";
+                                }}).catch(e => {{
+                                    console.error("Playback failed", e);
+                                }});
+                            }};
+                            
+                            // 자동 재생 시도
                             audio.play().then(() => {{
                                 btn.style.display = "none";
-                            }}).catch(e => {{ console.log("Autoplay blocked"); }});
-                        }}, 300);
+                            }}).catch(e => {{ console.log("Autoplay waiting for click"); }});
+                        }}
                     </script>
-                """, height=100)
+                """, unsafe_allow_html=True)
                 st.caption(f"🎵 Streaming: {sel_bgm_v9}")
     except Exception as e:
         st.warning(f"BGM 엔진 일시적 장애 (복구 중...): {e}")
