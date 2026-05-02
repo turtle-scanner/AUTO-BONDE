@@ -1978,9 +1978,6 @@ with st.sidebar:
         "[ MIX ] Random Mix": "shuffle",
         "[ BGM ] Tactical Force (Test)": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
         "[ BGM ] You Raise Me Up": "static/YouRaise.mp3",
-    bgm_options = {
-        "[ BGM ] Tactical Force (Test)": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-        "[ BGM ] You Raise Me Up": "static/YouRaise.mp3",
         "[ BGM ] My Bonde": "static/my bonde.mp3",
         "[ BGM ] Hope & Joy": "static/hope.mp3",
         "[ BGM ] Happy Day": "static/happy.mp3",
