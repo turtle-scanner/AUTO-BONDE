@@ -1629,11 +1629,11 @@ if not st.session_state["password_correct"]:
             # 전술 5문제 (Q11-Q15)
             q11 = st.text_input(
                 "Q11. 전일 종가보다 큰 차이로 높게 시작하는 것을 무엇이라 하나요? (영문 2단어)",
-                placeholder="Gap Up",
+                placeholder="G_ _  U_ (수급의 증거)",
             )
             q12 = st.text_input(
                 "Q12. 주식 시장의 4단계 중 가장 수익이 많이 나는 단계는? (숫자만)",
-                placeholder="2",
+                placeholder="가장 강력한 추세 번호",
             )
             q13 = st.radio(
                 "Q13. 주가가 너무 과하게 올랐을 때 나타나는 기술적 지표 상태는?",
@@ -1642,7 +1642,7 @@ if not st.session_state["password_correct"]:
             )
             q14 = st.text_input(
                 "Q14. 수익이 난 후 매수가격으로 손절가를 올리는 행위는? (본ㅁ)",
-                placeholder="본절",
+                placeholder="생존을 위한 필수 전술 (본_)",
             )
             q15 = st.radio(
                 "Q15. 주가가 이미 3일 이상 오른 종목을 뒤늦게 따라 사는 위험한 행위는?",
