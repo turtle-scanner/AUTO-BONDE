@@ -6074,31 +6074,40 @@ elif page.startswith("7-f."):
         url1 = "https://docs.google.com/spreadsheets/d/1xjbe9SF0HsxwY_Uy3NC2tT92BqK0nhArUaYU16Q0p9M/export?format=csv&gid=1499398020"
         url2 = "https://docs.google.com/spreadsheets/d/1HbC_U1I78HAdV99X6qS1hmY_RiRGPrHX92AYbBPrIpU/export?format=csv&gid=2082735174"
 
-        watch_list = set()
+        watch_list = []
         try:
-            # Source 1: RS Tab 1-50 & Left 10 Columns
+            # Source 1: RS Tab - 랭킹 최상단 위주로 추출
             df1 = pd.read_csv(url1)
-            # 1~50위 (가장 왼쪽 열 기준 첫 50개)
-            top50 = df1.iloc[:, 0].dropna().head(50).tolist()
-            watch_list.update(top50)
-            # 왼쪽 1~10열의 모든 종목
-            for col in range(min(10, len(df1.columns))):
-                watch_list.update(df1.iloc[:, col].dropna().tolist())
+            # 메인 RS 랭킹 열(첫 번째 열)에서 상위 100개를 우선적으로 확보
+            main_rs = df1.iloc[:, 0].dropna().head(100).tolist()
+            watch_list.extend(main_rs)
+            
+            # 부족할 경우 추가 열에서 보충 (총합 100개를 넘지 않도록 관리)
+            if len(watch_list) < 100:
+                for col in range(1, min(5, len(df1.columns))):
+                    extra = df1.iloc[:, col].dropna().head(20).tolist()
+                    watch_list.extend(extra)
+                    if len(watch_list) >= 100: break
 
-            # Source 2: RS Tab Top 20
+            # Source 2: 보조 RS Tab (Top 20)
             df2 = pd.read_csv(url2)
             top20 = df2.iloc[:, 0].dropna().head(20).tolist()
-            watch_list.update(top20)
+            watch_list.extend(top20)
         except:
             pass
 
-        # 유효한 티커 형태만 필터링 (간단히 3-10자)
-        valid_watchlist = [
-            str(t).upper().strip()
-            for t in watch_list
-            if isinstance(t, str) and 1 <= len(t.strip()) <= 10
-        ]
-        return sorted(list(set(valid_watchlist)))
+        # 유효한 티커 형태 필터링 및 최종 100개 한정
+        seen = set()
+        final_list = []
+        for t in watch_list:
+            tic = str(t).upper().strip()
+            if tic and 1 <= len(tic) <= 10 and tic not in seen:
+                final_list.append(tic)
+                seen.add(tic)
+            if len(final_list) >= 100:
+                break
+        
+        return sorted(final_list)
 
     # 2. Scanning Logic
     def scan_kullamaggi_setup(tickers):
@@ -6107,7 +6116,7 @@ elif page.startswith("7-f."):
             return results
 
         with st.spinner(
-            f"[ SCAN ] {len(tickers)}개 종목의 쿨라매기 나노 엔진 가동 중..."
+            f"[ SCAN ] 정예 RS 100선 대상 쿨라매기 나노 엔진 가동 중..."
         ):
             # (A) Daily Data for Patterns
             data_d = yf.download(tickers, period="3mo", interval="1d", progress=False)
