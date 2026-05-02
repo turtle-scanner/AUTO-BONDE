@@ -221,7 +221,6 @@ export default function TargetScanPage() {
           100% { transform: scale(1); opacity: 1; }
         }
       `}</style>
-    </div>
     </>
   );
 }
