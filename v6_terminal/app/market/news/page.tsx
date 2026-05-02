@@ -2,125 +2,216 @@
 
 import React, { useState } from 'react';
 import GlassCard from '@/components/GlassCard';
-import { Bell, Zap, Globe, TrendingUp, Clock, RefreshCw, Filter } from 'lucide-react';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Activity, 
+  Globe, 
+  Zap, 
+  Clock, 
+  RefreshCw, 
+  BarChart3,
+  Waves
+} from 'lucide-react';
 
-export default function NewsPage() {
+export default function MarketIntelligenceUpgrade() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const newsData = [
-    { id: 1, type: "URGENT", title: "미국 4월 소비자물가지수(CPI) 예상치 하회, 금리 인하 기대감 고조", time: "1분 전", source: "Reuters", impact: "HIGH" },
-    { id: 2, type: "HOT", title: "엔비디아(NVDA) 차세대 블랙웰 칩 양산 가속화... 시가총액 1위 탈환 가시화", time: "5분 전", source: "Bloomberg", impact: "MEDIUM" },
-    { id: 3, type: "INFO", title: "한국은행, 기준금리 3.5% 동결 결정... 시장 예상 부합", time: "12분 전", source: "Yonhap", impact: "LOW" },
-    { id: 4, type: "URGENT", title: "중동 긴장 재고조... 국제 유가(WTI) 배럴당 $90 돌파 시도", time: "25분 전", source: "CNBC", impact: "HIGH" },
-    { id: 5, type: "HOT", title: "테슬라(TSLA) FSD 중국 진출 가속화 소식에 시간외 8% 급등", time: "40분 전", source: "WSJ", impact: "MEDIUM" }
+  // 지수 샘플 데이터
+  const indices = [
+    { name: 'NASDAQ', value: '16,274.95', change: '+1.15%', isUp: true },
+    { name: 'S&P 500', value: '5,123.41', change: '+0.85%', isUp: true },
+    { name: 'KOSPI', value: '2,682.12', change: '-0.32%', isUp: false },
+    { name: 'USD/KRW', value: '1,372.50', change: '+4.20', isUp: true },
   ];
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 1500);
+    setTimeout(() => setIsRefreshing(false), 1200);
   };
 
   return (
-    <div className="news-container animate-fade-in">
-      <div className="news-header">
-        <h1 className="news-title">
-          <Bell size={32} className="title-icon" /> [ NEWS ] 실시간 시장 첩보 (Market Intelligence)
-        </h1>
-        <div className="news-notice glass">
-          전 세계 금융 시장의 전술적 첩보를 실시간으로 수집합니다. 정보의 속도가 곧 수익의 차이를 만듭니다.
+    <div className="market-intel-container animate-fade-in">
+      {/* Header */}
+      <div className="intel-header">
+        <div className="header-left">
+          <h1 className="intel-title">
+            <Activity className="title-icon" /> MARKET INTELLIGENCE
+          </h1>
+          <p className="intel-subtitle">전 세계 시장의 거시적 흐름과 미시적 속보를 실시간으로 교차 분석합니다.</p>
+        </div>
+        <div className="header-right">
+          <button className={`refresh-btn ${isRefreshing ? 'loading' : ''}`} onClick={handleRefresh}>
+            <RefreshCw size={16} className={isRefreshing ? "rotating" : ""} /> REFRESH OPS
+          </button>
         </div>
       </div>
 
-      <div className="intelligence-ops">
-        <div className="filter-group glass">
-          <button className="filter-btn active">ALL FEED</button>
-          <button className="filter-btn">GLOBAL</button>
-          <button className="filter-btn">DOMESTIC</button>
-          <button className="filter-btn">CRYPTO</button>
-        </div>
-        <button className={`refresh-btn glass ${isRefreshing ? 'loading' : ''}`} onClick={handleRefresh}>
-          <RefreshCw size={16} className={isRefreshing ? "rotating" : ""} /> [ SYNC ] INTELLIGENCE REFRESH
-        </button>
-      </div>
-
-      <div className="news-timeline">
-        {newsData.map((news) => (
-          <GlassCard key={news.id} className="news-item-card">
-            <div className="news-meta">
-              <span className={`news-badge ${news.type.toLowerCase()}`}>
-                <Zap size={10} /> {news.type}
+      {/* Indices Ticker */}
+      <div className="indices-grid">
+        {indices.map((idx) => (
+          <GlassCard key={idx.name} className="index-card">
+            <div className="index-name">{idx.name}</div>
+            <div className="index-value-group">
+              <span className="index-value">{idx.value}</span>
+              <span className={`index-change ${idx.isUp ? 'up' : 'down'}`}>
+                {idx.isUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                {idx.change}
               </span>
-              <span className="news-source">{news.source}</span>
-              <span className="news-time"><Clock size={12} /> {news.time}</span>
-            </div>
-            <h3 className="news-headline">{news.title}</h3>
-            <div className="news-footer">
-              <div className="impact-indicator">
-                <span className="label">MARKET IMPACT:</span>
-                <div className="impact-bar-container">
-                  <div className={`impact-bar ${news.impact.toLowerCase()}`} style={{ width: news.impact === 'HIGH' ? '100%' : news.impact === 'MEDIUM' ? '60%' : '30%' }}></div>
-                </div>
-              </div>
-              <button className="analysis-btn">전술 분석 보기</button>
             </div>
           </GlassCard>
         ))}
       </div>
 
-      <footer className="news-footer-quote">
-        <div className="insight-label">[ HQ-SHIELD ] 본데의 일간 전술 통찰</div>
-        <div className="insight-quote">
-          "뉴스는 사실이 아니라, 그 사실에 반응하는 대중의 심리를 읽는 도구일 뿐이다."
+      <div className="main-layout">
+        {/* News Feed */}
+        <div className="news-section">
+          <div className="section-header">
+            <h3><Zap size={18} /> LIVE INTEL FEED</h3>
+          </div>
+          
+          <div className="news-list">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="news-item">
+                <div className="news-time">14:{30 - i * 5}</div>
+                <div className="news-content-box">
+                  <div className="news-meta">
+                    <span className="news-source">BLOOMBERG</span>
+                    <span className="news-impact high">HIGH IMPACT</span>
+                  </div>
+                  <div className="news-text">
+                    {i === 1 ? "U.S. Tech Giants Surge as AI Infrastructure Spending Reaches Record Highs" : 
+                     i === 2 ? "Federal Reserve Officials Hint at 'Higher for Longer' Interest Rate Strategy" :
+                     i === 3 ? "South Korean Export Data Shows Robust Growth in Semiconductor Sector" :
+                     "Global Oil Markets React to Heightened Geopolitical Tensions in Energy Corridors"}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </footer>
+
+        {/* Market Breath & AI Briefing */}
+        <div className="side-section">
+          <GlassCard className="breath-card">
+            <div className="card-header">
+              <BarChart3 size={18} /> MARKET BREADTH
+            </div>
+            <div className="breath-meter">
+              <div className="meter-track">
+                <div className="meter-fill up" style={{ width: '62%' }}></div>
+                <div className="meter-fill down" style={{ width: '38%' }}></div>
+              </div>
+              <div className="meter-labels">
+                <span className="up-label">Advancers 62%</span>
+                <span className="down-label">Decliners 38%</span>
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="briefing-card">
+            <div className="card-header">
+              <Waves size={18} /> AI TACTICAL BRIEFING
+            </div>
+            <div className="briefing-text">
+              "현재 시장은 나스닥 중심의 강한 매수세가 유입되고 있으나, 국채 금리 상승으로 인한 변동성 확대에 유의하십시오. 2,680선 지지 여부가 단기 향방을 결정할 것으로 보입니다."
+            </div>
+            <div className="briefing-footer">
+              COMMANDER'S DIRECTION: <span className="highlight">HOLD / ACCUMULATE</span>
+            </div>
+          </GlassCard>
+        </div>
+      </div>
 
       <style jsx>{`
-        .news-container { padding: 40px; display: flex; flex-direction: column; gap: 32px; max-width: 1000px; margin: 0 auto; }
-        .news-title { font-size: 2.2rem; font-weight: 900; color: white; display: flex; align-items: center; gap: 16px; }
-        .title-icon { color: var(--primary); }
-        .news-notice { padding: 20px; border-radius: 12px; font-size: 0.95rem; color: var(--text-muted); font-weight: 600; }
+        .market-intel-container {
+          padding: 30px;
+          display: flex;
+          flex-direction: column;
+          gap: 30px;
+          color: white;
+        }
 
-        .intelligence-ops { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
-        .filter-group { display: flex; gap: 8px; padding: 6px; border-radius: 10px; background: rgba(0, 0, 0, 0.2); }
-        .filter-btn { padding: 8px 16px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; border: none; background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.3s; }
-        .filter-btn.active { background: var(--primary); color: black; }
-        .filter-btn:hover:not(.active) { color: white; background: rgba(255, 255, 255, 0.05); }
+        .intel-header { display: flex; justify-content: space-between; align-items: center; }
+        .intel-title { font-size: 1.8rem; font-weight: 900; display: flex; align-items: center; gap: 12px; letter-spacing: -1px; }
+        .title-icon { color: var(--gold-400); }
+        .intel-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
 
-        .refresh-btn { display: flex; align-items: center; gap: 10px; padding: 10px 20px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; color: var(--primary); border: 1px solid rgba(255, 189, 46, 0.2); cursor: pointer; }
+        .refresh-btn {
+          background: rgba(212, 175, 55, 0.1);
+          border: 1px solid rgba(212, 175, 55, 0.3);
+          color: var(--gold-400);
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-size: 0.8rem;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+        }
 
-        .news-timeline { display: flex; flex-direction: column; gap: 16px; }
-        .news-item-card { padding: 24px; position: relative; border-left: 4px solid transparent; transition: all 0.3s; }
-        .news-item-card:hover { border-left-color: var(--primary); transform: translateX(4px); }
+        /* Indices */
+        .indices-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 20px;
+        }
 
-        .news-meta { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
-        .news-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 900; display: flex; align-items: center; gap: 4px; }
-        .urgent { background: rgba(255, 0, 85, 0.2); color: #ff0055; border: 1px solid rgba(255, 0, 85, 0.3); box-shadow: 0 0 10px rgba(255, 0, 85, 0.2); }
-        .hot { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
-        .info { background: rgba(14, 165, 233, 0.2); color: #0ea5e9; border: 1px solid rgba(14, 165, 233, 0.3); }
+        .index-card { padding: 16px 20px; }
+        .index-name { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; }
+        .index-value-group { display: flex; justify-content: space-between; align-items: baseline; }
+        .index-value { font-size: 1.2rem; font-weight: 900; }
+        .index-change { font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .index-change.up { color: #10b981; }
+        .index-change.down { color: #ef4444; }
 
-        .news-source { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); }
-        .news-time { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+        /* Layout */
+        .main-layout {
+          display: grid;
+          grid-template-columns: 1fr 340px;
+          gap: 30px;
+        }
 
-        .news-headline { font-size: 1.25rem; font-weight: 800; color: white; line-height: 1.4; margin-bottom: 20px; }
+        .section-header h3 { font-size: 1rem; font-weight: 900; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
 
-        .news-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
-        .impact-indicator { display: flex; align-items: center; gap: 12px; }
-        .impact-indicator .label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); }
-        .impact-bar-container { width: 60px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
-        .impact-bar { height: 100%; border-radius: 2px; }
-        .high { background: #ff0055; box-shadow: 0 0 5px #ff0055; }
-        .medium { background: #fbbf24; }
-        .low { background: #0ea5e9; }
+        .news-list { display: flex; flex-direction: column; gap: 20px; }
+        .news-item { display: flex; gap: 15px; }
+        .news-time { font-size: 0.8rem; font-weight: 900; color: var(--gold-400); width: 45px; margin-top: 4px; }
+        
+        .news-content-box {
+          flex: 1;
+          padding: 16px;
+          background: rgba(255, 255, 255, 0.03);
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-        .analysis-btn { font-size: 0.75rem; font-weight: 800; color: var(--primary); background: transparent; border: none; cursor: pointer; text-decoration: underline; }
+        .news-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .news-source { font-size: 0.6rem; font-weight: 900; color: var(--text-muted); }
+        .news-impact { font-size: 0.6rem; font-weight: 900; padding: 2px 6px; border-radius: 4px; }
+        .news-impact.high { background: rgba(255, 0, 85, 0.1); color: #ff0055; }
 
-        .news-footer-quote { margin-top: 40px; text-align: center; border-top: 1px solid var(--card-border); padding-top: 30px; }
-        .insight-label { color: var(--primary); font-size: 0.8rem; font-weight: 900; margin-bottom: 10px; }
-        .insight-quote { font-size: 0.95rem; color: var(--text-muted); font-style: italic; }
+        .news-text { font-size: 1rem; font-weight: 700; line-height: 1.4; color: rgba(255, 255, 255, 0.9); }
+
+        /* Side Section */
+        .side-section { display: flex; flex-direction: column; gap: 30px; }
+        .card-header { font-size: 0.85rem; font-weight: 900; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--gold-400); }
+
+        .breath-card, .briefing-card { padding: 24px; }
+        
+        .meter-track { height: 10px; background: #333; border-radius: 5px; display: flex; overflow: hidden; margin-bottom: 12px; }
+        .meter-fill.up { background: #10b981; }
+        .meter-fill.down { background: #ef4444; }
+        .meter-labels { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); }
+
+        .briefing-text { font-size: 0.9rem; line-height: 1.6; color: var(--text-muted); font-weight: 600; margin-bottom: 20px; }
+        .briefing-footer { font-size: 0.75rem; font-weight: 900; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
+        .highlight { color: var(--gold-400); }
 
         .rotating { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .loading { opacity: 0.7; pointer-events: none; }
+        .loading { opacity: 0.5; pointer-events: none; }
       `}</style>
     </div>
   );

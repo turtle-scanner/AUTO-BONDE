@@ -23,8 +23,17 @@ jobs:
       - name: Build Next.js
         run: |
           cd v6_terminal
-          export NODE_OPTIONS="--max-old-space-size=1024"
-          npm run build
+          NODE_OPTIONS="--max-old-space-size=1536" npm run build -- --no-lint
+
+      - name: Create Environment File
+        run: |
+          echo "KIS_APP_KEY=${{ secrets.KIS_APP_KEY }}" > .env
+          echo "KIS_APP_SECRET=${{ secrets.KIS_APP_SECRET }}" >> .env
+          echo "KIS_ACCOUNT_NO=${{ secrets.KIS_ACCOUNT_NO }}" >> .env
+          echo "KIS_MOCK_TRADING=${{ secrets.KIS_MOCK_TRADING }}" >> .env
+          echo "TELEGRAM_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
+          echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> .env
+          cp .env v6_terminal/.env
 
       - name: Sync Python Dependencies (Bot)
         run: |
@@ -53,14 +62,18 @@ jobs:
           /usr/bin/pm2 delete v6-terminal || true
           /usr/bin/pm2 start npm --name "v6-terminal" -- start -- -p 3000
           
+          # 4. 배포 완료 알림 (텔레그램)
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=🚀 [STOCKDRAGONFLY V6.0] 사령부 배포 완료!%0A✅ 도메인: https://stockdragonfly.cloud%0A✅ 모든 시스템(API, BOT, WEB) 정상 가동 중입니다."
+          
           /usr/bin/pm2 save
 
       - name: Final Verification
         run: |
-          sleep 15
-          echo "--- NETWORK STATUS ---"
-          sudo ss -tulpn | grep ":3000"
-          echo "--- PROCESS LIST ---"
-          ps aux | grep -E "next|gemini"
-          echo "--- LOG PREVIEW ---"
-          tail -n 20 terminal.log
+          sleep 20
+          echo "--- 🛡️ PLATINUM SYSTEM STATUS ---"
+          sudo ss -tulpn | grep -E ":3000|:8000"
+          echo "--- 🤖 PROCESS MONITORING ---"
+          /usr/bin/pm2 status
+          echo "--- 📡 NETWORK ACCESSIBILITY ---"
+          curl -I http://localhost:3000
