@@ -3057,11 +3057,31 @@ elif page.startswith("8-a."):
             )
 
 elif page.startswith("3-c."):
-    st.header("[ FOCUS ] 사령부 최핵심 감시 리스트 (Top 3 Focus)")
-    SHEET_URL = st.secrets.get(
-        "MARKET_FOCUS_URL",
-        "https://docs.google.com/spreadsheets/d/1xjbe9SF0HsxwY_Uy3NC2tT92BqK0nhArUaYU16Q0p9M/export?format=csv&gid=1499398020",
-    )
+    st.header("📊 [ STRENGTH ] 주도주 강도 분석 (Google Sheet RS)")
+    st.markdown("<div class='glass-card'>사령부 지정 구글 시트의 RS 데이터를 기반으로 한 정밀 강도 분석입니다.</div>", unsafe_allow_html=True)
+    
+    RS_SHEET_CSV = "https://docs.google.com/spreadsheets/d/1HbC_U1I78HAdV99X6qS1hmY_RiRGPrHX92AYbBPrIpU/gviz/tq?tqx=out:csv&gid=2082735174"
+    
+    with st.spinner("구글 시트 RS 데이터 동기화 중..."):
+        try:
+            df_rs = pd.read_csv(RS_SHEET_CSV)
+            if not df_rs.empty:
+                st.markdown("#### 🏆 [ RS RANKING ] 실시간 주도주 강도 순위")
+                df_rs_clean = df_rs.dropna(how='all', axis=1).dropna(how='any', axis=0)
+                st.dataframe(df_rs_clean, use_container_width=True, hide_index=True)
+                
+                if len(df_rs_clean) > 0:
+                    import plotly.express as px
+                    name_col = df_rs_clean.columns[0]
+                    val_col = df_rs_clean.columns[1] if len(df_rs_clean.columns) > 1 else df_rs_clean.columns[0]
+                    fig = px.bar(df_rs_clean.head(15), x=name_col, y=val_col, color=val_col,
+                                 title="Top 15 주도주 강도 정밀 비교", color_continuous_scale="Viridis")
+                    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font=dict(color="#FFF"))
+                    st.plotly_chart(fig, use_container_width=True)
+            else: st.warning("시트 데이터가 비어 있습니다.")
+        except Exception as e: st.error(f"데이터 로드 실패: {e}")
+
+elif page.startswith("3-d."):
     now_kst = datetime.now(pytz.timezone("Asia/Seoul"))
 
     with st.spinner("DATA: 리더보드 수익률 및 수급 정밀 추적 중..."):
@@ -4345,30 +4365,35 @@ elif page.startswith("2-c."):
                 }).background_gradient(subset=["RS_Weighted"], cmap="YlOrRd"),
                 use_container_width=True, hide_index=True
             )
-        else: st.warning("분석 데이터가 부족합니다. 잠시 후 다시 시도해 주세요.")
-        <div style="position: relative; width: 300px; height: 150px; margin: 0 auto; overflow: hidden;">
-            <svg width="300" height="300" viewBox="0 0 300 300">
-                <path d="M 50 150 A 100 100 0 0 1 250 150" fill="none" stroke="#333" stroke-width="20" />
-                <path d="M 50 150 A 100 100 0 0 1 250 150" fill="none" stroke="url(#gaugeGradFinal)" stroke-width="20" stroke-dasharray="{val * 3.14}, 1000" />
-                <defs>
-                    <linearGradient id="gaugeGradFinal" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:#FF4B4B;stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:#FFD700;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#00FF00;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <line x1="150" y1="150" x2="{150 - 80 * np.cos(val * 3.14 / 100)}" y2="{150 - 80 * np.sin(val * 3.14 / 100)}" stroke="#FFF" stroke-width="4" stroke-linecap="round" />
-                <circle cx="150" cy="150" r="8" fill="#FFF" />
-            </svg>
-            <div style="position: absolute; bottom: 0; left: 0; right: 0; font-size: 2.5rem; font-weight: 900; color: #FFF; text-shadow: 0 0 20px rgba(255,255,255,0.4);">
-                {val:.0f}
+        else: 
+            st.warning("분석 데이터가 부족합니다. 잠시 후 다시 시도해 주세요.")
+
+        st.markdown(f"""
+        <div class="glass-card" style="text-align: center; padding: 40px;">
+            <h3 style="color: #FFD700; margin-bottom: 30px;">GLOBAL SENTIMENT METER</h3>
+            <div style="position: relative; width: 300px; height: 150px; margin: 0 auto; overflow: hidden;">
+                <svg width="300" height="300" viewBox="0 0 300 300">
+                    <path d="M 50 150 A 100 100 0 0 1 250 150" fill="none" stroke="#333" stroke-width="20" />
+                    <path d="M 50 150 A 100 100 0 0 1 250 150" fill="none" stroke="url(#gaugeGradFinal)" stroke-width="20" stroke-dasharray="{(val/100) * 314}, 1000" />
+                    <defs>
+                        <linearGradient id="gaugeGradFinal" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#FF4B4B;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#FFD700;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#00FF00;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <line x1="150" y1="150" x2="{150 - 80 * np.cos(val * 3.14 / 100)}" y2="{150 - 80 * np.sin(val * 3.14 / 100)}" stroke="#FFF" stroke-width="4" stroke-linecap="round" />
+                    <circle cx="150" cy="150" r="8" fill="#FFF" />
+                </svg>
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; font-size: 2.5rem; font-weight: 900; color: #FFF; text-shadow: 0 0 20px rgba(255,255,255,0.4);">
+                    {val:.0f}
+                </div>
+            </div>
+            <div style="margin-top: 20px; font-size: 1.2rem; font-weight: 700; color: {'#FF4B4B' if val < 30 else ('#00FF00' if val > 70 else '#FFD700')};">
+                STATUS: {status}
             </div>
         </div>
-        <div style="margin-top: 20px; font-size: 1.2rem; font-weight: 700; color: {'#FF4B4B' if val < 30 else ('#00FF00' if val > 70 else '#FFD700')};">
-            STATUS: {status}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
     st.info(f"[ ANALYSIS ] VIX {curr_vix:.1f} 기반 산출 지표입니다.")
 
     col1, col2 = st.columns([1.5, 1.2])
