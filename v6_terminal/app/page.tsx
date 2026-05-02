@@ -54,13 +54,18 @@ export default function PlatinumDashboard() {
   const router = useRouter();
   const { data: liveMarket, isConnected } = useMarketData();
   const [botStatus, setBotStatus] = useState<any>({ status: 'LIVE', lastHeartbeat: 'SYNCING...' });
+  const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
     const user = sessionStorage.getItem('dragonfly_user');
     if (!user) {
       router.push('/login');
+    } else {
+      setIsAuth(true);
     }
   }, [router]);
+
+  if (!isAuth) return null; // 로그인 안됐으면 아무것도 안보여줌 (리다이렉트 대기)
 
   const commandLogs = [
     { time: '23:14:22', msg: 'HEARTBEAT: ALL SYSTEMS OPERATIONAL', type: 'system' },
