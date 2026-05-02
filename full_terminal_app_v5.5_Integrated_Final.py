@@ -749,13 +749,41 @@ def get_ticker_roe(tic):
     """
     try:
         tk = yf.Ticker(tic)
-        # 🛡️ info 대신 fast_info나 다른 빠른 필드가 있다면 그것을 쓰는 것이 좋으나
-        # ROE는 info에 있음. 2초 타임아웃 형태로 우회 시도(yf 자체 지원 미비 시 수동 제한)
-        # 여기서는 최소한의 호출을 위해 st.cache_data를 유지
         info = tk.info
-        return info.get("returnOnEquity", 0) * 100
+        roe = info.get("returnOnEquity", 0)
+        return roe * 100 if roe else 0
     except:
         return 0
+
+def is_stage_2_stock(tic):
+    """[ TACTICAL ] 마크 미너비니 2단계(Stage 2) 상승 국면 정밀 판정"""
+    try:
+        data = yf.download(tic, period="1y", interval="1d", progress=False)
+        if len(data) < 200: return False
+        
+        c = data["Close"].values
+        # 이동평균선 산출
+        sma50 = data["Close"].rolling(50).mean().values[-1]
+        sma150 = data["Close"].rolling(150).mean().values[-1]
+        sma200 = data["Close"].rolling(200).mean().values[-1]
+        sma200_prev = data["Close"].rolling(200).mean().values[-22] # 약 1개월 전
+        
+        low_52w = data["Close"].min()
+        high_52w = data["Close"].max()
+        curr_price = c[-1]
+        
+        # 2단계 조건 (미너비니 Trend Template)
+        cond1 = curr_price > sma150 and curr_price > sma200
+        cond2 = sma150 > sma200
+        cond3 = sma200 > sma200_prev # 200일선 상향
+        cond4 = sma50 > sma150 and sma50 > sma200
+        cond5 = curr_price > sma50
+        cond6 = curr_price >= low_52w * 1.30 # 신저가 대비 30% 이상
+        cond7 = curr_price >= high_52w * 0.75 # 신고가 대비 -25% 이내
+        
+        return all([cond1, cond2, cond3, cond4, cond5, cond6, cond7])
+    except:
+        return False
 
 
 # --- [ DEPRECATED ] Notice function removed per user request ---
@@ -2133,6 +2161,23 @@ def get_pre_breakout_alert():
 
 breakout_msg = get_pre_breakout_alert() if current_user else "로그인 필요"
 
+# --- [ USER CONTROL ] 상단 로그인 정보 및 로그아웃 ---
+if current_user:
+    uc_col1, uc_col2 = st.columns([8, 2])
+    with uc_col2:
+        st.markdown(
+            f"""
+            <div style='text-align: right; margin-bottom: -40px; position: relative; z-index: 10000;'>
+                <span style='color: #888; font-size: 0.85rem;'>로그인: </span>
+                <b style='color: #FFD700; font-size: 0.9rem;'>{current_user}</b>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        if st.button("[ LOGOUT ]", key="top_logout_btn", use_container_width=True):
+            st.session_state.clear()
+            st.rerun()
+
 # --- 🔴 상단 브랜드 헤더 (초정밀 밀착 레이아웃 및 우측 상단 알림) ---
 st.markdown(
     f"""
@@ -2675,27 +2720,74 @@ elif page.startswith("2-c."):
 
 
 elif page.startswith("3-c."):
-    try:
-        st.header("📊 [ ANALYSIS ] 주도주 강도 분석 (Google Sheet RS)")
-        st.markdown("<div class='glass-card'>사령부 공인 구글 스프레드시트 'RS' 탭의 실시간 상대강도 데이터입니다.</div>", unsafe_allow_html=True)
-        
-        # [ DATA SOURCE ] 구글 스프레드시트 RS 탭 (gid=2082735174)
-        sheet_id = "1HbC_U1I78HAdV99X6qS1hmY_RiRGPrHX92AYbBPrIpU"
-        gid = "2082735174"
-        csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
-        
-        df_rs = fetch_rs_sheet_data(csv_url)
-        
-        if not df_rs.empty:
-            st.markdown("#### 🚀 [ LIVE ] 상대강도(RS) 통합 분석 테이블")
-            st.dataframe(
-                df_rs.style.background_gradient(cmap="Greens", subset=[df_rs.columns[2]] if len(df_rs.columns) > 2 else None),
-                use_container_width=True, hide_index=True
-            )
-        else:
-            st.warning("데이터가 비어 있거나 로드 중입니다.")
-    except Exception as e:
-        st.error(f"데이터 로드 실패: {e}")
+    st.header("🎯 [ LEADERS ] 사령부 정예 주도주 5선 (Alpha-Selection)")
+    st.markdown("<div class='glass-card'>구글 시트의 수급 데이터와 사령부의 2단계 상승 국면(Stage 2) 필터를 통과한 최정예 주도주입니다.</div>", unsafe_allow_html=True)
+    
+    SHEET_URL = "https://docs.google.com/spreadsheets/d/1HbC_U1I78HAdV99X6qS1hmY_RiRGPrHX92AYbBPrIpU/export?format=csv&gid=2082735174"
+    
+    with st.spinner("사령부 정예 주도주 선별 엔진 가동 중..."):
+        try:
+            df_raw = pd.read_csv(SHEET_URL)
+            # 1. 빈도 분석 (왼쪽 10개 열 대상)
+            all_mentions = []
+            for col in range(min(10, len(df_raw.columns))):
+                all_mentions.extend(df_raw.iloc[:, col].dropna().astype(str).str.upper().str.strip().tolist())
+            
+            from collections import Counter
+            counts = Counter([m for m in all_mentions if 1 <= len(m) <= 10])
+            
+            # 후보군 (빈도 상위 30개)
+            candidates = [item[0] for item in counts.most_common(30)]
+            
+            # 2. 정밀 필터링 (ROE 5% 이상 + Stage 2)
+            elite_candidates = []
+            for tic in candidates:
+                # ROE 체크
+                roe = get_ticker_roe(tic)
+                if roe >= 5:
+                    # Stage 2 체크
+                    if is_stage_2_stock(tic):
+                        elite_candidates.append(tic)
+                if len(elite_candidates) >= 15: break # 후보군 충분히 확보 시 중단
+            
+            if elite_candidates:
+                # 3. RS 상위 5개 선별
+                df_elite = get_leaderboard_data_v10(elite_candidates)
+                if not df_elite.empty:
+                    top_5 = df_elite.head(5)
+                    
+                    st.subheader("🏆 [ TOP 5 ] 금일의 최정예 전술 종목")
+                    
+                    for i, row in top_5.iterrows():
+                        tic = row['Ticker']
+                        rs_val = row['RS_Weighted']
+                        roe_val = get_ticker_roe(tic)
+                        advice = get_tactical_advice(tic, rs_val, roe_val)
+                        
+                        st.markdown(f"""
+                        <div class='glass-card' style='border-left: 5px solid #FFD700; margin-bottom: 15px;'>
+                            <div style='display: flex; justify-content: space-between;'>
+                                <b style='font-size: 1.3rem; color: #FFD700;'>{i+1}. {row['Name']} ({tic})</b>
+                                <span style='color: #00FF00; font-weight: 800;'>RS: {rs_val:.1f} | ROE: {roe_val:.1f}%</span>
+                            </div>
+                            <div style='margin-top: 15px; color: #DDD; font-size: 0.95rem;'>
+                                <b>[ 선정 사유 ]</b><br>
+                                {'<br>'.join(advice)}
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    # 상세 데이터 테이블
+                    with st.expander("📊 [ DETAIL ] 정예 종목 상세 분석 데이터", expanded=False):
+                        st.dataframe(df_elite.style.format({"Price": "{:,.2f}", "RS_Weighted": "{:.1f}", "3M_Ret": "{:+.1f}%"}), 
+                                     use_container_width=True, hide_index=True)
+                else:
+                    st.warning("선별된 종목의 기술적 지표를 산출할 수 없습니다.")
+            else:
+                st.info("현재 ROE 5% 및 2단계 상승 국면 조건을 동시에 만족하는 종목이 없습니다. 관망을 권고합니다.")
+                
+        except Exception as e:
+            st.error(f"주도주 분석 엔진 가동 실패: {e}")
 
 elif page.startswith("3-b."):
     st.header("🚀 주도주 랭킹 TOP 50 (RS 리더보드)")
@@ -3047,30 +3139,6 @@ elif page.startswith("8-a."):
                 unsafe_allow_html=True,
             )
 
-elif page.startswith("3-c."):
-    st.header("📊 [ STRENGTH ] 주도주 강도 분석 (Google Sheet RS)")
-    st.markdown("<div class='glass-card'>사령부 지정 구글 시트의 RS 데이터를 기반으로 한 정밀 강도 분석입니다.</div>", unsafe_allow_html=True)
-    
-    RS_SHEET_CSV = "https://docs.google.com/spreadsheets/d/1HbC_U1I78HAdV99X6qS1hmY_RiRGPrHX92AYbBPrIpU/gviz/tq?tqx=out:csv&gid=2082735174"
-    
-    with st.spinner("구글 시트 RS 데이터 동기화 중..."):
-        try:
-            df_rs = pd.read_csv(RS_SHEET_CSV)
-            if not df_rs.empty:
-                st.markdown("#### 🏆 [ RS RANKING ] 실시간 주도주 강도 순위")
-                df_rs_clean = df_rs.dropna(how='all', axis=1).dropna(how='any', axis=0)
-                st.dataframe(df_rs_clean, use_container_width=True, hide_index=True)
-                
-                if len(df_rs_clean) > 0:
-                    import plotly.express as px
-                    name_col = df_rs_clean.columns[0]
-                    val_col = df_rs_clean.columns[1] if len(df_rs_clean.columns) > 1 else df_rs_clean.columns[0]
-                    fig = px.bar(df_rs_clean.head(15), x=name_col, y=val_col, color=val_col,
-                                 title="Top 15 주도주 강도 정밀 비교", color_continuous_scale="Viridis")
-                    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font=dict(color="#FFF"))
-                    st.plotly_chart(fig, use_container_width=True)
-            else: st.warning("시트 데이터가 비어 있습니다.")
-        except Exception as e: st.error(f"데이터 로드 실패: {e}")
 
 elif page.startswith("3-d."):
     now_kst = datetime.now(pytz.timezone("Asia/Seoul"))
