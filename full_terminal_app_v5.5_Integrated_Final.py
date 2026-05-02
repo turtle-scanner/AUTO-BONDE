@@ -2172,7 +2172,7 @@ if current_user:
     h, m = divmod(m, 60)
     duration_str = f"{h:02d}:{m:02d}:{s:02d}" if h > 0 else f"{m:02d}:{s:02d}"
 
-    # 2. 통합 패널 레이아웃 (우측 상단 고정 효과)
+    # 2. 통합 패널 레이아웃 (CSS 고도화)
     st.markdown(
         f"""
         <style>
@@ -2181,38 +2181,57 @@ if current_user:
             .stAppHeader {{display: none !important;}}
             [data-testid="stHeader"] {{display: none !important;}}
             
+            /* [좌측 상단] 실시간 포착 알림 - 위치 이동 */
+            .alert-box {{
+                position: fixed; top: 15px; left: 20px; z-index: 10000;
+                background: rgba(255, 75, 75, 0.15); border: 1px solid #FF4B4B;
+                padding: 8px 18px; border-radius: 20px; color: #FFF;
+                font-weight: bold; font-size: 0.85rem; backdrop-filter: blur(10px);
+                animation: pulse-red 2s infinite; box-shadow: 0 0 15px rgba(255,75,75,0.2);
+            }}
+            
+            @keyframes pulse-red {{
+                0% {{ box-shadow: 0 0 0 0 rgba(255, 75, 75, 0.7); }}
+                70% {{ box-shadow: 0 0 0 10px rgba(255, 75, 75, 0); }}
+                100% {{ box-shadow: 0 0 0 0 rgba(255, 75, 75, 0); }}
+            }}
+            
             @keyframes pulse {{
                 0% {{ opacity: 1; transform: scale(1); }}
-                50% {{ opacity: 0.5; transform: scale(1.2); }}
+                50% {{ opacity: 0.5; transform: scale(1.1); }}
                 100% {{ opacity: 1; transform: scale(1); }}
             }}
             
             .stButton > button[kind="secondary"] {{
-                background: linear-gradient(135deg, rgba(255, 0, 0, 0.2), rgba(0, 0, 0, 0.8)) !important;
-                border: 1px solid rgba(255, 0, 0, 0.5) !important;
+                background: linear-gradient(135deg, rgba(255, 0, 0, 0.3), rgba(0, 0, 0, 0.9)) !important;
+                border: 1px solid rgba(255, 0, 0, 0.6) !important;
                 color: #FF4B4B !important;
                 border-radius: 8px !important;
                 font-size: 0.8rem !important;
                 font-weight: 900 !important;
-                letter-spacing: 1px !important;
-                height: 35px !important;
+                width: 100% !important;
+                height: 32px !important;
+                margin-top: -5px !important;
                 transition: all 0.3s ease !important;
             }}
             .stButton > button[kind="secondary"]:hover {{
                 background: #FF4B4B !important;
                 color: #FFF !important;
-                box-shadow: 0 0 20px rgba(255, 75, 75, 0.5) !important;
+                box-shadow: 0 0 20px rgba(255, 75, 75, 0.6) !important;
             }}
         </style>
-        <div style='position: fixed; top: 10px; right: 20px; z-index: 10001;'>
-            <div style='background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(0, 255, 0, 0.3); border-radius: 15px; padding: 12px 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); border-top: 3px solid #00FF00;'>
-                <div style='text-align: right; margin-bottom: 5px;'>
-                    <span style='color: #888; font-size: 0.7rem; font-weight: 900; letter-spacing: 1px;'>COMMANDER</span><br>
-                    <b style='color: #FFD700; font-size: 1.1rem; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);'>{current_user}</b>
+        <div class='alert-box'>
+            🚀 [ 실시간 포착 ] {breakout_msg}
+        </div>
+        <div style='position: fixed; top: 15px; right: 20px; z-index: 10001; width: 180px;'>
+            <div style='background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(25px); border: 1px solid rgba(0, 255, 0, 0.4); border-radius: 12px; padding: 10px 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); border-top: 4px solid #00FF00;'>
+                <div style='text-align: center; margin-bottom: 5px;'>
+                    <p style='color: #888; font-size: 0.65rem; font-weight: 900; margin: 0;'>COMMANDER</p>
+                    <b style='color: #FFD700; font-size: 1.05rem; letter-spacing: 0.5px;'>{current_user}</b>
                 </div>
-                <div style='display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 12px;'>
-                    <div style='width: 8px; height: 8px; background: #00FF00; border-radius: 50%; box-shadow: 0 0 10px #00FF00; animation: pulse 1.5s infinite;'></div>
-                    <span style='color: #00FF00; font-family: "Courier New", monospace; font-size: 0.95rem; font-weight: 800; text-shadow: 0 0 5px #00FF00;'>ACTIVE {duration_str}</span>
+                <div style='display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px;'>
+                    <div style='width: 7px; height: 7px; background: #00FF00; border-radius: 50%; box-shadow: 0 0 10px #00FF00; animation: pulse 1.5s infinite;'></div>
+                    <span style='color: #00FF00; font-family: "Courier New", monospace; font-size: 0.85rem; font-weight: 800;'>{duration_str}</span>
                 </div>
             </div>
         </div>
@@ -2220,27 +2239,17 @@ if current_user:
         unsafe_allow_html=True
     )
     
-    # 3. 실질적인 로그아웃 버튼 (위치 고정을 위해 컬럼 활용)
-    uc_col_1, uc_col_2 = st.columns([8.5, 1.5])
-    with uc_col_2:
-        st.write("<div style='height: 80px;'></div>", unsafe_allow_html=True) # 패널 아래로 버튼 밀어내기
-        if st.button("LOGOUT", key="integrated_logout_btn"):
+    # 3. 로그아웃 버튼 (관제 패널 바로 밑에 밀착)
+    side_col1, side_col2 = st.columns([8.4, 1.6])
+    with side_col2:
+        st.write("<div style='height: 86px;'></div>", unsafe_allow_html=True)
+        if st.button("LOGOUT", key="final_logout_btn"):
             st.session_state.clear()
             st.rerun()
 
-# --- 🔴 상단 브랜드 헤더 (초정밀 밀착 레이아웃 및 우측 상단 알림) ---
+# --- 🔴 상단 브랜드 헤더 (초정밀 밀착 레이아웃) ---
 st.markdown(
     f"""
-    <style>
-    @keyframes pulse-red {{
-        0% {{ box-shadow: 0 0 0 0 rgba(255, 75, 75, 0.7); }}
-        70% {{ box-shadow: 0 0 0 10px rgba(255, 75, 75, 0); }}
-        100% {{ box-shadow: 0 0 0 0 rgba(255, 75, 75, 0); }}
-    }}
-    </style>
-    <div style='position: fixed; top: 15px; right: 20px; z-index: 9999; background: rgba(255, 75, 75, 0.15); border: 1px solid #FF4B4B; padding: 6px 15px; border-radius: 20px; color: #FFF; font-weight: bold; font-size: 0.8rem; backdrop-filter: blur(5px); animation: pulse-red 2s infinite;'>
-        [ 실시간 포착 ] {breakout_msg}
-    </div>
     <div style='text-align: center; margin-top: -30px; margin-bottom: 5px; overflow: visible;'>
         <img src='data:image/png;base64,{logo_b64}' style='width: 110px; margin-bottom: -15px;'>
         <h1 style='font-size: clamp(1.8rem, 7.5vw, 3.8rem); font-weight: 900; background: linear-gradient(45deg, #FFD700, #FFFFFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 10px 20px rgba(0,0,0,0.5); white-space: nowrap; margin-bottom: 0px; line-height: 1.1;'>StockDragonfly</h1>
