@@ -1972,7 +1972,6 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
     
-    # [ ACTION ] 모든 로컬 파일 경로를 /static/ 으로 변경
     bgm_options = {
         "[ MUTE ] Silence": None,
         "[ MIX ] Random Mix": "shuffle",
