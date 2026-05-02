@@ -1,0 +1,41 @@
+name: RECOVERY DEPLOY
+
+on:
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  recovery_deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Sync Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Force Clear Port 8501
+        run: |
+          # Kill EVERYTHING using port 8501
+          sudo fuser -k 8501/tcp || true
+          sudo pkill -9 -f streamlit || true
+          sleep 2
+
+      - name: Launch Platinum V6.0 Terminal
+        run: |
+          # Start the actual app.py on port 8501
+          nohup streamlit run app.py --server.port 8501 --server.headless true > terminal.log 2>&1 &
+          
+      - name: Launch Gemini Telegram Bot
+        run: |
+          sudo pkill -f gemini_interactive_bot || true
+          nohup python gemini_interactive_bot.py > bot.log 2>&1 &
+          disown
+          
+      - name: Final Verification
+        run: |
+          sleep 5
+          echo "--- ACTIVE STREAMLIT PROCESS ---"
+          ps aux | grep streamlit | grep -v grep
+          echo "--- NETWORK STATUS (SS) ---"
+          ss -tulpn | grep 8501 || echo "Port 8501 not listening yet, but check browser in 30s."
