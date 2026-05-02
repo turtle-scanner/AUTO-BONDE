@@ -1959,36 +1959,27 @@ with st.sidebar:
                 unsafe_allow_html=True,
             )
 
-    # --- [ AUDIO ] 고도화된 전술 BGM 제어판 (Ultra-Performance) ---
+    # --- [ AUDIO ] 고도화된 전술 BGM 제어판 (Static-Stream Mode) ---
     st.divider()
     st.markdown(
-        "<p style='font-weight:bold; font-size:0.8rem; color:#888;'>[ AUDIO ] TACTICAL BGM PLAYER</p>",
+        "<p style='font-weight:bold; font-size:0.8rem; color:#888;'>[ AUDIO ] TACTICAL BGM PLAYER (High-Speed)</p>",
         unsafe_allow_html=True,
     )
     
+    # [ ACTION ] 모든 로컬 파일 경로를 /static/ 으로 변경
     bgm_options = {
         "[ MUTE ] Silence": None,
         "[ MIX ] Random Mix": "shuffle",
-        "[ BGM ] You Raise Me Up": "audio/YouRaise.mp3",
-        "[ BGM ] My Bonde": "audio/my bonde.mp3",
-        "[ BGM ] Hope & Joy": "audio/hope.mp3",
-        "[ BGM ] Happy Day": "audio/happy.mp3",
-        "[ BGM ] Cute Style": "audio/cute.mp3",
-        "[ BGM ] Forest Bird": "audio/bird.mp3",
-        "[ BGM ] Petty": "audio/petty.mp3",
-        "[ BGM ] Full Power": "audio/full.mp3",
+        "[ BGM ] You Raise Me Up": "static/YouRaise.mp3",
+        "[ BGM ] My Bonde": "static/my bonde.mp3",
+        "[ BGM ] Hope & Joy": "static/hope.mp3",
+        "[ BGM ] Happy Day": "static/happy.mp3",
+        "[ BGM ] Cute Style": "static/cute.mp3",
+        "[ BGM ] Forest Bird": "static/bird.mp3",
+        "[ BGM ] Petty": "static/petty.mp3",
+        "[ BGM ] Full Power": "static/full.mp3",
         "[ BGM ] Tactical Force": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
     }
-
-    @st.cache_data(show_spinner=False, ttl=3600)
-    def get_base64_audio_v2(file_path):
-        try:
-            if os.path.exists(file_path):
-                with open(file_path, "rb") as f:
-                    data = f.read()
-                    return base64.b64encode(data).decode()
-        except: pass
-        return None
 
     sel_bgm_v9 = st.selectbox("BGM Select", list(bgm_options.keys()), index=0, label_visibility="collapsed")
     vol_v9 = st.slider("[ VOL ] Volume", 0.0, 1.0, 0.4, step=0.05)
@@ -2002,49 +1993,41 @@ with st.sidebar:
         target_bgm_v9 = st.session_state.shuffled_bgm
 
     if target_bgm_v9:
-        audio_src = target_bgm_v9
-        if not target_bgm_v9.startswith("http"):
-            b64_data = get_base64_audio_v2(target_bgm_v9)
-            if b64_data:
-                audio_src = f"data:audio/mp3;base64,{b64_data}"
-            else:
-                audio_src = ""
+        audio_src = target_bgm_v9 if target_bgm_v9.startswith("http") else f"./{target_bgm_v9}"
 
-        if audio_src:
-            st.components.v1.html(f"""
-                <div style="text-align: center; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px dashed #555;">
-                    <p style="color: #FFD700; font-size: 0.75rem; margin: 0 0 8px 0; font-weight: bold;">🔊 BGM 엔진이 대기 중입니다. 아래 버튼을 눌러 소리를 활성화하세요.</p>
-                    <button id="play-btn" style="background: #FFD700; color: #000; border: none; padding: 5px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">[ 🔊 SOUND ON ]</button>
-                    <audio id="bgm-audio" loop>
-                        <source src="{audio_src}" type="audio/mp3">
-                    </audio>
-                </div>
-                <script>
-                    var audio = document.getElementById("bgm-audio");
-                    var btn = document.getElementById("play-btn");
-                    audio.volume = {vol_v9};
-                    
-                    btn.addEventListener('click', function() {{
-                        audio.play().then(() => {{
-                            btn.innerText = "🔊 PLAYING...";
-                            btn.style.background = "#00FF00";
-                            btn.style.cursor = "default";
-                        }}).catch(e => {{
-                            alert("소리 재생 실패: 브라우저 설정을 확인하세요.");
-                        }});
+        st.components.v1.html(f"""
+            <div style="text-align: center; background: rgba(0,255,0,0.05); padding: 12px; border-radius: 10px; border: 1px solid #00FF0033;">
+                <p style="color: #00FF00; font-size: 0.8rem; margin: 0 0 10px 0; font-weight: bold; text-shadow: 0 0 5px #00FF00;">📡 BGM 엔진 고속 스트리밍 모드 가동 중</p>
+                <button id="play-btn" style="background: linear-gradient(135deg, #00FF00, #008800); color: #000; border: none; padding: 8px 20px; border-radius: 6px; font-weight: 900; cursor: pointer; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(0,255,0,0.3);">[ 🔊 SOUND ACTIVATE ]</button>
+                <audio id="bgm-audio" loop>
+                    <source src="{audio_src}" type="audio/mp3">
+                </audio>
+            </div>
+            <script>
+                var audio = document.getElementById("bgm-audio");
+                var btn = document.getElementById("play-btn");
+                audio.volume = {vol_v9};
+                
+                btn.addEventListener('click', function() {{
+                    audio.play().then(() => {{
+                        btn.innerText = "🔊 AUDIO ACTIVE";
+                        btn.style.background = "#222";
+                        btn.style.color = "#00FF00";
+                        btn.style.border = "1px solid #00FF00";
+                    }}).catch(e => {{
+                        alert("재생 실패: 서버에서 파일을 찾을 수 없거나 브라우저 문제입니다.");
                     }});
-                    
-                    // 자동 재생 시도
-                    setTimeout(() => {{
-                        audio.play().then(() => {{
-                            btn.style.display = "none";
-                        }}).catch(e => {{
-                            console.log("Autoplay blocked, waiting for click");
-                        }});
-                    }}, 500);
-                </script>
-            """, height=80)
-            st.caption(f"🎵 Current Selection: {sel_bgm_v9}")
+                }});
+
+                // 자동 재생 시도
+                setTimeout(() => {{
+                    audio.play().then(() => {{
+                        btn.style.display = "none";
+                    }}).catch(e => {{ console.log("Autoplay blocked"); }});
+                }}, 300);
+            </script>
+        """, height=100)
+        st.caption(f"🎵 Streaming: {sel_bgm_v9}")
         else:
             st.error(f"⚠️ [ BGM ] 파일을 로드할 수 없습니다: {target_bgm_v9}")
 
