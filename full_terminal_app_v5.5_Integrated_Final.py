@@ -3650,6 +3650,136 @@ elif page.startswith("6-a."):
             st.markdown(table_html, unsafe_allow_html=True)
 
 
+elif page.startswith("1-b."):
+    st.header("[ HR ] HQ 인적 자원 사령부 (Member HR Command)")
+    users = load_users()
+
+    # 사령관(방장) 전용 보안
+    if users.get(st.session_state.current_user, {}).get("grade") != "방장":
+        st.error("[ ERROR ] 이 전술 구역은 사령관(방장) 전용입니다. 권한이 없습니다.")
+        st.stop()
+
+    st.markdown(
+        "<div class='glass-card'>사령관의 권위로 대원의 등급을 조정하거나 사령부에서 즉각 제명(삭제)하는 인사권을 행사합니다.</div>",
+        unsafe_allow_html=True,
+    )
+
+    # 🛡️ 사령부 데이터 동기화 및 복구 센터 (통합 관리)
+    st.subheader("[ CLOUD ] 클라우드 데이터 동기화 및 복구 센터")
+    with st.expander(
+        "[ DATA ] 구글 시트 양방향 동기화 (불러오기 / 백업)", expanded=True
+    ):
+        st.markdown("""
+        사령부 명부와 구글 시트 데이터를 동기화합니다. 
+        - **불러오기 (Import):** 구글 시트에 저장된 최신 명단을 가져와 현재 터미널을 업데이트합니다.
+        - **백업 (Export):** 현재 터미널의 모든 대원 정보를 구글 시트(클라우드)로 안전하게 전송합니다.
+        """)
+
+        c_sync1, c_sync2 = st.columns(2)
+        with c_sync1:
+            if st.button(
+                "[ IMPORT ] 클라우드 명단 불러오기 (Import)",
+                use_container_width=True,
+                key="import_btn",
+            ):
+                with st.spinner("구글 시트 데이터 수신 및 무결성 검사 중..."):
+                    if "gs_error" in st.session_state:
+                        del st.session_state["gs_error"]
+                    load_users.clear()
+                    users = load_users()
+
+                    if "gs_error" in st.session_state:
+                        st.error(st.session_state["gs_error"])
+                    elif users:
+                        # 🛡️ 빈 문자열 아이디 필터링
+                        users = {k: v for k, v in users.items() if k.strip()}
+                        save_users(users)
+                        st.success(
+                            f"[ SUCCESS ] 클라우드에서 {len(users)}명의 요원 정보를 성공적으로 수신하여 동기화했습니다."
+                        )
+                        st.rerun()
+                    else:
+                        st.warning(
+                            "[ WARNING ] 시트에서 데이터를 가져왔으나 등록된 대원 정보가 없습니다."
+                        )
+
+        with c_sync2:
+            if st.button(
+                "[ EXPORT ] 현재 명단 클라우드 백업 (Export)",
+                use_container_width=True,
+                key="export_btn",
+            ):
+                with st.spinner("사령부 명부 데이터 전송 중..."):
+                    count = 0
+                    for uid, udata in users.items():
+                        info = udata.get("info", {})
+                        gsheet_sync(
+                            "회원명단",
+                            [
+                                "아이디",
+                                "비밀번호",
+                                "상태",
+                                "등급",
+                                "지역",
+                                "연령대",
+                                "성별",
+                                "경력",
+                                "가입일",
+                                "매매동기",
+                            ],
+                            [
+                                uid,
+                                udata.get("password", ""),
+                                udata.get("status", "approved"),
+                                udata.get("grade", "회원"),
+                                info.get("region", "-"),
+                                info.get("age", "-"),
+                                info.get("gender", "-"),
+                                info.get("exp", "-"),
+                                info.get("joined_at", "-"),
+                                info.get("motivation", "-"),
+                            ],
+                        )
+                        count += 1
+                    st.success(
+                        f"[ SUCCESS ] 총 {count}명의 대원 정보가 구글 시트에 안전하게 백업되었습니다!"
+                    )
+                    st.balloons()
+
+    st.divider()
+    st.subheader("[ DIRECTORY ] 전체 대원 리스트 관리")
+
+    # 자신을 제외한 대원 리스트
+    m_list = [u for u in users.keys() if u != st.session_state.current_user]
+
+    if m_list:
+        for u in m_list:
+            udata = users[u]
+            uinfo = udata.get("info", {})
+            with st.expander(f"[ ID: {u} ] (현재 보직: {udata.get('grade', '회원')})"):
+                c1, c2, c3 = st.columns([2, 1.5, 1])
+                with c1:
+                    st.write(f"📍 거주지: {uinfo.get('region', '-')}")
+                    st.write(f"📊 경력: {uinfo.get('exp', '-')}")
+                    st.write(f"🕯️ 나이: {uinfo.get('age', '-')}")
+                with c2:
+                    current_idx = (
+                        ["회원", "정규직", "관리자"].index(udata.get("grade", "회원"))
+                        if udata.get("grade") in ["회원", "정규직", "관리자"]
+                        else 0
+                    )
+                    new_grade = st.selectbox(
+                        f"보직 변경 (ID:{u})",
+                        ["회원", "정규직", "관리자"],
+                        key=f"grade_sel_{u}",
+                        index=current_idx,
+                    )
+                    if st.button(f"인사발령 (ID:{u})", key=f"btn_grade_{u}"):
+                        users[u]["grade"] = new_grade
+                        save_users(users)
+                        st.success(f"✅ {u} 요원이 {new_grade}(으)로 발령되었습니다.")
+                        st.rerun()
+
 elif page.startswith("6-c."):
     st.header("[ APPLY ] 방문자 승격 신청서")
     st.markdown(
@@ -3933,11 +4063,15 @@ elif page.startswith("5-d."):
     )
 
 elif page.startswith("5-e."):
-    st.header("[ GAIN ] 실전 익절 자랑방 (Hall of Gain)")
-    st.markdown(
-        "<div class='glass-card'>지옥 같은 시장을 이겨내고 획득한 귀중한 전리품(익절)을 사령부 전역에 자랑하세요!</div>",
-        unsafe_allow_html=True,
-    )
+    st.header("[ HUB ] 사령부 지식 및 승리 공유 센터")
+    
+    tab_gain, tab_study = st.tabs(["[ GAIN ] 실전 익절 자랑방", "[ STUDY ] 주식 용어공부"])
+
+    with tab_gain:
+        st.markdown(
+            "<div class='glass-card'>지옥 같은 시장을 이겨내고 획득한 귀중한 전리품(익절)을 사령부 전역에 자랑하세요!</div>",
+            unsafe_allow_html=True,
+        )
 
     if not os.path.exists(PROFIT_FILE):
         safe_write_csv(
@@ -4152,6 +4286,53 @@ elif page.startswith("5-e."):
             st.error(f"[ ERROR ] 첩보 목록을 렌더링하는 중 오류가 발생했습니다: {e}")
     else:
         st.info("아직 도착한 익절 첩보가 없습니다. 첫 주인공이 되어보세요!")
+
+    with tab_study:
+        st.markdown(
+            "<div class='glass-card'>사령부의 전술적 언어를 통일하고, 시장의 본질을 꿰뚫는 용어들을 정립하는 지식의 전당입니다.</div>",
+            unsafe_allow_html=True,
+        )
+
+        TERMS_FILE = "terms_db.csv"
+        if not os.path.exists(TERMS_FILE):
+            safe_write_csv(pd.DataFrame(columns=["시간", "작성자", "용어", "설명"]), TERMS_FILE)
+
+        with st.expander("[ ACTION ] 새로운 전술 용어 하달하기", expanded=False):
+            with st.form("term_form", clear_on_submit=True):
+                new_term = st.text_input("용어 (Term)", placeholder="예: Episodic Pivot (EP)")
+                new_desc = st.text_area("설명 (Description)", placeholder="용어에 대한 상세 전술적 정의를 입력하세요.")
+                if st.form_submit_button("[ EXEC ] 지식 하달"):
+                    if new_term and new_desc:
+                        now_t = datetime.now(pytz.timezone("Asia/Seoul")).strftime("%Y-%m-%d %H:%M")
+                        u = st.session_state.current_user
+                        new_term_df = pd.DataFrame([[now_t, u, new_term, new_desc]], columns=["시간", "작성자", "용어", "설명"])
+                        safe_write_csv(new_term_df, TERMS_FILE, mode="a", header=False)
+                        st.success(f"✅ '{new_term}' 용어가 사령부 지식고에 등록되었습니다.")
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error("❌ 용어와 설명은 필수 입력 사항입니다.")
+
+        # 용어 목록 표시
+        tdf = safe_read_csv(TERMS_FILE, ["시간", "작성자", "용어", "설명"])
+        if not tdf.empty:
+            for _, row in tdf.iloc[::-1].iterrows():
+                st.markdown(
+                    f"""
+                    <div style='background: rgba(255,215,0,0.05); border-left: 5px solid #FFD700; border-radius: 8px; padding: 15px; margin-bottom: 10px;'>
+                        <div style='display: flex; justify-content: space-between;'>
+                            <b style='color: #FFD700; font-size: 1.2rem;'>{row["용어"]}</b>
+                            <span style='color: #666; font-size: 0.8rem;'>{row["시간"]} | {row["작성자"]}</span>
+                        </div>
+                        <div style='margin-top: 10px; color: #EEE; line-height: 1.6;'>
+                            {row["설명"]}
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+        else:
+            st.info("아직 등록된 용어가 없습니다. 사령부의 첫 번째 지식을 기록해 주세요.")
 
 
 elif page.startswith("5-f."):
@@ -4775,41 +4956,41 @@ elif page.startswith("5-b."):
         )
 
     with tab2:
-        st.subheader("2. 트레이닝 룸: 실전 타점 훈련")
+        st.subheader("2. 트레이닝 룸: 주도주 6선 정예 타점 훈련")
         st.markdown(
-            "<div class='glass-card'>차트를 보고 직접 매수 급소를 클릭하며 실전 감각을 기르는 인터랙티브 훈련장입니다.</div>",
+            "<div class='glass-card'>현재 시장을 지배하는 'Elite 6' 주도주들의 차트를 동시에 관제하며 실전 타점을 연마하십시오.</div>",
             unsafe_allow_html=True,
         )
 
-        cc1, cc2 = st.columns([2, 1])
-        with cc1:
-            st.markdown(
-                """
-            <div style='height: 400px; display: flex; align-items: center; justify-content: center; background: #111; border: 2px dashed #444; border-radius: 15px;'>
-                <div style='text-align: center; color: #666;'>
-                    <h3>[피벗 포인트 퀴즈 모드]</h3>
-                    <p>랜덤 과거 차트 로드 중... 타점을 클릭하세요.</p>
-                </div>
-            </div>
-            """,
-                unsafe_allow_html=True,
-            )
-        with cc2:
-            st.markdown("#### 🛡️ 훈련 지침")
-            st.warning("""
-            **반사 신경 강화:**  
-            장중에 머리로 고민하지 않고 손이 먼저 반응하도록 무한 반복 훈련합니다.
-            """)
-            if st.button("[ RUN ] 무작위 훈련 시작"):
-                st.toast(
-                    "사령부 데이터베이스에서 무작위 폭등주 과거 차트를 추출합니다."
-                )
+        # 주도주 6선 정의
+        elite_stocks = {
+            "NVIDIA (NVDA)": "NVDA",
+            "Alphabet A (GOOGL)": "GOOGL",
+            "AMD": "AMD",
+            "ARM": "ARM",
+            "SK Hynix": "000660.KS",
+            "Microsoft (MSFT)": "MSFT"
+        }
 
-            st.markdown("---")
-            st.markdown("**전술 피드백:**")
-            st.info(
-                "클릭 결과에 따라 본데의 철학이 담긴 정교한 해설과 뼈 때리는 일침이 제공됩니다."
-            )
+        # 3x2 그리드 배치
+        rows = [st.columns(3), st.columns(3)]
+        stock_items = list(elite_stocks.items())
+        
+        for i in range(2):
+            for j in range(3):
+                idx = i * 3 + j
+                if idx < len(stock_items):
+                    name, symbol = stock_items[idx]
+                    with rows[i][j]:
+                        st.markdown(f"<p style='color:#FFD700; font-weight:bold; margin-bottom:5px;'>{name}</p>", unsafe_allow_html=True)
+                        st.components.v1.html(
+                            f"""
+                            <iframe src='https://s.tradingview.com/widgetembed/?symbol={symbol}&interval=D&theme=dark' width='100%' height='300'></iframe>
+                            """,
+                            height=310
+                        )
+
+        st.info("[ SPEED-UP ] 핵심 주도주 6선에 리소스를 집중하여 로딩 속도를 최적화했습니다. 불필요한 차트 호출을 배제합니다.")
 
     with tab3:
         st.subheader("3. 라이브 아카메디: 현재 주도주 실시간 분석")
