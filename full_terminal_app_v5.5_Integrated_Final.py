@@ -1994,7 +1994,8 @@ with st.sidebar:
 
     try:
         if target_bgm_v9:
-            audio_src = target_bgm_v9 if target_bgm_v9.startswith("http") else f"./{target_bgm_v9}"
+            # [ ACTION ] 스트리밍 경로를 절대 경로(/static/)로 명확히 지정
+            audio_src = target_bgm_v9 if target_bgm_v9.startswith("http") else f"static/{target_bgm_v9.split('/')[-1]}"
 
             # 로컬 파일의 경우 존재 여부 최종 확인
             if not target_bgm_v9.startswith("http") and not os.path.exists(target_bgm_v9):
