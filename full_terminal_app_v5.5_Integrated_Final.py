@@ -70,6 +70,13 @@ def get_stock_name(ticker):
     # 네트워크 지연 방지를 위해 yfinance 호출 최소화 (필요시 캐시 활용)
     return ticker
 
+@st.cache_data(ttl=300)  # 5분간 캐시 유지로 속도 극대화
+def fetch_rs_sheet_data(url):
+    try:
+        return pd.read_csv(url).dropna(how='all')
+    except:
+        return pd.DataFrame()
+
 # --- [ SYSTEM ] [GLOBAL HELPER] SSL Fix for Environments with Certificate Issues ---
 os.environ["CURL_CA_BUNDLE"] = ""
 os.environ["REQUESTS_CA_BUNDLE"] = ""
@@ -2726,12 +2733,6 @@ elif page.startswith("2-c."):
             st.warning("분석할 수 있는 주도주 데이터가 충분하지 않습니다. 스캐너를 먼저 가동해 주세요.")
 
 
-@st.cache_data(ttl=300)  # 5분간 캐시 유지로 속도 극대화
-def fetch_rs_sheet_data(url):
-    try:
-        return pd.read_csv(url).dropna(how='all')
-    except:
-        return pd.DataFrame()
 
 elif page.startswith("3-c."):
     try:
