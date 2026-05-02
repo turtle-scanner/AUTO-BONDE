@@ -6,7 +6,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "StockDragonfly v6.0 | Elite Trading Terminal",
+  title: "StockDragonfly v6.0 | PLATINUM COMMAND",
   description: "Next-generation algorithmic trading and market analysis dashboard.",
 };
 
@@ -17,9 +17,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet" />
+      </head>
       <body>
         <div className="terminal-overlay"></div>
         <div className="scanlines"></div>
+        
         <div className="layout-container">
           <aside className="sidebar glass">
             <div className="logo-container">
@@ -29,7 +35,6 @@ export default function RootLayout({
               <span className="label">[ MISSION CONTROL ]</span>
             </div>
             <nav className="nav-menu mission-scroll">
-              {/* HQ */}
               <div className="nav-group">
                 <div className="group-header">[ HQ ] 1. 본부 사령부</div>
                 <div className="sub-menu">
@@ -40,7 +45,6 @@ export default function RootLayout({
                 </div>
               </div>
 
-              {/* MARKET */}
               <div className="nav-group">
                 <div className="group-header">[ MARKET ] 2. 시장 상황실</div>
                 <div className="sub-menu">
@@ -52,7 +56,6 @@ export default function RootLayout({
                 </div>
               </div>
 
-              {/* TARGET */}
               <div className="nav-group">
                 <div className="group-header">[ TARGET ] 3. 주도주 추격대</div>
                 <div className="sub-menu">
@@ -64,12 +67,10 @@ export default function RootLayout({
                 </div>
               </div>
 
-              {/* RISK / PORTFOLIO */}
               <Link href="/portfolio" className="nav-item mission-btn">
                 <span className="tag">[ RISK ]</span> 4. 전략 및 리스크
               </Link>
 
-              {/* ACADEMY */}
               <div className="nav-group">
                 <div className="group-header">[ ACADEMY ] 5. 마스터 훈련소</div>
                 <div className="sub-menu">
@@ -82,7 +83,6 @@ export default function RootLayout({
                 </div>
               </div>
 
-              {/* SQUARE */}
               <div className="nav-group">
                 <div className="group-header">[ SQUARE ] 6. 안티그래비티 광장</div>
                 <div className="sub-menu">
@@ -92,7 +92,6 @@ export default function RootLayout({
                 </div>
               </div>
 
-              {/* AUTO */}
               <div className="nav-group">
                 <div className="group-header">[ AUTO ] 7. 자동매매 사령부</div>
                 <div className="sub-menu">
@@ -104,7 +103,6 @@ export default function RootLayout({
                 </div>
               </div>
 
-              {/* STRATEGY */}
               <div className="nav-group">
                 <div className="group-header">[ STRATEGY ] 8. AI 거장들의 전술</div>
                 <div className="sub-menu">
@@ -130,24 +128,6 @@ export default function RootLayout({
             <header className="top-nav glass">
               <div className="search-bar">
                 <input type="text" placeholder="Search tickers, strategies, or commands..." className="glass" />
-              </div>
-              <div className="market-ticker glass">
-                <div className="ticker-track">
-                  {[
-                    { name: "KOSPI", val: "2,750.32", delta: "+1.2%" },
-                    { name: "KOSDAQ", val: "892.15", delta: "+0.8%" },
-                    { name: "NASDAQ", val: "16,397.64", delta: "+1.5%" },
-                    { name: "DOW", val: "39,127.14", delta: "+0.4%" },
-                    { name: "S&P 500", val: "5,211.49", delta: "+1.1%" },
-                  ].map((idx, i) => (
-                    <div key={i} className="ticker-index">
-                      <span className="idx-name">{idx.name}</span>
-                      <span className="idx-val">{idx.val}</span>
-                      <span className="idx-delta status-up">{idx.delta}</span>
-                    </div>
-                  ))}
-                  {/* Duplicate for seamless loop if needed, or use CSS animation */}
-                </div>
               </div>
               <div className="header-actions">
                 <DigitalClock />
