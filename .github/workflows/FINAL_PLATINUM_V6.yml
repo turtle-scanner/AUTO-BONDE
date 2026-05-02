@@ -27,7 +27,8 @@ jobs:
 
       - name: Create Environment File
         run: |
-          echo "KIS_APP_KEY=${{ secrets.KIS_APP_KEY }}" > .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+          echo "KIS_APP_KEY=${{ secrets.KIS_APP_KEY }}" >> .env
           echo "KIS_APP_SECRET=${{ secrets.KIS_APP_SECRET }}" >> .env
           echo "KIS_ACCOUNT_NO=${{ secrets.KIS_ACCOUNT_NO }}" >> .env
           echo "KIS_MOCK_TRADING=${{ secrets.KIS_MOCK_TRADING }}" >> .env
