@@ -18,6 +18,8 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
+        <div className="terminal-overlay"></div>
+        <div className="scanlines"></div>
         <div className="layout-container">
           <aside className="sidebar glass">
             <div className="logo-container">
