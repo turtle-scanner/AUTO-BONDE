@@ -2175,24 +2175,18 @@ if current_user:
     # 2. 통합 패널 레이아웃 (우측 상단 고정 효과)
     st.markdown(
         f"""
-        <div style='position: fixed; top: 15px; right: 20px; z-index: 10001;'>
-            <div style='background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(0, 255, 0, 0.3); border-radius: 15px; padding: 12px 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); border-top: 3px solid #00FF00;'>
-                <div style='text-align: right; margin-bottom: 5px;'>
-                    <span style='color: #888; font-size: 0.7rem; font-weight: 900; letter-spacing: 1px;'>COMMANDER</span><br>
-                    <b style='color: #FFD700; font-size: 1.1rem; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);'>{current_user}</b>
-                </div>
-                <div style='display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 12px;'>
-                    <div style='width: 8px; height: 8px; background: #00FF00; border-radius: 50%; box-shadow: 0 0 10px #00FF00; animation: pulse 1.5s infinite;'></div>
-                    <span style='color: #00FF00; font-family: "Courier New", monospace; font-size: 0.95rem; font-weight: 800; text-shadow: 0 0 5px #00FF00;'>ACTIVE {duration_str}</span>
-                </div>
-            </div>
-        </div>
         <style>
+            /* Streamlit 기본 헤더 및 툴바 숨기기 */
+            header {{visibility: hidden !important; height: 0px !important;}}
+            .stAppHeader {{display: none !important;}}
+            [data-testid="stHeader"] {{display: none !important;}}
+            
             @keyframes pulse {{
                 0% {{ opacity: 1; transform: scale(1); }}
                 50% {{ opacity: 0.5; transform: scale(1.2); }}
                 100% {{ opacity: 1; transform: scale(1); }}
             }}
+            
             .stButton > button[kind="secondary"] {{
                 background: linear-gradient(135deg, rgba(255, 0, 0, 0.2), rgba(0, 0, 0, 0.8)) !important;
                 border: 1px solid rgba(255, 0, 0, 0.5) !important;
@@ -2210,6 +2204,18 @@ if current_user:
                 box-shadow: 0 0 20px rgba(255, 75, 75, 0.5) !important;
             }}
         </style>
+        <div style='position: fixed; top: 10px; right: 20px; z-index: 10001;'>
+            <div style='background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(0, 255, 0, 0.3); border-radius: 15px; padding: 12px 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); border-top: 3px solid #00FF00;'>
+                <div style='text-align: right; margin-bottom: 5px;'>
+                    <span style='color: #888; font-size: 0.7rem; font-weight: 900; letter-spacing: 1px;'>COMMANDER</span><br>
+                    <b style='color: #FFD700; font-size: 1.1rem; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);'>{current_user}</b>
+                </div>
+                <div style='display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 12px;'>
+                    <div style='width: 8px; height: 8px; background: #00FF00; border-radius: 50%; box-shadow: 0 0 10px #00FF00; animation: pulse 1.5s infinite;'></div>
+                    <span style='color: #00FF00; font-family: "Courier New", monospace; font-size: 0.95rem; font-weight: 800; text-shadow: 0 0 5px #00FF00;'>ACTIVE {duration_str}</span>
+                </div>
+            </div>
+        </div>
         """,
         unsafe_allow_html=True
     )
