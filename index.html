@@ -4,566 +4,335 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>STOCK DRAGONFLY V6.0 | Platinum Command</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Premium Typography & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {
-            --bg-color: #05070a;
-            --card-bg: rgba(15, 18, 25, 0.8);
+            --primary: #fef01b; /* Dragonfly Yellow */
+            --primary-dark: #d4c815;
+            --bg-dark: #05070a;
             --glass-bg: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.08);
-            --primary: #fef01b; /* Dragonfly Yellow */
-            --primary-glow: rgba(254, 240, 27, 0.3);
-            --accent-blue: #00d2ff;
-            --accent-purple: #a855f7;
+            --text-main: #ffffff;
+            --text-muted: #8e9297;
             --success: #00ff88;
-            --danger: #ff0055;
-            --text-main: #e2e8f0;
-            --text-muted: #94a3b8;
+            --danger: #ff4b4b;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-        body { background: var(--bg-color); color: var(--text-main); overflow-x: hidden; min-height: 100vh; }
-
-        .hidden { display: none !important; }
-
-        /* --- Animations --- */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* --- Login Overlay --- */
-        #login-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #1a1c24, #05070a);
-            display: flex; justify-content: center; align-items: center; z-index: 10000;
-        }
-        .login-card {
-            background: var(--card-bg); backdrop-filter: blur(20px);
-            padding: 3rem; border-radius: 24px; border: 1px solid var(--glass-border);
-            width: 100%; max-width: 420px; text-align: center;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            animation: fadeIn 0.6s ease-out;
-        }
-        .login-logo { margin-bottom: 2rem; }
-        .login-logo img { height: 120px; filter: drop-shadow(0 0 15px var(--primary-glow)); border-radius: 12px; }
-        .login-title { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem; }
-        .login-subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 2rem; }
-        .input-group { position: relative; margin-bottom: 1.5rem; text-align: left; }
-        .input-group label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-        .input-group input {
-            width: 100%; padding: 1rem; background: rgba(255,255,255,0.03);
-            border: 1px solid var(--glass-border); border-radius: 12px;
-            color: white; font-size: 1rem; outline: none; transition: all 0.3s;
-        }
-        .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(254, 240, 27, 0.1); }
-        .login-btn {
-            width: 100%; padding: 1rem; background: var(--primary); color: #000;
-            border: none; border-radius: 12px; font-weight: 800; font-size: 1rem;
-            cursor: pointer; transition: all 0.3s; margin-top: 1rem;
-        }
-        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(254, 240, 27, 0.2); }
-
-        /* --- Exam Overlay --- */
-        #exam-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #05070a; z-index: 9000; overflow-y: auto; padding: 2rem;
-        }
-        .exam-container { max-width: 800px; margin: 0 auto; animation: fadeIn 0.5s ease-out; }
-        .exam-header {
-            background: var(--card-bg); backdrop-filter: blur(10px); padding: 2rem;
-            border-radius: 20px; border: 1px solid var(--glass-border); margin-bottom: 2rem;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .exam-title h2 { color: var(--primary); font-weight: 800; }
-        .exam-timer { font-size: 1.5rem; font-weight: 800; color: var(--danger); font-variant-numeric: tabular-nums; }
-        .question-card {
-            background: var(--card-bg); padding: 2rem; border-radius: 20px;
-            border: 1px solid var(--glass-border); margin-bottom: 1.5rem;
-        }
-        .question-text { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.5rem; line-height: 1.5; }
-        .options-list { display: grid; gap: 10px; }
-        .option-label {
-            padding: 1rem 1.5rem; background: rgba(255,255,255,0.02);
-            border: 1px solid var(--glass-border); border-radius: 12px;
-            cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px;
-        }
-        .option-label:hover { background: rgba(255,255,255,0.05); border-color: var(--text-muted); }
-        .option-label.selected { background: rgba(254, 240, 27, 0.1); border-color: var(--primary); color: var(--primary); }
-        .option-label input { display: none; }
-        .submit-exam-btn {
-            width: 100%; padding: 1.5rem; background: var(--primary); color: #000;
-            border: none; border-radius: 16px; font-weight: 800; font-size: 1.2rem;
-            cursor: pointer; margin-top: 2rem; margin-bottom: 4rem;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Noto+Sans+KR', sans-serif;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% -20%, #1a1e26 0%, #05070a 100%);
         }
 
-        /* --- Dashboard Content --- */
-        #dashboard-root { padding: 2rem; max-width: 1440px; margin: 0 auto; display: none; }
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+
+        /* --- Global Styles --- */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover { border-color: rgba(254, 240, 27, 0.3); transform: translateY(-2px); }
+
+        /* --- Header --- */
         .header-bar {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 1.5rem 2rem; background: var(--card-bg); backdrop-filter: blur(10px);
-            border-radius: 20px; border: 1px solid var(--glass-border); margin-bottom: 2rem;
+            height: 80px; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between;
+            background: rgba(5, 7, 10, 0.8); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 1000;
         }
         .brand { display: flex; align-items: center; gap: 1rem; }
-        .brand img { height: 50px; border-radius: 8px; }
-        .brand h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
-        .brand span { font-weight: 300; color: var(--text-muted); }
+        .brand img { width: 50px; filter: drop-shadow(0 0 10px rgba(254, 240, 27, 0.5)); }
+        .brand h1 { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; font-weight: 900; letter-spacing: 2px; }
+        .brand h1 span { color: var(--primary); font-size: 0.8rem; vertical-align: middle; margin-left: 5px; opacity: 0.8; }
+
+        /* --- Layout --- */
+        .dashboard-root { display: flex; min-height: 100vh; padding-top: 80px; }
         
-        .grid-layout { display: grid; grid-template-columns: 1fr 350px; gap: 2rem; }
-        .main-col { display: flex; flex-direction: column; gap: 2rem; }
-        .side-col { display: flex; flex-direction: column; gap: 2rem; }
-
-        .glass-card {
-            background: var(--card-bg); backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border); border-radius: 24px; padding: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        .card-title { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px; }
-        
-        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
-        .stat-card { text-align: left; }
-        .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
-        .stat-value { font-size: 1.8rem; font-weight: 800; }
-        .stat-delta { font-size: 0.85rem; margin-top: 0.4rem; font-weight: 600; }
-        .up { color: var(--success); }
-        .down { color: var(--danger); }
-
-        .chart-container { height: 400px; margin-top: 1rem; }
-        
-        .feed-list { display: flex; flex-direction: column; gap: 1.2rem; }
-        .feed-item { display: flex; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 1rem; }
-        .op-avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; color: white; flex-shrink: 0; }
-        .feed-content h4 { font-size: 0.85rem; margin-bottom: 0.2rem; }
-        .feed-content p { font-size: 0.8rem; color: var(--text-main); opacity: 0.8; line-height: 1.4; }
-        .feed-time { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.4rem; display: block; }
-
-        #result-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 10001; display: none;
-            justify-content: center; align-items: center;
-        }
-        .result-content {
-            background: var(--card-bg); padding: 3rem; border-radius: 32px;
-            border: 1px solid var(--glass-border); text-align: center; max-width: 500px;
-        }
-        .result-status { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
-        .result-score { font-size: 1.2rem; margin-bottom: 2rem; }
-        .pass-text { color: var(--success); }
-        .fail-text { color: var(--danger); }
-
-        .ticker-tape {
-            background: rgba(254, 240, 27, 0.1); border-bottom: 1px solid var(--primary);
-            padding: 10px 0; overflow: hidden; white-space: nowrap; font-size: 0.9rem;
-            color: var(--primary); font-weight: 600;
-        }
-        .ticker-scroll { display: inline-block; animation: scroll 30s linear infinite; }
-        .ticker-item { display: inline-block; margin-right: 50px; }
-        .ticker-symbol { font-weight: 800; margin-right: 8px; color: white; }
-        @keyframes scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
-
-        /* --- Hero Banner --- */
-        .hero-banner {
-            width: 100%; height: 200px; border-radius: 24px; margin-bottom: 2rem;
-            background: linear-gradient(135deg, rgba(254, 240, 27, 0.2), rgba(0, 210, 255, 0.1)), url('StockDragonfly2.png');
-            background-size: cover; background-position: center;
-            display: flex; align-items: center; padding: 0 3rem;
-            border: 1px solid var(--glass-border); position: relative; overflow: hidden;
-        }
-        .hero-banner::after {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(90deg, #05070a 0%, transparent 60%);
-        }
-        .hero-text { position: relative; z-index: 2; }
-        .hero-text h2 { font-size: 2.5rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem; }
-        .hero-text p { font-size: 1.1rem; color: var(--text-main); opacity: 0.9; }
-
-        /* --- Sidebar Navigation --- */
-        .dashboard-container { display: flex; gap: 2rem; min-height: calc(100vh - 200px); }
+        /* --- Sidebar --- */
         .sidebar-nav {
-            width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.8rem;
+            width: 320px; height: calc(100vh - 80px); position: fixed; left: 0; top: 80px;
+            background: rgba(5, 7, 10, 0.5); border-right: 1px solid var(--glass-border);
+            padding: 1.5rem; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--glass-border) transparent;
+            padding-bottom: 5rem;
         }
-        .nav-item {
-            background: var(--card-bg); border: 1px solid var(--glass-border);
-            padding: 1rem 1.5rem; border-radius: 12px; cursor: pointer;
-            display: flex; align-items: center; gap: 1rem; transition: 0.3s;
-            color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
-        }
-        .nav-item i { width: 20px; font-size: 1.1rem; color: var(--primary); opacity: 0.8; }
-        .nav-item:hover { background: rgba(254, 240, 27, 0.05); border-color: var(--primary); color: white; }
-        .nav-item.active { background: var(--primary); color: #000; border-color: var(--primary); }
-        .nav-item.active i { color: #000; opacity: 1; }
+        .sidebar-nav::-webkit-scrollbar { width: 4px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
 
-        .main-display { flex-grow: 1; min-width: 0; }
-        #module-content { animation: fadeIn 0.4s ease-out; }
+        .nav-group { margin-bottom: 0.8rem; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.01); }
+        .nav-header {
+            padding: 1rem 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+            transition: 0.3s; font-weight: 700; font-size: 0.9rem;
+        }
+        .nav-header:hover { background: rgba(255,255,255,0.05); color: var(--primary); }
+        .nav-header i.main-icon { width: 22px; color: var(--primary); margin-right: 0.8rem; text-align: center; }
+        .nav-header .toggle-icon { font-size: 0.7rem; transition: 0.3s; color: var(--text-muted); }
+        .nav-group.open .toggle-icon { transform: rotate(180deg); color: var(--primary); }
+        .nav-group.open { border-color: rgba(254, 240, 27, 0.2); background: rgba(254, 240, 27, 0.02); }
+
+        .nav-sub-list { display: none; padding: 0.5rem 0; background: rgba(0,0,0,0.2); }
+        .nav-group.open .nav-sub-list { display: block; }
+        
+        .nav-item {
+            padding: 0.8rem 1.2rem 0.8rem 3.2rem; cursor: pointer; font-size: 0.85rem; color: var(--text-muted);
+            transition: 0.2s; border-left: 2px solid transparent; position: relative;
+        }
+        .nav-item:hover { color: var(--primary); background: rgba(254, 240, 27, 0.05); padding-left: 3.5rem; }
+        .nav-item.active { color: #000; background: var(--primary); font-weight: 800; border-left: 4px solid #fff; }
+        .nav-item.active::after { content: '▶'; position: absolute; right: 15px; font-size: 0.6rem; }
+
+        /* --- Main Content --- */
+        .main-content { margin-left: 320px; flex-grow: 1; padding: 2.5rem; max-width: 1600px; }
+        .module-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; animation: slideDown 0.5s ease-out; }
+        .module-header i { font-size: 2rem; color: var(--primary); }
+        .module-header h1 { font-size: 2rem; font-weight: 900; letter-spacing: -1px; }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- Overlays --- */
+        #login-overlay, #exam-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000;
+            background: var(--bg-dark); display: flex; align-items: center; justify-content: center;
+        }
+        .hidden { display: none !important; }
+
+        .login-card { width: 450px; text-align: center; }
+        .login-card img { width: 120px; margin-bottom: 2rem; filter: drop-shadow(0 0 20px var(--primary)); }
+        .login-btn {
+            width: 100%; padding: 1.2rem; background: var(--primary); color: #000;
+            border: none; border-radius: 12px; font-weight: 900; font-family: 'Orbitron';
+            cursor: pointer; font-size: 1.1rem; transition: 0.3s; margin-top: 1rem;
+        }
+        .login-btn:hover { transform: scale(1.02); box-shadow: 0 0 30px rgba(254, 240, 27, 0.4); }
 
     </style>
 </head>
 <body>
 
-    <!-- 1. LOGIN OVERLAY -->
-    <div id="login-overlay">
-        <div class="login-card">
-            <div class="login-logo">
-                <img src="StockDragonfly2.png" alt="Dragonfly Logo">
-            </div>
-            <h1 class="login-title">DRAGONFLY V6.0 PLATINUM</h1>
-            <p class="login-subtitle">퀀트 자동매매 통합 사령부 터미널</p>
-            <div class="input-group">
-                <label>Access ID</label>
-                <input type="text" id="login-id" placeholder="ID를 입력하세요">
-            </div>
-            <div class="input-group">
-                <label>Security Key</label>
-                <input type="password" id="login-pw" placeholder="PASSWORD를 입력하세요">
-            </div>
-            <button class="login-btn" onclick="handleLogin()">ENTER COMMAND CENTER</button>
-            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
-                <p style="font-size: 0.8rem; color: var(--text-muted);">New Recruit? Get Certified First</p>
-                <button class="login-btn" style="background: var(--glass-bg); color: white; border: 1px solid var(--glass-border); margin-top: 0;" onclick="startJoinProcess()">[ JOIN / EXAM ] 요원 자격 심사</button>
-            </div>
+    <!-- AUTH & EXAM OVERLAYS (SIMULATED FOR THIS DEMO) -->
+    <div id="login-overlay" class="hidden">
+        <div class="login-card glass-card">
+            <img src="StockDragonfly2.png" alt="Logo">
+            <h2 class="orbitron" style="margin-bottom: 1rem;">SECURE ACCESS</h2>
+            <input type="password" id="pass" placeholder="PASSWORD" style="width: 100%; padding: 1rem; background: #000; border: 1px solid var(--glass-border); color: #fff; border-radius: 8px; margin-bottom: 1rem; text-align: center;">
+            <button class="login-btn" onclick="document.getElementById('login-overlay').classList.add('hidden')">ENTER TERMINAL</button>
         </div>
     </div>
 
-    <!-- 2. EXAM OVERLAY -->
-    <div id="exam-overlay" class="hidden">
-        <div class="exam-container">
-            <div class="exam-header">
-                <div class="exam-title">
-                    <div class="brand" style="margin-bottom: 0.5rem;">
-                        <img src="StockDragonfly2.png" alt="Logo">
-                        <h2 style="color: var(--primary); font-weight: 800;">엘리트 요원 자격 심사</h2>
-                    </div>
-                    <p style="color: var(--text-muted);">30문항 중 25문항 이상 득점 시 사령부 진입 허가</p>
-                </div>
-                <div class="exam-timer" id="timer">10:00</div>
-            </div>
-            <div id="questions-container"></div>
-            <button class="submit-exam-btn" onclick="handleSubmitExam()">[ EXEC ] 답안 제출 및 심사 요청</button>
+    <header class="header-bar">
+        <div class="brand">
+            <img src="StockDragonfly2.png" alt="Logo">
+            <h1>DRAGONFLY <span>PLATINUM V6.0</span></h1>
         </div>
-    </div>
-
-    <!-- 3. RESULT MODAL -->
-    <div id="result-modal">
-        <div class="result-content">
-            <div id="result-status" class="result-status">PASS</div>
-            <div id="result-score" class="result-score">28 / 30</div>
-            <p id="result-msg" style="margin-bottom: 2rem; line-height: 1.6;"></p>
-            <button class="login-btn" id="result-action-btn">진행하기</button>
+        <div class="orbitron" style="color: var(--primary); font-size: 0.8rem; letter-spacing: 2px;">
+            <i class="fa-solid fa-signal"></i> SYSTEM LIVE
         </div>
-    </div>
+    </header>
 
-    <!-- 4. DASHBOARD ROOT -->
-    <div id="dashboard-root">
-        <div class="ticker-tape">
-            <div class="ticker-scroll">
-                <span class="ticker-item"><span class="ticker-symbol">NVDA</span> 894.32 <span class="up">▲ 2.4%</span></span>
-                <span class="ticker-item"><span class="ticker-symbol">TSLA</span> 184.02 <span class="down">▼ 1.2%</span></span>
-                <span class="ticker-item"><span class="ticker-symbol">AAPL</span> 173.50 <span class="up">▲ 0.5%</span></span>
-                <span class="ticker-item"><span class="ticker-symbol">MSFT</span> 420.22 <span class="up">▲ 1.1%</span></span>
-                <span class="ticker-item"><span class="ticker-symbol">KOSPI</span> 2,740.10 <span class="up">▲ 0.8%</span></span>
-                <span class="ticker-item"><span class="ticker-symbol">KOSDAQ</span> 890.30 <span class="down">▼ 0.3%</span></span>
+    <div class="dashboard-root">
+        <aside class="sidebar-nav">
+            <!-- 1. 본부 사령부 -->
+            <div class="nav-group open">
+                <div class="nav-header" onclick="toggleGroup(this)">
+                    <span><i class="fa-solid fa-building-shield main-icon"></i> 1. 본부 사령부</span>
+                    <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="nav-sub-list">
+                    <div class="nav-item" onclick="loadSubMission('1_hq', '1-a')">1-a. [ ADMIN ] 승인 센터</div>
+                    <div class="nav-item" onclick="loadSubMission('1_hq', '1-b')">1-b. [ HR ] 인적 자원</div>
+                    <div class="nav-item" onclick="loadSubMission('1_hq', '1-c')">1-c. [ SECURE ] 보안 관리</div>
+                    <div class="nav-item" onclick="loadSubMission('1_hq', '1-d')">1-d. [ EXIT ] 탈퇴 신청</div>
+                </div>
             </div>
-        </div>
 
-        <header class="header-bar">
-            <div class="brand">
-                <img src="StockDragonfly2.png" alt="Logo">
-                <h1>DRAGONFLY <span>PLATINUM V6.0</span></h1>
+            <!-- 2. 시장 상황실 -->
+            <div class="nav-group">
+                <div class="nav-header" onclick="toggleGroup(this)">
+                    <span><i class="fa-solid fa-satellite-dish main-icon"></i> 2. 시장 상황실</span>
+                    <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="nav-sub-list">
+                    <div class="nav-item" onclick="loadSubMission('2_market', '2-a')">2-a. [ TREND ] 트렌드 요약</div>
+                    <div class="nav-item" onclick="loadSubMission('2_market', '2-b')">2-b. [ MAP ] 실시간 히트맵</div>
+                    <div class="nav-item" onclick="loadSubMission('2_market', '2-c')">2-c. [ SENTIMENT ] 심리 게이지</div>
+                    <div class="nav-item" onclick="loadSubMission('2_market', '2-d')">2-d. [ ABOUT ] 제작 동기</div>
+                </div>
             </div>
-            <div style="display: flex; gap: 1.5rem; align-items: center;">
-                <div style="text-align: right;">
-                    <div style="font-weight: 800; font-size: 0.9rem;">Captain cntfed</div>
-                    <div style="font-size: 0.7rem; color: var(--success);">● ENGINE ONLINE</div>
+
+            <!-- 3. 주도주 추격대 -->
+            <div class="nav-group">
+                <div class="nav-header" onclick="toggleGroup(this)">
+                    <span><i class="fa-solid fa-crosshairs main-icon"></i> 3. 주도주 추격대</span>
+                    <i class="fa-solid fa-chevron-down toggle-icon"></i>
                 </div>
-                <button class="login-btn" style="padding: 0.6rem 1.2rem; font-size: 0.8rem; margin: 0; background: var(--glass-bg); color: white; border: 1px solid var(--glass-border);" onclick="logout()">LOGOUT</button>
+                <div class="nav-sub-list">
+                    <div class="nav-item" onclick="loadSubMission('3_target', '3-a')">3-a. [ SCAN ] 타점 스캐너</div>
+                    <div class="nav-item" onclick="loadSubMission('3_target', '3-b')">3-b. [ RANK ] TOP 50</div>
+                    <div class="nav-item" onclick="loadSubMission('3_target', '3-c')">3-c. [ WATCH ] 감시 리스트</div>
+                    <div class="nav-item" onclick="loadSubMission('3_target', '3-d')">3-d. [ INDUSTRY ] 산업 동향</div>
+                    <div class="nav-item" onclick="loadSubMission('3_target', '3-e')">3-e. [ RS ] RS 강도 분석</div>
+                </div>
             </div>
-        </header>
 
-        <div class="dashboard-container">
-            <aside class="sidebar-nav">
-                <div class="nav-item active" onclick="loadMission('default')">
-                    <i class="fa-solid fa-house"></i>
-                    <span>홈 대시보드</span>
+            <!-- 4. 전략 및 리스크 -->
+            <div class="nav-group">
+                <div class="nav-header" onclick="toggleGroup(this)">
+                    <span><i class="fa-solid fa-shield-halved main-icon"></i> 4. 전략 및 리스크</span>
+                    <i class="fa-solid fa-chevron-down toggle-icon"></i>
                 </div>
-                <div class="nav-item" onclick="loadMission('1_hq')">
-                    <i class="fa-solid fa-building-shield"></i>
-                    <span>1. 본부 사령부</span>
+                <div class="nav-sub-list">
+                    <div class="nav-item" onclick="loadSubMission('4_risk', '4-a')">4-a. [ REPORT ] 분석 리포트</div>
+                    <div class="nav-item" onclick="loadSubMission('4_risk', '4-b')">4-b. [ CALC ] 리스크 계산기</div>
+                    <div class="nav-item" onclick="loadSubMission('4_risk', '4-c')">4-c. [ SHIELD ] 리스크 방패</div>
                 </div>
-                <div class="nav-item" onclick="loadMission('2_market')">
-                    <i class="fa-solid fa-satellite-dish"></i>
-                    <span>2. 시장 상황실</span>
-                </div>
-                <div class="nav-item" onclick="loadMission('3_target')">
-                    <i class="fa-solid fa-crosshairs"></i>
-                    <span>3. 주도주 추격대</span>
-                </div>
-                <div class="nav-item" onclick="loadMission('4_risk')">
-                    <i class="fa-solid fa-shield-halved"></i>
-                    <span>4. 전략 및 리스크</span>
-                </div>
-                <div class="nav-item" onclick="loadMission('5_academy')">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                    <span>5. 마스터 훈련소</span>
-                </div>
-                <div class="nav-item" onclick="loadMission('6_square')">
-                    <i class="fa-solid fa-comments"></i>
-                    <span>6. 안티그래비티 광장</span>
-                </div>
-                <div class="nav-item" onclick="loadMission('7_auto')">
-                    <i class="fa-solid fa-robot"></i>
-                    <span>7. 자동매매 사령부</span>
-                </div>
-                <div class="nav-item" onclick="loadMission('8_strategy')">
-                    <i class="fa-solid fa-brain"></i>
-                    <span>8. AI 거장들의 전술</span>
-                </div>
-            </aside>
+            </div>
 
-            <main class="main-display">
-                <div id="module-content">
-                    <div class="hero-banner">
-                        <div class="hero-text">
-                            <h2>PLATINUM COMMAND V6.0</h2>
-                            <p>Stock Dragonfly 전용 알고리즘 엔진 가동 중...</p>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-grid">
-                        <div class="glass-card stat-card">
-                            <div class="stat-label">Total Assets</div>
-                            <div class="stat-value">₩128,450,000</div>
-                            <div class="stat-delta up">▲ ₩3,120,000 (+2.4%)</div>
-                        </div>
-                        <div class="glass-card stat-card">
-                            <div class="stat-label">Active Positions</div>
-                            <div class="stat-value">8 Stocks</div>
-                            <div class="stat-label" style="margin-top: 0.5rem;">Avg Holding: 4.2 Days</div>
-                        </div>
-                        <div class="glass-card stat-card">
-                            <div class="stat-label">Today's P/L</div>
-                            <div class="stat-value up">+₩1,850,200</div>
-                            <div class="stat-label" style="margin-top: 0.5rem;">14 Executed Trades</div>
-                        </div>
-                        <div class="glass-card stat-card">
-                            <div class="stat-label">Risk Exposure</div>
-                            <div class="stat-value" style="color: var(--primary);">MODERATE</div>
-                            <div class="stat-delta down">VIX: 18.2 (+1.5%)</div>
-                        </div>
-                    </div>
+            <!-- 5. 마스터 훈련소 -->
+            <div class="nav-group">
+                <div class="nav-header" onclick="toggleGroup(this)">
+                    <span><i class="fa-solid fa-graduation-cap main-icon"></i> 5. 마스터 훈련소</span>
+                    <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="nav-sub-list">
+                    <div class="nav-item" onclick="loadSubMission('5_academy', '5-a')">5-a. [ WHOWS ] 본데는 누구인가?</div>
+                    <div class="nav-item" onclick="loadSubMission('5_academy', '5-b')">5-b. [ STUDY ] 주식공부방</div>
+                    <div class="nav-item" onclick="loadSubMission('5_academy', '5-c')">5-c. [ RADAR ] 나노바나나 레이더</div>
+                    <div class="nav-item" onclick="loadSubMission('5_academy', '5-d')">5-d. [ EXAM ] 승급 시험 안내</div>
+                    <div class="nav-item" onclick="loadSubMission('5_academy', '5-e')">5-e. [ SUCCESS ] 익절 자랑방</div>
+                    <div class="nav-item" onclick="loadSubMission('5_academy', '5-f')">5-f. [ REVIEW ] 복기방</div>
+                </div>
+            </div>
 
-                    <div class="grid-layout" style="grid-template-columns: 1fr 350px;">
-                        <div class="main-col">
-                            <div class="glass-card">
-                                <div class="card-title"><i class="fa-solid fa-chart-line"></i> Market Overview (NASDAQ)</div>
-                                <div id="main-chart" class="chart-container"></div>
-                            </div>
-                        </div>
-                        <div class="side-col">
-                            <div class="glass-card">
-                                <div class="card-title"><i class="fa-solid fa-users-viewfinder"></i> Operative Feed</div>
-                                <div class="feed-list">
-                                    <div class="feed-item">
-                                        <div class="op-avatar" style="background: var(--accent-purple);">W</div>
-                                        <div class="feed-content">
-                                            <h4>윌리엄 오닐 [AI]</h4>
-                                            <p>CAN SLIM 조건 충족 종목 포착. 컵앤핸들 돌파 구간을 주시하십시오.</p>
-                                            <span class="feed-time">2 mins ago</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            <!-- 6. 안티그래비티 광장 -->
+            <div class="nav-group">
+                <div class="nav-header" onclick="toggleGroup(this)">
+                    <span><i class="fa-solid fa-comments main-icon"></i> 6. 안티그래비티 광장</span>
+                    <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="nav-sub-list">
+                    <div class="nav-item" onclick="loadSubMission('6_square', '6-a')">6-a. [ CHECK ] 출석체크</div>
+                    <div class="nav-item" onclick="loadSubMission('6_square', '6-b')">6-b. [ CHAT ] 소통 대화방</div>
+                    <div class="nav-item" onclick="loadSubMission('6_square', '6-c')">6-c. [ VISIT ] 방문자 인사</div>
+                </div>
+            </div>
+
+            <!-- 7. 자동매매 사령부 -->
+            <div class="nav-group">
+                <div class="nav-header" onclick="toggleGroup(this)">
+                    <span><i class="fa-solid fa-robot main-icon"></i> 7. 자동매매 사령부</span>
+                    <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="nav-sub-list">
+                    <div class="nav-item" onclick="loadSubMission('7_auto', '7-a')">7-a. [ EXEC ] 매수 테스트</div>
+                    <div class="nav-item" onclick="loadSubMission('7_auto', '7-b')">7-b. [ DASHBOARD ] 투자 현황</div>
+                    <div class="nav-item" onclick="loadSubMission('7_auto', '7-c')">7-c. [ ENGINE ] 전략 엔진</div>
+                    <div class="nav-item" onclick="loadSubMission('7_auto', '7-d')">7-d. [ REPORT ] 투자 성적표</div>
+                </div>
+            </div>
+
+            <!-- 8. AI 거장들의 전술 -->
+            <div class="nav-group">
+                <div class="nav-header" onclick="toggleGroup(this)">
+                    <span><i class="fa-solid fa-brain main-icon"></i> 8. AI 거장들의 전술</span>
+                    <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="nav-sub-list">
+                    <div class="nav-item" onclick="loadSubMission('8_strategy', '8-a')">8-a. [ INTRO ] 거장 소개</div>
+                    <div class="nav-item" onclick="loadSubMission('8_strategy', '8-b')">8-b. [ MANUAL ] 전술 매뉴얼</div>
+                    <div class="nav-item" onclick="loadSubMission('8_strategy', '8-c')">8-c. [ CHECKLIST ] 체크리스트</div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div id="module-content">
+                <div class="module-header">
+                    <i class="fa-solid fa-gauge-high"></i>
+                    <h1 class="orbitron">COMMAND CENTER OVERVIEW</h1>
+                </div>
+                
+                <div class="glass-card" style="margin-bottom: 2rem; background: linear-gradient(90deg, rgba(254, 240, 27, 0.1), transparent);">
+                    <h3 style="color: var(--primary); margin-bottom: 0.5rem;">WELCOME BACK, CAPTAIN</h3>
+                    <p style="color: var(--text-muted);">실시간 시장 감시 및 자동매매 시스템이 정상 가동 중입니다. 오늘의 작전을 개시하십시오.</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                    <div class="glass-card">
+                        <h4 style="margin-bottom: 1rem;"><i class="fa-solid fa-bolt" style="color: var(--primary);"></i> 시장 모멘텀</h4>
+                        <div style="height: 150px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                            <span style="color: var(--success); font-weight: 900; font-size: 1.5rem;">EXTREME BULL</span>
                         </div>
                     </div>
+                    <div class="glass-card">
+                        <h4 style="margin-bottom: 1rem;"><i class="fa-solid fa-shield" style="color: var(--success);"></i> 리스크 상태</h4>
+                        <div style="height: 150px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                            <span style="color: var(--primary); font-weight: 900; font-size: 1.5rem;">STABLE (Low VIX)</span>
+                        </div>
+                    </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </main>
     </div>
 
     <script>
-        const state = {
-            isLoggedIn: false,
-            isCertified: false,
-            timer: null,
-            timeLeft: 600,
-        };
-
-        function handleLogin() {
-            const id = document.getElementById('login-id').value;
-            const pw = document.getElementById('login-pw').value;
-            if (id === 'cntfed' && pw === 'cntfed') {
-                state.isLoggedIn = true;
-                state.isCertified = true; // Admin Bypass
-                checkNavigation();
-            } else { alert('Access ID 또는 Security Key가 일치하지 않습니다.\n(관리자 전용 로그인 페이지입니다)'); }
+        function toggleGroup(header) {
+            const group = header.parentElement;
+            // Close other groups? (Optional, let's keep it accordion style)
+            // document.querySelectorAll('.nav-group').forEach(g => { if(g !== group) g.classList.remove('open'); });
+            group.classList.toggle('open');
         }
 
-        function startJoinProcess() {
-            state.isLoggedIn = true;
-            state.isCertified = false;
-            checkNavigation();
-        }
-
-        function logout() {
-            location.reload();
-        }
-
-        function checkNavigation() {
-            const loginOverlay = document.getElementById('login-overlay');
-            const examOverlay = document.getElementById('exam-overlay');
-            const dashboardRoot = document.getElementById('dashboard-root');
-
-            if (!state.isLoggedIn) {
-                loginOverlay.classList.remove('hidden');
-                examOverlay.classList.add('hidden');
-                dashboardRoot.style.display = 'none';
-                return;
-            }
-
-            loginOverlay.classList.add('hidden');
-            if (!state.isCertified) {
-                examOverlay.classList.remove('hidden');
-                dashboardRoot.style.display = 'none';
-                initExam();
-            } else {
-                examOverlay.classList.add('hidden');
-                dashboardRoot.style.display = 'block';
-                initDashboard();
-            }
-        }
-
-        const questionPool = [
-            { q: "주식 시장에서 '상장폐지'를 의미하는 것은?", o: ["주식이 더 이상 거래소에서 거래되지 않음", "주식이 상한가를 기록함", "배당금이 지급됨", "액면분할이 이루어짐"], a: 0 },
-            { q: "EPS(주당순이익)의 올바른 설명은?", o: ["기업의 순이익을 총 발행 주식수로 나눈 값", "주가를 순이익으로 나눈 값", "주당 배당금의 비율", "기업의 총 부채를 주식수로 나눈 값"], a: 0 },
-            { q: "PER(주가수익비율)이 낮다는 것은 일반적으로 무엇을 의미하는가?", o: ["주가가 기업의 이익에 비해 저평가되어 있을 가능성이 높다", "주가가 고평가되어 있다", "회사의 성장이 매우 빠르다", "배당률이 높다"], a: 0 },
-            { q: "다음 중 증거금(Margin) 거래의 가장 큰 위험성은?", o: ["원금 이상의 손실이 발생할 수 있다 (반대매매)", "수수료가 저렴하다", "환율 변동에만 영향을 받는다", "세금이 면제된다"], a: 0 },
-            { q: "배당락(Ex-dividend)일의 의미는?", o: ["해당 일부터 주식을 매수해도 배당을 받을 권리가 없음", "배당금이 계좌에 입금되는 날", "배당을 받을 수 있는 마지막 날", "주식이 상장되는 날"], a: 0 },
-            { q: "ETF(상장지수펀드)의 특징이 아닌 것은?", o: ["개별 주식처럼 실시간으로 매매할 수 없다", "분산 투자 효과가 있다", "주가지수 등 특정 지수의 수익률을 추종한다", "운용 수수료가 일반 펀드보다 대체로 저렴하다"], a: 0 },
-            { q: "코스피(KOSPI) 지수는 무엇을 기준으로 산출되는가?", o: ["시가총액", "거래량", "매출액", "주가 평균"], a: 0 },
-            { q: "서킷브레이커(Circuit Breaker)가 발동되는 이유는?", o: ["시장의 비이성적인 급락을 막고 투자자에게 냉정할 시간을 주기 위해", "주가가 상한가에 도달했을 때 거래를 촉진하기 위해", "외국인 투자를 장려하기 위해", "상장폐지를 결정하기 위해"], a: 0 },
-            { q: "가치투자의 창시자로 불리며 워런 버핏의 스승인 인물은?", o: ["벤저민 그레이엄", "조지 소로스", "피터 린치", "제시 리버모어"], a: 0 },
-            { q: "ROE(자기자본이익률)를 구하는 공식은?", o: ["(당기순이익 / 평균 자기자본) × 100", "(영업이익 / 총부채) × 100", "(당기순이익 / 총자산) × 100", "(주당순이익 / 주가) × 100"], a: 0 },
-            { q: "CAN SLIM 기법에서 'C'가 의미하는 것은?", o: ["Current quarterly earnings (최근 분기 주당순이익의 폭발적 증가)", "Capital (자본금 규모)", "Chart (차트 패턴)", "CEO (경영진의 우수성)"], a: 0 },
-            { q: "CAN SLIM에서 'A'가 요구하는 연간 수익 증가율의 기준은 최소 얼마 이상인가?", o: ["최소 25% 이상의 연간 순이익 증가율", "최소 5% 이상의 연간 순이익 증가율", "최소 50% 이상의 연간 배당 증가율", "최소 10% 이상의 매출 증가율"], a: 0 },
-            { q: "윌리엄 오닐이 가장 선호하는 차트 패턴(컵 앤 핸들)의 핵심 특징은?", o: ["이전 저항선을 돌파하기 전 얕은 거래량으로 조정을 거치는 손잡이(Handle) 부분의 존재", "V자 형태로 급반등하는 모양", "계속해서 하락하는 우하향 차트", "거래량이 폭발하며 윗꼬리를 길게 다는 모양"], a: 0 },
-            { q: "CAN SLIM에서 'N'은 New(신제품, 신고가 등)를 의미한다. 오닐은 어떤 주식을 매수하라고 했는가?", o: ["52주 신고가를 돌파하거나 사상 최고가를 경신하는 주식", "52주 신저가를 갱신하는 저렴한 주식", "가격이 5달러 미만인 동전주", "배당을 처음 지급하기 시작한 주식"], a: 0 },
-            { q: "오닐의 절대 손절 원칙은 매수가 대비 몇 퍼센트 하락 시 기계적 매도인가?", o: ["-7% ~ -8%", "-20%", "-3%", "본전이 올 때까지 존버한다"], a: 0 },
-            { q: "CAN SLIM에서 'S' (Supply and Demand)에 대한 설명으로 옳은 것은?", o: ["총 발행 주식수가 지나치게 많지 않고, 돌파 시점에 거래량이 크게 증가해야 한다", "주식수가 무한히 많을수록 안전하다", "거래량이 적을 때 매수해야 한다", "개인 투자자들의 매수세가 많아야 한다"], a: 0 },
-            { q: "CAN SLIM에서 'L' (Leader or Laggard)의 원칙은 무엇인가?", o: ["해당 산업군에서 주도주(Leader)를 매수하고, 소외주(Laggard)는 피하라", "소외주를 저점에서 매수하여 기다려라", "가장 늦게 오르는 주식을 찾아라", "대형주만 매수하라"], a: 0 },
-            { q: "오닐의 시장 방향 분석 중 'M' (Market Direction)을 분석할 때 주로 보는 것은?", o: ["주요 시장 지수(나스닥, S&P 500 등)의 가격과 거래량의 움직임", "금리 변동", "전문가들의 뉴스 전망", "PER 등 밸류에이션 지표"], a: 0 },
-            { q: "윌리엄 오닐은 주식을 매수할 때 피라미딩(Pyramiding) 기법을 추천했다. 이는 무엇인가?", o: ["돌파점 매수 후 수익이 나며 상승할 때 점진적으로 추가 매수(불타기)하는 것", "주가가 하락할 때마다 평단가를 낮추기 위해 추가 매수(물타기)하는 것", "여러 종목에 동일한 금액을 분산 투자하는 것", "한 번에 풀매수하는 것"], a: 0 },
-            { q: "CAN SLIM에서 'I' (Institutional Sponsorship)가 의미하는 바는?", o: ["우수한 실적을 내는 기관 투자자들이 해당 주식을 매수/보유하고 있어야 한다", "개인 투자자들 사이에서 인기가 많아야 한다", "정부 기관의 지원을 받아야 한다", "외국인 투자자가 50% 이상이어야 한다"], a: 0 },
-            { q: "강세장(Bull Market)에서 주도주를 보유하고 있을 때 가장 적절한 행동은?", o: ["추세가 꺾이기 전까지 섣불리 수익을 실현하지 않고 수익을 극대화한다", "2~3% 수익이 나면 즉시 전량 매도한다", "다른 소외주로 갈아탄다", "주가가 오를 때마다 공매도를 친다"], a: 0 },
-            { q: "약세장(Bear Market)이 명확해졌을 때 가장 중요한 계좌 방어 전략은?", o: ["현금 비중을 높이고 신규 매수를 멈추거나 최소화한다", "떨어진 주식을 계속 물타기 한다", "레버리지 상품에 투자하여 하락을 만회한다", "바닥을 예측하여 몰빵 투자를 한다"], a: 0 },
-            { q: "상승장 초기에 가장 먼저 해야 할 일은?", o: ["가장 먼저 신고가를 돌파하며 강하게 치고 나가는 새로운 주도주군을 파악하고 매수한다", "과거에 많이 떨어졌던 낙폭과대주를 찾는다", "인버스(하락 베팅) 상품을 매수한다", "모든 주식을 매도하고 관망한다"], a: 0 },
-            { q: "하락장에서 '데드캣 바운스(Dead Cat Bounce)'가 발생했을 때 주의할 점은?", o: ["일시적인 기술적 반등일 수 있으므로 추세가 완전히 전환되기 전까지는 공격적 매수를 자제한다", "바닥을 확인한 것이므로 신용/미수를 써서 풀매수한다", "우량주는 무조건 전고점을 돌파할 것이라 믿고 존버한다", "공매도를 전량 청산한다"], a: 0 },
-            { q: "시장 변동성이 극심한 장세(Choppy Market)에서 살아남는 윌리엄 오닐의 조언은?", o: ["돌파 후 실패하는 패턴이 잦아지면 매매 횟수를 줄이고 섣불리 진입하지 않는다", "변동성을 이용하여 하루에 수십 번 단타 매매를 한다", "손절 폭을 기존 8%에서 20%로 넓혀 버틴다", "오히려 투자 금액을 두 배로 늘린다"], a: 0 },
-            { q: "주도주가 고점에서 거래량이 폭증하며 갭상승하는 '클라이맥스' 징후가 나타날 때 행동 요령은?", o: ["탐욕이 극에 달한 시점이므로 분할 매도를 통해 수익을 실현할 준비를 한다", "새로운 상승의 시작이므로 추격 매수한다", "자녀에게 물려주기 위해 계좌를 덮어둔다", "가족과 친구들에게 매수를 강력히 추천한다"], a: 0 },
-            { q: "하락장에서 손실이 발생하여 원금이 줄어들었을 때 가장 경계해야 할 심리는?", o: ["본전을 빨리 복구하겠다는 조급함에 무리한 베팅을 하는 것", "시장을 관망하며 공부에 집중하는 것", "투자 일지를 작성하며 실패 원인을 분석하는 것", "현금 비중을 100%로 유지하는 것"], a: 0 },
-            { q: "강세장이 장기간 지속되어 주식들이 컵 앤 핸들의 3~4번째 베이스를 형성할 때의 주의점은?", o: ["초기 베이스에 비해 실패 확률이 매우 높으므로 신규 매수에 극도로 신중해야 한다", "베이스가 많을수록 신뢰도가 높으므로 안심하고 매수한다", "모든 주식이 오르며 무작위로 매수해도 된다", "가치투자 방식으로 전환해야 한다"], a: 0 },
-            { q: "약세장에서 반등을 시도하는 '팔로우스루 데이(Follow-Through Day)'를 확인할 때 필수적인 조건은?", o: ["주요 지수가 반등을 시도한 지 4일~10일 즈음에 거래량이 전일보다 증가하며 지수가 크게 상승하는 것", "주요 지수가 10일 연속으로 하락하는 것", "외국인이 1조원 이상 순매수하는 것", "개인 투자자의 신용 융자 잔고가 최고치를 찍는 것"], a: 0 },
-            { q: "자신이 보유한 주식이 시장의 급락과 무관하게 지지선을 강하게 버티고 있을 때의 판단은?", o: ["매우 강한 상대강도(RS)를 보여주는 주도주 후보이므로 지켜본다", "시장을 거스르는 세력의 장난이므로 즉시 매도한다", "조만간 폭락할 징조이므로 공매도한다", "주식의 거래가 정지될 가능성이 높다"], a: 0 },
-        ];
-
-        function initExam() {
-            const container = document.getElementById('questions-container');
-            container.innerHTML = '';
-            questionPool.forEach((q, i) => {
-                const card = document.createElement('div');
-                card.className = 'question-card';
-                card.innerHTML = `<div class="question-text">Q${i+1}. ${q.q}</div><div class="options-list">${q.o.map((opt, oi) => `<label class="option-label" onclick="selectOption(this, ${i}, ${oi})"><input type="radio" name="q${i}" value="${oi}">${opt}</label>`).join('')}</div>`;
-                container.appendChild(card);
-            });
-            startTimer();
-        }
-
-        window.selectOption = function(el, qi, oi) {
-            el.parentNode.querySelectorAll('.option-label').forEach(o => o.classList.remove('selected'));
-            el.classList.add('selected');
-            el.querySelector('input').checked = true;
-        }
-
-        function startTimer() {
-            if (state.timer) clearInterval(state.timer);
-            state.timer = setInterval(() => {
-                state.timeLeft--;
-                const m = Math.floor(state.timeLeft / 60).toString().padStart(2, '0');
-                const s = (state.timeLeft % 60).toString().padStart(2, '0');
-                document.getElementById('timer').textContent = `${m}:${s}`;
-                if (state.timeLeft <= 0) handleSubmitExam();
-            }, 1000);
-        }
-
-        function handleSubmitExam() {
-            clearInterval(state.timer);
-            let score = 0;
-            questionPool.forEach((q, i) => {
-                const checked = document.querySelector(`input[name="q${i}"]:checked`);
-                if (checked && parseInt(checked.value) === q.a) score++;
-            });
-            const modal = document.getElementById('result-modal');
-            modal.style.display = 'flex';
-            document.getElementById('result-score').textContent = `${score} / 30 점`;
-            if (score >= 25) {
-                document.getElementById('result-status').textContent = 'PASS';
-                document.getElementById('result-status').className = 'result-status pass-text';
-                document.getElementById('result-msg').textContent = '축하합니다! 정예요원 입성 자격을 획득하셨습니다.';
-                document.getElementById('result-action-btn').onclick = () => {
-                    state.isCertified = true; localStorage.setItem('isCertified', 'true');
-                    modal.style.display = 'none'; checkNavigation();
-                };
-            } else {
-                document.getElementById('result-status').textContent = 'FAIL';
-                document.getElementById('result-status').className = 'result-status fail-text';
-                document.getElementById('result-msg').textContent = '불합격입니다. 재시험을 준비해 주세요.';
-                document.getElementById('result-action-btn').textContent = '재시험 보기';
-                document.getElementById('result-action-btn').onclick = () => location.reload();
-            }
-        }
-
-        function initDashboard() {
-            const chartDom = document.getElementById('main-chart');
-            if (chartDom) {
-                const chart = LightweightCharts.createChart(chartDom, { width: chartDom.clientWidth, height: 400, layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#94a3b8' }, grid: { vertLines: { color: 'rgba(255,255,255,0.05)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } } });
-                const lineSeries = chart.addLineSeries({ color: '#fef01b', lineWidth: 2 });
-                lineSeries.setData(Array.from({ length: 50 }, (_, i) => ({ time: 1700000000 + i * 86400, value: 800 + Math.random() * 200 })));
-            }
-        }
-
-        async function loadMission(name) {
+        async function loadSubMission(file, section) {
             // Update active state
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const activeNav = document.querySelector(`.nav-item[onclick="loadMission('${name}')"]`);
-            if (activeNav) activeNav.classList.add('active');
+            const activeNav = event.currentTarget;
+            activeNav.classList.add('active');
 
             const contentArea = document.getElementById('module-content');
-            if (name === 'default') {
-                location.reload(); // Quick way to restore home for now
-                return;
-            }
 
             try {
-                const response = await fetch(`missions/${name}.html`);
-                if (!response.ok) throw new Error('Module not found');
-                const html = await response.text();
+                // Use bundled data from window.MISSION_BUNDLE (injected by app.py)
+                const html = window.MISSION_BUNDLE ? window.MISSION_BUNDLE[file] : null;
                 
-                // Extract body content only
+                if (!html) throw new Error('Module data missing');
+                
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 const bodyContent = doc.body.innerHTML;
                 
                 contentArea.innerHTML = bodyContent;
-                contentArea.classList.remove('fadeIn');
-                void contentArea.offsetWidth; // Trigger reflow
-                contentArea.classList.add('fadeIn');
+
+                // Execute scripts
+                const scripts = doc.querySelectorAll('script');
+                scripts.forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    document.body.appendChild(newScript);
+                    newScript.parentNode.removeChild(newScript);
+                });
+                
+                contentArea.style.animation = 'none';
+                void contentArea.offsetWidth;
+                contentArea.style.animation = 'fadeIn 0.5s ease-out';
+
             } catch (err) {
+                console.error(err);
                 contentArea.innerHTML = `<div class="glass-card" style="text-align: center; padding: 5rem;">
                     <i class="fa-solid fa-triangle-exclamation" style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;"></i>
-                    <h2>연결 오류</h2>
-                    <p style="color: var(--text-muted);">${name} 모듈을 사령부 서버에서 불러올 수 없습니다.</p>
+                    <h2>데이터 로드 실패</h2>
+                    <p style="color: var(--text-muted);">${section} 모듈 데이터를 번들에서 찾을 수 없습니다.</p>
                 </div>`;
             }
         }
-
-        checkNavigation();
     </script>
 </body>
 </html>

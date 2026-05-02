@@ -5,21 +5,46 @@
         <i class="fa-solid fa-satellite-dish"></i>
         <h1>2. 시장 상황실 (Market Ops)</h1>
     </div>
+
     <div class="glass-card">
-        <h3>글로벌 마켓 트렌드 요약</h3>
-        <p style="color: var(--text-muted); margin-top: 1rem;">나스닥, 코스피, 환율 등 주요 거시 지표를 실시간으로 모니터링합니다.</p>
-        <div style="margin-top: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-            <div style="padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 16px; border: 1px solid var(--glass-border);">
-                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">[ TREND ]</div>
-                <h4 style="color: var(--primary);">Bull Market Confirmation</h4>
-                <p style="font-size: 0.85rem; margin-top: 0.5rem;">주요 지수가 20일 이동평균선 위에서 견고하게 지지받고 있습니다.</p>
-            </div>
-            <div style="padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 16px; border: 1px solid var(--glass-border);">
-                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">[ SENTIMENT ]</div>
-                <h4 style="color: var(--success);">Greed (68 pts)</h4>
-                <p style="font-size: 0.85rem; margin-top: 0.5rem;">시장 참여자들의 매수 의지가 강하며, 변동성 지수(VIX)가 하향 안정화되었습니다.</p>
+        <h3>[ TREND ] 2-a. 마켓 트렌드 요약</h3>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">글로벌 시장의 주요 추세 및 수급 흐름을 분석합니다.</p>
+        <div style="margin-top: 1rem; padding: 1.2rem; background: rgba(0,210,255,0.05); border-radius: 12px; border: 1px solid var(--accent-blue);">
+            <h4 style="color: var(--accent-blue);">Bull Market Status: ACTIVE</h4>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">이동평균선 정배열 구간 진입. 주도주 중심의 강한 수급이 지속되고 있습니다.</p>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <h3>[ MAP ] 2-b. 실시간 히트맵</h3>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">섹터별 등락 현황을 시각적으로 파악합니다.</p>
+        <div style="margin-top: 1.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; aspect-ratio: 16/9;">
+            <div style="background: #22c55e; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800;">TECH</div>
+            <div style="background: #16a34a; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800;">SEMI</div>
+            <div style="background: #ef4444; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800;">FINANCE</div>
+            <div style="background: #166534; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800;">AI</div>
+            <div style="background: #4ade80; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800;">BIO</div>
+            <div style="background: #22c55e; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800;">AUTO</div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <h3>[ SENTIMENT ] 2-c. 시장 심리 게이지</h3>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">탐욕과 공포 지수를 통해 변곡점을 예측합니다.</p>
+        <div style="margin-top: 1.5rem; height: 10px; background: #333; border-radius: 5px; position: relative;">
+            <div style="position: absolute; left: 68%; top: -5px; width: 20px; height: 20px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 15px var(--primary);"></div>
+            <div style="display: flex; justify-content: space-between; margin-top: 1rem; font-size: 0.7rem; color: var(--text-muted);">
+                <span>FEAR</span>
+                <span>NEUTRAL</span>
+                <span>GREED (68)</span>
             </div>
         </div>
+    </div>
+
+    <div class="glass-card">
+        <h3>[ ABOUT ] 2-d. 제작 동기</h3>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">안티그래비티 사령부 탄생 배경과 철학을 공유합니다.</p>
+        <p style="font-size: 0.85rem; line-height: 1.6; margin-top: 1rem;">"우리는 시장의 중력(공포와 탐욕)에 저항하며, 오직 데이터와 원칙으로 비상합니다."</p>
     </div>
 </body>
 </html>
