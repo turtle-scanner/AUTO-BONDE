@@ -16,6 +16,7 @@ export default function TargetScanPage() {
   }, []);
 
   return (
+    <>
       <div className="section-header">
         <div className="header-top">
           <h1 className="gradient-text">3-a. [ SCAN ] 주도주 타점 스캐너</h1>
@@ -221,5 +222,6 @@ export default function TargetScanPage() {
         }
       `}</style>
     </div>
+    </>
   );
 }
