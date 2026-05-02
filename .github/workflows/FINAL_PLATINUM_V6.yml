@@ -1,6 +1,8 @@
 name: FINAL PLATINUM V6 (Next.js Deploy)
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
