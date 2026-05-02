@@ -25,7 +25,7 @@ import requests
 from urllib3.exceptions import InsecureRequestWarning
 
 TICKER_NAME_MAP = {
-    # --- [ US / NASDAQ / NYSE ] ---
+    # --- [ US / NASDAQ / NYSE - Top 100+ ] ---
     "NVDA": "엔비디아", "TSLA": "테슬라", "AAPL": "애플", "MSFT": "마이크로소프트", "GOOGL": "구글",
     "AMZN": "아마존", "META": "메타", "AVGO": "브로드컴", "NFLX": "넷플릭스", "AMD": "AMD",
     "SMCI": "슈퍼마이크로", "CRWD": "크라우드스트라이크", "PLTR": "팔란티어", "MSTR": "마이크로스트래티지",
@@ -34,16 +34,33 @@ TICKER_NAME_MAP = {
     "MU": "마이크론", "QCOM": "퀄컴", "INTC": "인텔", "AMAT": "어플라이드", "LRCX": "램리서치",
     "DELL": "델", "VRT": "버티브", "HOOD": "로빈후드", "LLY": "일라이릴리", "NVO": "노보노디스크",
     "V": "비자", "MA": "마스터카드", "JPM": "JP모건", "GME": "게임스탑", "DJT": "트럼프미디어",
-
-    # --- [ KR / KOSPI ] ---
+    "ADBE": "어도비", "ORCL": "오라클", "CRM": "세일즈포스", "UBER": "우버", "ABNB": "에어비앤비",
+    "SHOP": "쇼피파이", "TEAM": "아틀라시안", "DDOG": "데이터독", "ZS": "지스케일러", "NET": "클라우드플레어",
+    "MELI": "메르카도", "PDD": "핀둬둬", "BABA": "알리바바", "SE": "씨", "RBLX": "로블록스",
+    "U": "유니티", "PATH": "유아이패스", "AFRM": "어펌", "SQ": "블록", "PYPL": "페이팔",
+    
+    # --- [ KR / KOSPI - Top 100+ ] ---
     "005930.KS": "삼성전자", "000660.KS": "SK하이닉스", "005380.KS": "현대차", "000270.KS": "기아",
     "068270.KS": "셀트리온", "005490.KS": "POSCO홀딩스", "051910.KS": "LG화학", "035420.KS": "NAVER",
     "035720.KS": "카카오", "105560.KS": "KB금융", "055550.KS": "신한지주", "000810.KS": "삼성화재",
     "032830.KS": "삼성생명", "196170.KQ": "알테오젠", "042700.KS": "한미반도체", "001240.KS": "한미약품",
     "012450.KS": "한화에어로", "000100.KS": "유한양행", "010620.KS": "현대미포", "028260.KS": "삼성물산",
     "010130.KS": "고려아연", "006400.KS": "삼성SDI", "373220.KS": "LG엔솔", "003670.KS": "포스코퓨처엠",
+    "034730.KS": "SK", "011200.KS": "HMM", "015760.KS": "한국전력", "018260.KS": "삼성에스디에스",
+    "033780.KS": "KT&G", "003550.KS": "LG", "030200.KS": "KT", "036570.KS": "엔씨소프트",
+    "024110.KS": "기업은행", "086280.KS": "현대글로비스", "009150.KS": "삼성전기", "010950.KS": "S-Oil",
+    "051900.KS": "LG생활건강", "004020.KS": "현대제철", "000720.KS": "현대건설", "011070.KS": "LG이노텍",
 
-    # --- [ KR / KOSDAQ ] ---
+    # --- [ KR / KOSDAQ - Top 100+ ] ---
+    "247540.KQ": "에코프로비엠", "086520.KQ": "에코프로", "091990.KQ": "셀트리온헬스케어", "293490.KQ": "카카오게임즈",
+    "403870.KQ": "HPSP", "066970.KQ": "엘앤에프", "145020.KQ": "휴젤", "028300.KQ": "HLB",
+    "214450.KQ": "파마리서치", "035900.KQ": "제이시스메디칼", "039030.KQ": "이오테크닉스", "277810.KQ": "레인보우로보",
+    "112040.KQ": "위메이드", "058470.KQ": "리노공업", "067160.KQ": "아프리카TV", "036930.KQ": "주성엔지니어링",
+    "041510.KQ": "에스엠", "022100.KQ": "포스코DX", "060250.KQ": "NHNKCP", "253450.KQ": "스튜디오드래곤",
+    "214150.KQ": "클래시스", "196170.KQ": "알테오젠", "003520.KQ": "영진약품", "036830.KQ": "솔브레인",
+    "039200.KQ": "경동나비엔", "054090.KQ": "우리기술투자", "065680.KQ": "우주일렉트로", "084370.KQ": "유진테크",
+    "025900.KQ": "동화기업", "036200.KQ": "유니셈", "042000.KQ": "피에스케이", "053030.KQ": "바이넥스"
+}
     "247540.KQ": "에코프로비엠", "086520.KQ": "에코프로", "091990.KQ": "셀트리온헬스케어", "293490.KQ": "카카오게임즈",
     "403870.KQ": "HPSP", "066970.KQ": "엘앤에프", "145020.KQ": "휴젤", "028300.KQ": "HLB",
     "214450.KQ": "파마리서치", "035900.KQ": "제이시스메디칼", "039030.KQ": "이오테크닉스", "277810.KQ": "레인보우로보",
@@ -2579,28 +2596,49 @@ def get_footer_quote():
     return random.choice(BONDE_FOOTER_QUOTES)
 
 
-@st.cache_data(ttl=3600)
-def get_leaderboard_data_v9(tickers):
-    """[ PRO ] 주도주 랭킹 데이터 산출 (RS 점수: 가중치 적용)"""
+@st.cache_data(ttl=900) # 15분 캐싱
+def get_leaderboard_data_v10(tickers):
+    """[ PLATINUM ] 고성능 리더보드 엔진 (NumPy 벡터 연산 및 일괄 처리)"""
     try:
-        data = yf.download(tickers, period="1y", interval="1d", progress=False)
+        # 일괄 다운로드 (속도 핵심)
+        data = yf.download(tickers, period="1y", interval="1d", progress=False, group_by='ticker')
         if data.empty: return pd.DataFrame()
-        close = data["Close"]
+        
         results = []
         for tic in tickers:
-            if tic in close.columns:
-                c = close[tic].dropna()
-                if len(c) > 200:
-                    ret_3m = (c.iloc[-1] / c.iloc[-60] - 1) * 100 if len(c) > 60 else 0
-                    ret_6m = (c.iloc[-1] / c.iloc[-120] - 1) * 100 if len(c) > 120 else 0
-                    ret_12m = (c.iloc[-1] / c.iloc[-250] - 1) * 100 if len(c) > 250 else 0
+            try:
+                # 개별 종목 데이터 추출 (MultiIndex 대응)
+                if isinstance(data.columns, pd.MultiIndex):
+                    ticker_df = data[tic].dropna()
+                else:
+                    ticker_df = data.dropna() # 단일 종목 케이스
+                
+                if len(ticker_df) > 200:
+                    c = ticker_df["Close"].values
+                    # NumPy 기반 초고속 연산
+                    ret_3m = (c[-1] / c[-60] - 1) * 100 if len(c) >= 60 else 0
+                    ret_6m = (c[-1] / c[-120] - 1) * 100 if len(c) >= 120 else 0
+                    ret_12m = (c[-1] / c[-250] - 1) * 100 if len(c) >= 250 else 0
+                    
                     weighted_rs = (ret_3m * 0.4) + (ret_6m * 0.3) + (ret_12m * 0.3)
                     results.append({
-                        "Ticker": tic, "Name": TICKER_NAME_MAP.get(tic, tic),
-                        "Price": c.iloc[-1], "RS_Weighted": weighted_rs, "3M_Ret": ret_3m
+                        "Rank": 0, # 후순위 정렬용
+                        "Name": TICKER_NAME_MAP.get(tic, tic),
+                        "Ticker": tic,
+                        "Price": c[-1],
+                        "RS_Weighted": weighted_rs,
+                        "3M_Ret": ret_3m
                     })
-        return pd.DataFrame(results)
-    except: return pd.DataFrame()
+            except: continue
+            
+        df_res = pd.DataFrame(results)
+        if not df_res.empty:
+            df_res = df_res.sort_values("RS_Weighted", ascending=False).reset_index(drop=True)
+            df_res["Rank"] = df_res.index + 1
+        return df_res
+    except Exception as e:
+        print(f"Leaderboard V10 Error: {e}")
+        return pd.DataFrame()
 
 # --- [PLACEHOLDER_LOGIC_START] ---
 if page.startswith("3-a."):
@@ -3540,16 +3578,16 @@ elif page.startswith("6-a."):
     if not df_att.empty:
         df_att = df_att.sort_values("시간", ascending=False).reset_index(drop=True)
         
-        # [ UI FIX ] 테이블 줄바꿈을 위한 커스텀 스타일 및 HTML 렌더링
+        # [ UI FIX ] 테이블 줄바꿈 및 프리미엄 스타일 적용
         table_html = """
-        <div style='overflow-x: auto; width: 100%;'>
-            <table style='width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden; font-size: 0.85rem;'>
+        <div style='overflow-x: auto; width: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);'>
+            <table style='width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.2);'>
                 <thead>
-                    <tr style='background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);'>
-                        <th style='padding: 12px; text-align: left; color: #888;'>시간</th>
-                        <th style='padding: 12px; text-align: left; color: #888;'>아이디</th>
-                        <th style='padding: 12px; text-align: left; color: #888; width: 50%;'>인사 (오늘의 다짐)</th>
-                        <th style='padding: 12px; text-align: left; color: #888;'>등급</th>
+                    <tr style='background: rgba(255,215,0,0.05); border-bottom: 1px solid rgba(255,215,0,0.1);'>
+                        <th style='padding: 12px; text-align: left; color: #FFD700; font-size: 0.8rem;'>TIME</th>
+                        <th style='padding: 12px; text-align: left; color: #FFD700; font-size: 0.8rem;'>ID</th>
+                        <th style='padding: 12px; text-align: left; color: #FFD700; font-size: 0.8rem; width: 50%;'>COMMITMENT</th>
+                        <th style='padding: 12px; text-align: left; color: #FFD700; font-size: 0.8rem;'>GRADE</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -3557,11 +3595,11 @@ elif page.startswith("6-a."):
         for _, row in df_att.iterrows():
             g_color = "#FFD700" if row['등급'] in ["방장", "관리자"] else "#AAA"
             table_html += f"""
-                <tr style='border-bottom: 1px solid rgba(255,255,255,0.03);'>
-                    <td style='padding: 12px; color: #666; white-space: nowrap;'>{row['시간']}</td>
-                    <td style='padding: 12px; color: #EEE;'>{row['아이디']}</td>
-                    <td style='padding: 12px; color: #DDD; word-break: break-all; white-space: normal; line-height: 1.5;'>{row['인사']}</td>
-                    <td style='padding: 12px; color: {g_color}; font-weight: bold;'>{row['등급']}</td>
+                <tr style='border-bottom: 1px solid rgba(255,255,255,0.02);'>
+                    <td style='padding: 12px; color: #666; font-size: 0.8rem;'>{row['시간']}</td>
+                    <td style='padding: 12px; color: #EEE; font-weight: bold;'>{row['아이디']}</td>
+                    <td style='padding: 12px; color: #DDD; word-break: break-all; white-space: normal; line-height: 1.5; font-size: 0.9rem;'>{row['인사']}</td>
+                    <td style='padding: 12px; color: {g_color}; font-size: 0.8rem;'>{row['등급']}</td>
                 </tr>
             """
         table_html += "</tbody></table></div>"
@@ -4352,7 +4390,7 @@ elif page.startswith("2-c."):
     
     with st.spinner("전 시장 주도주 데이터 수집 중..."):
         all_watch_tickers = list(TICKER_NAME_MAP.keys())
-        df_leaders = get_leaderboard_data_v9(all_watch_tickers)
+        df_leaders = get_leaderboard_data_v10(all_watch_tickers)
         
         if not df_leaders.empty:
             df_leaders = df_leaders.sort_values("RS_Weighted", ascending=False).reset_index(drop=True)
