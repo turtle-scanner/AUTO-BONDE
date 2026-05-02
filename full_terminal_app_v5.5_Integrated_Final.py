@@ -2010,14 +2010,14 @@ with st.sidebar:
     bgm_options = {
         "[ MUTE ] Silence": None,
         "[ MIX ] Random Mix": "shuffle",
-        "[ BGM ] You Raise Me Up": "YouRaise.mp3",
-        "[ BGM ] My Bonde": "my bonde.mp3",
-        "[ BGM ] Hope & Joy": "hope.mp3",
-        "[ BGM ] Happy Day": "happy.mp3",
-        "[ BGM ] Cute Style": "cute.mp3",
-        "[ BGM ] Forest Bird": "bird.mp3",
-        "[ BGM ] Petty": "petty.mp3",
-        "[ BGM ] Full Power": "full.mp3",
+        "[ BGM ] You Raise Me Up": "audio/YouRaise.mp3",
+        "[ BGM ] My Bonde": "audio/my bonde.mp3",
+        "[ BGM ] Hope & Joy": "audio/hope.mp3",
+        "[ BGM ] Happy Day": "audio/happy.mp3",
+        "[ BGM ] Cute Style": "audio/cute.mp3",
+        "[ BGM ] Forest Bird": "audio/bird.mp3",
+        "[ BGM ] Petty": "audio/petty.mp3",
+        "[ BGM ] Full Power": "audio/full.mp3",
     }
     # 외부 URL 옵션 추가 (필요시)
     bgm_options.update({
