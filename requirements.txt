@@ -17,3 +17,5 @@ pyTelegramBotAPI
 emoji
 python-dotenv
 toml
+fastapi
+uvicorn

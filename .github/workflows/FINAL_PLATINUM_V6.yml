@@ -41,8 +41,7 @@ jobs:
 
       - name: Ultimate Cleanup
         run: |
-          # 80번 포트(웹) 및 기존 Next.js 프로세스만 종료
-          sudo fuser -k 80/tcp || true
+          # 기존 Next.js 프로세스만 종료 (Nginx/80번은 건드리지 않음)
           sudo pkill -9 -f next-server || true
           sudo pkill -9 -f node || true
           sleep 2
