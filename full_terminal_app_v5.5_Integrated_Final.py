@@ -1959,7 +1959,7 @@ with st.sidebar:
                 unsafe_allow_html=True,
             )
 
-    # --- [ AUDIO ] 고도화된 전술 BGM 제어판 ---
+    # --- [ AUDIO ] 고도화된 전술 BGM 제어판 (Ultra-Performance) ---
     st.divider()
     st.markdown(
         "<p style='font-weight:bold; font-size:0.8rem; color:#888;'>[ AUDIO ] TACTICAL BGM PLAYER</p>",
@@ -1980,12 +1980,21 @@ with st.sidebar:
         "[ BGM ] Tactical Force": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
     }
 
+    @st.cache_data(show_spinner=False, ttl=3600)
+    def get_base64_audio_v2(file_path):
+        try:
+            if os.path.exists(file_path):
+                with open(file_path, "rb") as f:
+                    data = f.read()
+                    return base64.b64encode(data).decode()
+        except: pass
+        return None
+
     sel_bgm_v9 = st.selectbox("BGM Select", list(bgm_options.keys()), index=0, label_visibility="collapsed")
     vol_v9 = st.slider("[ VOL ] Volume", 0.0, 1.0, 0.4, step=0.05)
 
     target_bgm_v9 = bgm_options[sel_bgm_v9]
     
-    # 랜덤 믹스 처리
     if target_bgm_v9 == "shuffle":
         if "shuffled_bgm" not in st.session_state:
             valid_files = [f for f in bgm_options.values() if f and f != "shuffle"]
@@ -1993,42 +2002,51 @@ with st.sidebar:
         target_bgm_v9 = st.session_state.shuffled_bgm
 
     if target_bgm_v9:
-        audio_html = ""
-        if target_bgm_v9.startswith("http"):
-            audio_src = target_bgm_v9
-        else:
-            # 로컬 파일 존재 확인 및 인코딩
-            if os.path.exists(target_bgm_v9):
-                with open(target_bgm_v9, "rb") as f:
-                    data = f.read()
-                    b64 = base64.b64encode(data).decode()
-                    audio_src = f"data:audio/mp3;base64,{b64}"
+        audio_src = target_bgm_v9
+        if not target_bgm_v9.startswith("http"):
+            b64_data = get_base64_audio_v2(target_bgm_v9)
+            if b64_data:
+                audio_src = f"data:audio/mp3;base64,{b64_data}"
             else:
                 audio_src = ""
 
         if audio_src:
             st.components.v1.html(f"""
-                <div style="display:none;">
-                    <audio id="bgm-audio" loop autoplay>
+                <div style="text-align: center; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px dashed #555;">
+                    <p style="color: #FFD700; font-size: 0.75rem; margin: 0 0 8px 0; font-weight: bold;">🔊 BGM 엔진이 대기 중입니다. 아래 버튼을 눌러 소리를 활성화하세요.</p>
+                    <button id="play-btn" style="background: #FFD700; color: #000; border: none; padding: 5px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">[ 🔊 SOUND ON ]</button>
+                    <audio id="bgm-audio" loop>
                         <source src="{audio_src}" type="audio/mp3">
                     </audio>
                 </div>
                 <script>
                     var audio = document.getElementById("bgm-audio");
+                    var btn = document.getElementById("play-btn");
                     audio.volume = {vol_v9};
                     
-                    // 브라우저 자동 재생 정책 대응: 클릭 시 재생 트리거
-                    document.addEventListener('click', function() {{
-                        if (audio.paused) {{
-                            audio.play().catch(e => console.log("Autoplay blocked"));
-                        }}
-                    }}, {{ once: true }});
+                    btn.addEventListener('click', function() {{
+                        audio.play().then(() => {{
+                            btn.innerText = "🔊 PLAYING...";
+                            btn.style.background = "#00FF00";
+                            btn.style.cursor = "default";
+                        }}).catch(e => {{
+                            alert("소리 재생 실패: 브라우저 설정을 확인하세요.");
+                        }});
+                    }});
                     
-                    // 전역 볼륨 제어 지원
-                    window.parent.postMessage({{type: 'set_volume', value: {vol_v9}}}, '*');
+                    // 자동 재생 시도
+                    setTimeout(() => {{
+                        audio.play().then(() => {{
+                            btn.style.display = "none";
+                        }}).catch(e => {{
+                            console.log("Autoplay blocked, waiting for click");
+                        }});
+                    }}, 500);
                 </script>
-            """, height=0)
-            st.caption(f"🎵 Now Playing: {sel_bgm_v9}")
+            """, height=80)
+            st.caption(f"🎵 Current Selection: {sel_bgm_v9}")
+        else:
+            st.error(f"⚠️ [ BGM ] 파일을 로드할 수 없습니다: {target_bgm_v9}")
 
     # --- [ GLOBAL ] 실시간 AI 요원 매매 상황 중계 (전역 팝업 알림) ---
     if st.session_state.get("password_correct") and random.random() < 0.05:
