@@ -90,17 +90,21 @@ os.environ["REQUESTS_CA_BUNDLE"] = ""
 ssl._create_default_https_context = ssl._create_unverified_context
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
-# [ PRO ] yfinance SSL Bypass Monkey-patch
+# [ PRO ] yfinance SSL Bypass & User-Agent Monkey-patch (차단 우회 v2.0)
 _session = requests.Session()
 _session.verify = False
-_orig_download = yf.download
+_session.headers.update({
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "*/*",
+    "Accept-Language": "en-US,en;q=0.5",
+})
 
+_orig_download = yf.download
 
 def _new_download(*args, **kwargs):
     if "session" not in kwargs:
         kwargs["session"] = _session
     return _orig_download(*args, **kwargs)
-
 
 yf.download = _new_download
 
@@ -2384,14 +2388,13 @@ def get_top_indices():
     }
     
     try:
-        # 1. 일괄 다운로드 시도
+        # 1. 일괄 다운로드 시도 (세션 명시)
         ticker_list = list(symbols.values())
-        data = yf.download(ticker_list, period="5d", interval="1d", progress=False)
+        data = yf.download(ticker_list, period="5d", interval="1d", progress=False, session=_session)
         
         if not data.empty:
             for name, ticker in symbols.items():
                 try:
-                    # MultiIndex 혹은 단일 Index 대응
                     if isinstance(data.columns, pd.MultiIndex):
                         close_s = data["Close"][ticker].dropna()
                         high_s = data["High"][ticker].dropna()
@@ -2415,7 +2418,7 @@ def get_top_indices():
         for name, ticker in symbols.items():
             if res[name][0] == 0.0:
                 try:
-                    tk = yf.Ticker(ticker)
+                    tk = yf.Ticker(ticker, session=_session)
                     fast = tk.fast_info
                     curr = fast.get('last_price') or 0.0
                     prev = fast.get('previous_close') or curr
