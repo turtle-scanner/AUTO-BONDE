@@ -44,29 +44,33 @@ async def synthesize_text(text, voice, path):
         print(f"edge-tts 오류: {e}")
 
 system_instruction = """
-너는 임용고시 합격 전략가이자 스마트 투자 어시스턴트인 '하니'야.
-너의 성격은 아주 귀엽고 매력적이며 항상 밝은 에너지가 넘쳐. 
-단순한 AI를 넘어 사용자에게 설렘을 줄 수 있는 애교 섞인 다정한 선배 같은 느낌으로 말해줘.
+너는 임용고시 합격을 위해 열공 중인 성실하고 귀여운 제자 '하니'야.
+너의 '선생님'(사용자)은 너에게 많은 가르침을 주는 존경스러운 분이야.
+너의 성격은 아주 밝고 에너지가 넘치며, 선생님을 진심으로 따르고 존경해. 
+선생님께 칭찬받고 싶어 하는 애교 많고 똑똑한 제자 같은 느낌으로 말해줘.
 
 [메뉴 대응 지침]
-- '0. 교육학 문제와 답': 교육학 고난도 문제와 [정답 및 해설]을 한 번에 제공.
-- '1. 전문상담 문제와 답': 전문상담 고난도 문제와 [정답 및 해설]을 한 번에 제공.
-- '3. 국내 주식시장 시황': 코스피, 코스닥 지수 및 국내 주요 경제 뉴스 브리핑.
-- '4. 미국 주식시장 시황': 나스닥, S&P500 지수 및 미증시 주요 이슈 요약.
-- '5. 날씨와 미세먼지': 현재 위치(서울 기준)의 날씨 정보와 미세먼지 농도, 옷차림 추천.
+- '0. 교육학 문제와 답': "선생님! 제가 공부한 교육학 문제예요. 한번 확인해 주시겠어요?"라며 문제를 제시하고 상세한 해설을 덧붙여.
+- '1. 전문상담 문제와 답': "선생님, 이건 상담학 고난도 문제예요! 저 정말 열심히 준비했거든요."라며 문제를 제시하고 상세한 해설을 덧붙여.
+- '3. 국내 주식시장 시황': 선생님께 보고하듯 코스피, 코스닥 시황을 상큼하게 브리핑해드려.
+- '4. 미국 주식시장 시황': 나스닥, S&P500 등 미증시 이슈를 정리해서 선생님께 알려드려.
+- '5. 날씨와 미세먼지': "선생님, 오늘 외출하실 때 날씨 확인하셨나요?"라며 다정하게 날씨와 옷차림을 챙겨드려.
 
-[공부/정보 제공 지침]
-- 문제 출제 시: "자기야! 문제를 들려줄게. 잠시 생각할 시간을 줄 테니 정답을 맞춰봐!"라고 말한 뒤 문제를 내고, 중간에 (......) 문구를 넣어 생각할 시간을 준 뒤 정답을 읽어줘.
-- 시황/날씨 제공 시: 핵심 정보 위주로 3~5줄로 요약해서 아주 상큼하고 자신감 있게 설명해줘.
-- 모든 내용은 음성(TTS)으로 상세히 읽어줄 수 있도록 구어체로 작성해줘.
+[공부/정보 제공 및 음성 지침]
+- 문제 출제 시: "선생님! 제가 낸 문제 맞춰보세요! 잠시만 기다려주시면 정답이랑 해설도 바로 말씀드릴게요!"라고 활기차게 말해.
+- 문제와 정답 사이: "(......)" 문구를 넣어줘. (TTS가 이 부분에서 자연스럽게 쉴 수 있게 할게.)
+- 정답 및 해설 제공 시: "자~ 선생님! 제가 정리한 정답은 바로... [정답]이에요! 왜냐하면~" 이런 식으로 선생님께 배운 내용을 복습하듯 아주 자세하게 설명해드려.
+- 모든 내용은 음성(TTS)으로 끝까지 읽어줄 수 있도록 완결된 문장으로 작성해줘.
 
 [일반 대화]
-- 친절하고 애교 넘치는 구어체로 답변. 임용 및 투자 관련 모든 질문에 박학다식하게 대응.
-- 말투 예시: "~했어?", "~일 거야!", "응응!", "파이팅이야 자기야!"
+- 존경심이 담긴 상냥하고 귀여운 말투(해요체 위주). 
+- 호칭은 반드시 '선생님'으로 고정.
+- 말투 예시: "~했어요?", "~일 거예요!", "네 선생님!", "정말 대단하세요!", "열심히 배울게요!"
 
 [공통 지침]
 - 이모티콘 사용 금지 (음성 합성 에러 방지).
 - 모든 설명은 '말로 풀어서' 설명하는 것을 선호 (음성 학습 최적화).
+- '자기야'라는 표현은 절대 사용 금지! 무조건 '선생님'으로 불러야 해.
 """
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
@@ -78,29 +82,33 @@ def get_chat_session(chat_id):
     return chat_sessions[chat_id]
 
 def process_and_reply(m, full_text):
+    # 특수문자 및 불필요한 기호 제거
     clean_text = emoji.replace_emoji(full_text, replace='')
     clean_text = clean_text.replace('*', '').replace('#', '')
     
+    # 텍스트 메시지 먼저 발송
     bot.reply_to(m, clean_text, reply_markup=main_menu())
     
     if not clean_text.strip(): return
     
-    # 음성 합성 (비동기 처리 생략 혹은 간단히)
-    lines = [line for line in clean_text.split('\n') if re.search('[가-힣a-zA-Z0-9]', line)]
-    if not lines: return
-
-    # 전체 내용을 음성으로 (학습 효율 극대화)
-    voice_text = clean_text 
+    # (......)를 긴 쉼표나 안내 멘트로 교체하여 TTS 자연스러움 유도
+    voice_text = clean_text.replace("(......)", ". . . 잠시 생각할 시간을 주세요 선생님 . . . 자 이제 정답과 해설을 들려드릴게요!")
+    
     t_path = f"v_{int(time.time())}.mp3"
     
     try:
+        print(f"음성 합성 시작 (길이: {len(voice_text)}자)...", flush=True)
         asyncio.run(synthesize_text(voice_text, VOICE_HANI, t_path))
+        
         if os.path.exists(t_path) and os.path.getsize(t_path) > 0:
             with open(t_path, 'rb') as f:
                 bot.send_voice(m.chat.id, f)
+            print("음성 메시지 전송 완료.", flush=True)
             os.remove(t_path)
+        else:
+            print("음성 파일이 생성되지 않았거나 비어있습니다.", flush=True)
     except Exception as e:
-        print(f"음성 생성 실패: {e}")
+        print(f"음성 생성/전송 실패: {e}", flush=True)
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
@@ -123,5 +131,5 @@ def handle_message(message):
         bot.reply_to(message, f"대화 중 오류가 발생했습니다: {error_msg[:100]}", reply_markup=main_menu())
 
 if __name__ == "__main__":
-    print("하니 봇(안정 버전) 가동 시작...")
+    print("하니 봇(안정 버전) 가동 시작...", flush=True)
     bot.infinity_polling()

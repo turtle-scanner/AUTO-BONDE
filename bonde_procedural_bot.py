@@ -206,9 +206,14 @@ class BondeProceduralBotV3:
                 name = row['stock_name']
 
                 if code in self.active_positions:
+                    # [UPDATE] 수량 동기화 및 0인 매수가 복구
                     if self.active_positions[code]['qty'] != qty:
                         logger.info(f"[SYNC] {name} ({code}) 수량 변경: {self.active_positions[code]['qty']} -> {qty}")
                         self.active_positions[code]['qty'] = qty
+                    
+                    if self.active_positions[code].get('entry_price', 0) == 0:
+                        logger.info(f"[SYNC] {name} ({code}) 매수가 복구: {avg_price}")
+                        self.active_positions[code]['entry_price'] = avg_price
                 else:
                     logger.info(f"[SYNC] 새로운 보유 종목 발견: {name} ({code}). 관리 목록에 추가합니다.")
                     
@@ -244,14 +249,29 @@ class BondeProceduralBotV3:
                 curr = float(price_info.get('price', 0))
                 if curr == 0: continue
 
-                # 1. ATR 기반 손절
-                if curr <= pos['stop_price']:
+                # 0. 엔비디아(NVDA) 예외 처리: 사용자 요청에 따라 강제 보유
+                if code == "NVDA":
+                    logger.info(f"[SKIP] {pos['name']} ({code}) 종목은 사용자 요청에 따라 매도 대상에서 제외합니다.")
+                    continue
+
+                # 1. 고정 -3% 손절 로직 (사용자 요청 사항)
+                entry_price = pos.get('entry_price', 0)
+                if entry_price > 0:
+                    profit_rate = (curr - entry_price) / entry_price
+                    if profit_rate <= -0.03:
+                        self.executor.execute_signal(Signal(code, pos['name'], Action.SELL, reason=f"고정 손절 (-3% 도달: {profit_rate*100:.1f}%)"))
+                        send_telegram_message(f"🔴 [STOP] {pos['name']} 고정 손절가(-3%) 터치: 현재 {profit_rate*100:.1f}%")
+                        codes_to_remove.append(code)
+                        continue
+
+                # 2. ATR 기반 손절 (보조)
+                if pos['stop_price'] > 0 and curr <= pos['stop_price']:
                     self.executor.execute_signal(Signal(code, pos['name'], Action.SELL, reason="ATR 손절"))
-                    send_telegram_message(f"🔴 [STOP] {pos['name']} 손절가 터치")
+                    send_telegram_message(f"🔴 [STOP] {pos['name']} ATR 손절가 터치")
                     codes_to_remove.append(code)
                     continue
 
-                # 2. 본데 방식 SMA7 추세 이탈
+                # 3. 본데 방식 SMA7 추세 이탈
                 df = self._fetch_with_backoff(data_fetcher.get_daily_prices, code, days=20)
                 if df is not None and len(df) >= 7:
                     sma7 = indicators.calc_ma(df, 7).iloc[-1]

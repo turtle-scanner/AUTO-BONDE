@@ -2598,6 +2598,29 @@ def get_footer_quote():
     return random.choice(BONDE_FOOTER_QUOTES)
 
 
+@st.cache_data(ttl=3600)
+def get_leaderboard_data_v9(tickers):
+    """[ PRO ] 주도주 랭킹 데이터 산출 (RS 점수: 가중치 적용)"""
+    try:
+        data = yf.download(tickers, period="1y", interval="1d", progress=False)
+        if data.empty: return pd.DataFrame()
+        close = data["Close"]
+        results = []
+        for tic in tickers:
+            if tic in close.columns:
+                c = close[tic].dropna()
+                if len(c) > 200:
+                    ret_3m = (c.iloc[-1] / c.iloc[-60] - 1) * 100 if len(c) > 60 else 0
+                    ret_6m = (c.iloc[-1] / c.iloc[-120] - 1) * 100 if len(c) > 120 else 0
+                    ret_12m = (c.iloc[-1] / c.iloc[-250] - 1) * 100 if len(c) > 250 else 0
+                    weighted_rs = (ret_3m * 0.4) + (ret_6m * 0.3) + (ret_12m * 0.3)
+                    results.append({
+                        "Ticker": tic, "Name": TICKER_NAME_MAP.get(tic, tic),
+                        "Price": c.iloc[-1], "RS_Weighted": weighted_rs, "3M_Ret": ret_3m
+                    })
+        return pd.DataFrame(results)
+    except: return pd.DataFrame()
+
 # --- [PLACEHOLDER_LOGIC_START] ---
 if page.startswith("3-a."):
     st.header("[ SCAN ] 주도주 VCP & EP 마스터 스캐너")
@@ -2651,28 +2674,6 @@ if page.startswith("3-a."):
             else:
                 st.info("현재 발견된 VCP 종목이 없습니다.")
 
-@st.cache_data(ttl=3600)
-def get_leaderboard_data_v9(tickers):
-    """[ PRO ] 주도주 랭킹 데이터 산출 (RS 점수: 가중치 적용)"""
-    try:
-        data = yf.download(tickers, period="1y", interval="1d", progress=False)
-        if data.empty: return pd.DataFrame()
-        close = data["Close"]
-        results = []
-        for tic in tickers:
-            if tic in close.columns:
-                c = close[tic].dropna()
-                if len(c) > 200:
-                    ret_3m = (c.iloc[-1] / c.iloc[-60] - 1) * 100 if len(c) > 60 else 0
-                    ret_6m = (c.iloc[-1] / c.iloc[-120] - 1) * 100 if len(c) > 120 else 0
-                    ret_12m = (c.iloc[-1] / c.iloc[-250] - 1) * 100 if len(c) > 250 else 0
-                    weighted_rs = (ret_3m * 0.4) + (ret_6m * 0.3) + (ret_12m * 0.3)
-                    results.append({
-                        "Ticker": tic, "Name": TICKER_NAME_MAP.get(tic, tic),
-                        "Price": c.iloc[-1], "RS_Weighted": weighted_rs, "3M_Ret": ret_3m
-                    })
-        return pd.DataFrame(results)
-    except: return pd.DataFrame()
 
 elif page.startswith("3-b."):
     st.header("🚀 주도주 랭킹 TOP 50 (RS 리더보드)")
