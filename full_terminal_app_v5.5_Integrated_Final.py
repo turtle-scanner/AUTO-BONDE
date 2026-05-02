@@ -256,6 +256,7 @@ ATTENDANCE_FILE = get_db_path("attendance.csv")
 PROFIT_FILE = get_db_path("profit_brags.csv")
 LOSS_FILE = get_db_path("loss_reviews.csv")
 COMMENTS_FILE = get_db_path("shared_comments.csv")
+MARKET_SUMMARIES_FILE = get_db_path("market_summaries.csv")
 MASTER_GAS_URL = st.secrets.get(
     "MASTER_GAS_URL",
     "https://script.google.com/macros/s/AKfycbyp31pP_T4nVi0rEoeOu-kc6t_ynofxRYnnYZTTO1kxOcQWinBfyhEeDjTRZXzp1eCo/exec",
@@ -2668,6 +2669,56 @@ if page.startswith("3-a."):
                 st.info("현재 발견된 VCP 종목이 없습니다.")
 
 
+elif page.startswith("2-c."):
+    st.header("🎯 [ LEADERS ] 주도주 정밀 분석 센터 (Alpha-Selection)")
+    st.markdown("<div class='glass-card'>사령부의 RS(상대강도) 엔진으로 선별된 상위 50대 주도주 리더보드입니다.</div>", unsafe_allow_html=True)
+    
+    with st.spinner("주도주 수급 및 추세 정밀 분석 중..."):
+        # 1. 주도주 랭킹 데이터 산출
+        all_watch_tickers = list(TICKER_NAME_MAP.keys())
+        df_leaders = get_leaderboard_data_v9(all_watch_tickers)
+        
+        if not df_leaders.empty:
+            # RS 기준 내림차순 정렬
+            df_leaders = df_leaders.sort_values("RS_Weighted", ascending=False).reset_index(drop=True)
+            df_leaders["Rank"] = df_leaders.index + 1
+            
+            # [ ACTION ] 주도주 요약 카드 (상위 3선)
+            top3 = df_leaders.head(3)
+            tc1, tc2, tc3 = st.columns(3)
+            for i, (idx, row) in enumerate(top3.iterrows()):
+                with [tc1, tc2, tc3][i]:
+                    st.markdown(f"""
+                    <div class='glass-card' style='border-top: 4px solid #FFD700; text-align: center; padding: 15px;'>
+                        <div style='font-size: 0.8rem; color: #FFD700;'>TOP {i+1} LEADER</div>
+                        <h3 style='margin: 10px 0; color: #FFF;'>{row['Name']}</h3>
+                        <div style='font-size: 1.5rem; font-weight: 800; color: #00FF00;'>{row['RS_Weighted']:.1f} pts</div>
+                        <small style='color: #888;'>3M Return: {row['3M_Ret']:+.1f}%</small>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            st.divider()
+            
+            # [ VIEW ] 전체 리더보드 테이블
+            st.markdown("#### 🏆 [ LEADERBOARD ] 주도주 통합 순위 (RS Weighted)")
+            st.dataframe(
+                df_leaders[["Rank", "Name", "Ticker", "Price", "RS_Weighted", "3M_Ret"]].style.format({
+                    "RS_Weighted": "{:.1f}", "3M_Ret": "{:+.1f}%", "Price": "{:,.2f}"
+                }).background_gradient(subset=["RS_Weighted"], cmap="YlOrRd"),
+                use_container_width=True, hide_index=True
+            )
+            
+            # [ ANALYSIS ] 전술적 조언
+            with st.expander("💡 [ INSIGHT ] 사령부 주도주 운용 전술 지침", expanded=True):
+                st.markdown(f"""
+                - **최상위 주도주군 ({df_leaders.iloc[0]['Name']} 등)**: RS 90점 이상의 종목은 시장 조정 시에도 가장 늦게 빠지고 가장 먼저 튀어 오릅니다. 눌림목 타점을 엄격히 감시하십시오.
+                - **수급 강화 종목**: 최근 3개월 수익률이 RS 점수보다 높게 형성되는 종목은 '가속 단계'에 진입했을 가능성이 큽니다.
+                - **전술**: 현재 주도주들의 평균 RS 점수가 {df_leaders['RS_Weighted'].mean():.1f}점입니다. 이보다 낮은 종목은 과감히 교체 매매를 검토하십시오.
+                """)
+        else:
+            st.warning("분석할 수 있는 주도주 데이터가 충분하지 않습니다. 스캐너를 먼저 가동해 주세요.")
+
+
 elif page.startswith("3-b."):
     st.header("🚀 주도주 랭킹 TOP 50 (RS 리더보드)")
     st.markdown("<div class='glass-card'>마크 미너비니의 상대강도(RS) 개념을 적용한 퀀트 리더보드입니다.</div>", unsafe_allow_html=True)
@@ -2927,6 +2978,87 @@ elif page.startswith("8-d."):
             """,
                 unsafe_allow_html=True,
             )
+        # --- [ NEW ] 전체 시장 요약 게시판 (Pagination + Admin CRUD) ---
+        st.divider()
+        st.markdown("### 📊 [ SUMMARY ] 전체 시장 요약 (Command Post)")
+        
+        # 데이터 로드
+        if os.path.exists(MARKET_SUMMARIES_FILE):
+            df_ms = pd.read_csv(MARKET_SUMMARIES_FILE)
+            df_ms = df_ms.sort_values(by="날짜", ascending=False).reset_index(drop=True)
+        else:
+            df_ms = pd.DataFrame(columns=["날짜", "제목", "내용", "작성자"])
+
+        # [ ADMIN ] 글쓰기 폼
+        if is_admin:
+            with st.expander("📝 [ ADMIN ] 시장 요약 신규 작성", expanded=False):
+                with st.form("new_market_summary"):
+                    new_title = st.text_input("제목", placeholder="오늘의 시장 핵심 요약")
+                    new_content = st.text_area("내용", placeholder="상세 내용을 입력하세요...", height=150)
+                    if st.form_submit_button("사령부 공표"):
+                        if new_title and new_content:
+                            new_row = pd.DataFrame([[
+                                datetime.now(pytz.timezone("Asia/Seoul")).strftime("%Y-%m-%d %H:%M"),
+                                new_title, new_content, current_user
+                            ]], columns=["날짜", "제목", "내용", "작성자"])
+                            df_ms = pd.concat([new_row, df_ms], ignore_index=True)
+                            df_ms.to_csv(MARKET_SUMMARIES_FILE, index=False)
+                            st.success("✅ 새로운 시장 요약이 공표되었습니다.")
+                            st.rerun()
+                        else:
+                            st.warning("제목과 내용을 모두 입력하십시오.")
+
+        # [ VIEW ] 게시글 출력 및 페이지네이션
+        if not df_ms.empty:
+            items_per_page = 3
+            total_pages = (len(df_ms) - 1) // items_per_page + 1
+            if "ms_page" not in st.session_state: st.session_state.ms_page = 1
+            
+            c_p1, c_p2, c_p3 = st.columns([1, 1, 1])
+            with c_p2:
+                page_sel = st.number_input("Summary Page", min_value=1, max_value=total_pages, value=st.session_state.ms_page, key="ms_page_input")
+                st.session_state.ms_page = page_sel
+
+            start_idx = (st.session_state.ms_page - 1) * items_per_page
+            end_idx = start_idx + items_per_page
+            
+            for idx, row in df_ms.iloc[start_idx:end_idx].iterrows():
+                st.markdown(f"""
+                <div class='glass-card' style='padding: 20px; border-left: 5px solid #FFD700; margin-bottom: 15px;'>
+                    <div style='display: flex; justify-content: space-between; align-items: flex-start;'>
+                        <h4 style='margin: 0; color: #FFD700; font-size: 1.1rem;'>{row['제목']}</h4>
+                        <small style='color: #666;'>{row['날짜']}</small>
+                    </div>
+                    <div style='color: #DDD; margin-top: 15px; white-space: pre-wrap; font-size: 0.95rem; line-height: 1.6;'>{row['내용']}</div>
+                    <div style='text-align: right; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;'>
+                        <small style='color: #555;'>Commander: {row['작성자']}</small>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if is_admin:
+                    ca1, ca2, _ = st.columns([1, 1, 4])
+                    with ca1:
+                        if st.button("수정", key=f"edit_ms_{idx}"):
+                            st.session_state[f"editing_ms_{idx}"] = True
+                    with ca2:
+                        if st.button("삭제", key=f"del_ms_{idx}"):
+                            df_ms = df_ms.drop(idx).reset_index(drop=True)
+                            df_ms.to_csv(MARKET_SUMMARIES_FILE, index=False)
+                            st.rerun()
+                    
+                    if st.session_state.get(f"editing_ms_{idx}"):
+                        with st.form(f"f_edit_ms_{idx}"):
+                            et = st.text_input("제목 수정", value=row['제목'])
+                            ec = st.text_area("내용 수정", value=row['내용'], height=150)
+                            if st.form_submit_button("수정 완료"):
+                                df_ms.at[idx, '제목'] = et
+                                df_ms.at[idx, '내용'] = ec
+                                df_ms.to_csv(MARKET_SUMMARIES_FILE, index=False)
+                                del st.session_state[f"editing_ms_{idx}"]
+                                st.rerun()
+        else:
+            st.info("사령부에서 공표된 시장 요약이 아직 없습니다.")
 
 elif page.startswith("8-e."):
     st.header("[ QUOTE ] 거장의 한마디 (Mindset)")
