@@ -2365,6 +2365,82 @@ now_us = datetime.now(pytz.timezone("America/New_York"))
 
 
 
+@st.cache_data(ttl=30)
+def get_top_indices():
+    """[ PRO ] 실시간 지수 관제 데이터 페칭 (나스닥/코스피 등 통합)"""
+    res = {
+        "DOW": [0.0, 0.0, 0.0, 0.0],
+        "S&P500": [0.0, 0.0, 0.0, 0.0],
+        "NASDAQ": [0.0, 0.0, 0.0, 0.0],
+        "KOSPI": [0.0, 0.0, 0.0, 0.0],
+        "KOSDAQ": [0.0, 0.0, 0.0, 0.0],
+    }
+    symbols = {
+        "DOW": "^DJI",
+        "S&P500": "^GSPC",
+        "NASDAQ": "^IXIC",
+        "KOSPI": "^KS11",
+        "KOSDAQ": "^KQ11",
+    }
+    
+    try:
+        # 1. 일괄 다운로드 시도
+        ticker_list = list(symbols.values())
+        data = yf.download(ticker_list, period="5d", interval="1d", progress=False)
+        
+        if not data.empty:
+            for name, ticker in symbols.items():
+                try:
+                    # MultiIndex 혹은 단일 Index 대응
+                    if isinstance(data.columns, pd.MultiIndex):
+                        close_s = data["Close"][ticker].dropna()
+                        high_s = data["High"][ticker].dropna()
+                        low_s = data["Low"][ticker].dropna()
+                    else:
+                        close_s = data["Close"].dropna() if ticker in ticker_list else pd.Series()
+                        high_s = data["High"].dropna()
+                        low_s = data["Low"].dropna()
+
+                    if not close_s.empty and len(close_s) >= 2:
+                        curr = float(close_s.iloc[-1])
+                        prev = float(close_s.iloc[-2])
+                        pct = ((curr / prev) - 1) * 100
+                        h_val = float(high_s.max())
+                        l_val = float(low_s.min())
+                        res[name] = [curr, pct, h_val, l_val]
+                except:
+                    continue
+
+        # 2. 누락된 항목에 대해 개별 Ticker 객체로 정밀 재시도
+        for name, ticker in symbols.items():
+            if res[name][0] == 0.0:
+                try:
+                    tk = yf.Ticker(ticker)
+                    fast = tk.fast_info
+                    curr = fast.get('last_price') or 0.0
+                    prev = fast.get('previous_close') or curr
+                    if curr == 0: 
+                        df = tk.history(period="5d")
+                        if not df.empty:
+                            curr = df['Close'].iloc[-1]
+                            prev = df['Close'].iloc[-2] if len(df) >= 2 else curr
+                            h_val = df['High'].max()
+                            l_val = df['Low'].min()
+                        else: continue
+                    else:
+                        h_val = fast.get('day_high') or curr
+                        l_val = fast.get('day_low') or curr
+                    
+                    pct = ((curr / prev) - 1) * 100 if prev != 0 else 0
+                    res[name] = [float(curr), float(pct), float(h_val), float(l_val)]
+                except:
+                    continue
+    except Exception as e:
+        print(f"DEBUG: Index Fetch Error: {e}")
+    
+    return res
+
+
 # --- [ CONTROL ] 사령부 통합 지수 관제 센터 (Stable v6.1) ---
 idx_info = get_top_indices()
 
