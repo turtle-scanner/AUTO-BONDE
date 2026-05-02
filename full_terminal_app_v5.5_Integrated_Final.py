@@ -1172,6 +1172,7 @@ ZONE_CONFIG = {
         "2-b. [ MAP ] 실시간 히트맵",
         "2-c. [ SENTIMENT ] 시장 심리 게이지",
         "2-d. [ ABOUT ] 제작 동기",
+        "2-e. [ NEWS ] 실시간 시장 뉴스",
     ],
     "[ TARGET ] 3. 주도주 추격대": [
         "3-a. [ SCAN ] 주도주 타점 스캐너",
@@ -3568,6 +3569,92 @@ Dragonfly는 복잡한 중력의 방해를 받지 않고 <b style='color:#FFD700
     """,
         unsafe_allow_html=True,
     )
+
+elif page.startswith("2-e."):
+    st.header("📰 [ LIVE ] 실시간 시장 뉴스 관제 센터")
+    st.markdown("<div class='glass-card'>국내외 증시의 핵심 뉴스 및 헤드라인을 실시간으로 감시합니다.</div>", unsafe_allow_html=True)
+    
+    # [ PREMIUM ] TradingView News Ticker Banner
+    ticker_html = """
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+      {
+      "symbols": [
+        { "proName": "FOREXCOM:SPX3500", "title": "S&P 500" },
+        { "proName": "FOREXCOM:NSXUSD", "title": "Nasdaq 100" },
+        { "proName": "FX_IDC:USDKRW", "title": "USD/KRW" },
+        { "description": "KOSPI", "proName": "KRX:KOSPI" },
+        { "description": "KOSDAQ", "proName": "KRX:KOSDAQ" },
+        { "description": "NVDA", "proName": "NASDAQ:NVDA" },
+        { "description": "TSLA", "proName": "NASDAQ:TSLA" }
+      ],
+      "showSymbolLogo": true,
+      "colorTheme": "dark",
+      "isTransparent": true,
+      "displayMode": "adaptive",
+      "locale": "kr"
+    }
+      </script>
+    </div>
+    """
+    st.components.v1.html(ticker_html, height=80)
+
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        st.subheader("🚀 글로벌 마켓 헤드라인")
+        # TradingView Market News Widget
+        news_html = """
+        <div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+          {
+          "feedMode": "all_symbols",
+          "colorTheme": "dark",
+          "isTransparent": true,
+          "displayMode": "regular",
+          "width": "100%",
+          "height": "600",
+          "locale": "kr"
+        }
+          </script>
+        </div>
+        """
+        st.components.v1.html(news_html, height=650)
+
+    with col2:
+        st.subheader("🇰🇷 국내 증시 주요 지표")
+        # TradingView Market Overview / Mini Chart for KR
+        kr_indices_html = """
+        <div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+          {
+          "colorTheme": "dark",
+          "dateRange": "12M",
+          "showChart": true,
+          "locale": "kr",
+          "width": "100%",
+          "height": "600",
+          "largeChartUrl": "",
+          "isTransparent": true,
+          "showSymbolLogo": true,
+          "showFloatingTooltip": false,
+          "tabs": [
+            {
+              "title": "국내 지수",
+              "symbols": [
+                { "s": "KRX:KOSPI", "d": "코스피" },
+                { "s": "KRX:KOSDAQ", "d": "코스닥" }
+              ]
+            }
+          ]
+        }
+          </script>
+        </div>
+        """
+        st.components.v1.html(kr_indices_html, height=650)
 
 elif page.startswith("6-a."):
     st.header("[ CHECK ] 출석체크 (Daily Attendance)")
