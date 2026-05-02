@@ -2744,6 +2744,31 @@ elif page.startswith("2-c."):
             st.warning("분석할 수 있는 주도주 데이터가 충분하지 않습니다. 스캐너를 먼저 가동해 주세요.")
 
 
+elif page.startswith("3-c."):
+    try:
+        st.header("📊 [ ANALYSIS ] 주도주 강도 분석 (Google Sheet RS)")
+        st.markdown("<div class='glass-card'>사령부 공인 구글 스프레드시트 'RS' 탭의 실시간 상대강도 데이터입니다.</div>", unsafe_allow_html=True)
+        
+        with st.spinner("구글 시트 RS 데이터 동기화 중..."):
+            # [ DATA SOURCE ] 구글 스프레드시트 RS 탭 (gid=2082735174)
+            sheet_id = "1HbC_U1I78HAdV99X6qS1hmY_RiRGPrHX92AYbBPrIpU"
+            gid = "2082735174"
+            csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+            
+            df_rs = pd.read_csv(csv_url).dropna(how='all')
+            
+            if not df_rs.empty:
+                st.markdown("#### 🚀 [ LIVE ] 상대강도(RS) 통합 분석 테이블")
+                st.dataframe(
+                    df_rs.style.background_gradient(cmap="Greens", subset=[df_rs.columns[2]] if len(df_rs.columns) > 2 else None),
+                    use_container_width=True, hide_index=True
+                )
+            else:
+                st.warning("데이터가 비어 있습니다.")
+    except Exception as e:
+        st.error(f"데이터 로드 실패: {e}")
+        st.info("사령부 무중단 운영 모드 가동 중...")
+
 elif page.startswith("3-b."):
     st.header("🚀 주도주 랭킹 TOP 50 (RS 리더보드)")
     st.markdown("<div class='glass-card'>마크 미너비니의 상대강도(RS) 개념을 적용한 퀀트 리더보드입니다.</div>", unsafe_allow_html=True)
@@ -3603,7 +3628,12 @@ elif page.startswith("6-a."):
                 </tr>
             """
         table_html += "</tbody></table></div>"
-        st.markdown(table_html, unsafe_allow_html=True)
+        # [ UI FIX ] st.components.v1.html을 사용하여 렌더링 보장 및 오류 방지
+        try:
+            import streamlit.components.v1 as components
+            components.html(table_html, height=500, scrolling=True)
+        except:
+            st.markdown(table_html, unsafe_allow_html=True)
 
 
 elif page.startswith("6-c."):
