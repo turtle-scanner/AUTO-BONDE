@@ -70,7 +70,15 @@ def get_stock_name(ticker):
     # 네트워크 지연 방지를 위해 yfinance 호출 최소화 (필요시 캐시 활용)
     return ticker
 
-@st.cache_data(ttl=300)  # 5분간 캐시 유지로 속도 극대화
+def is_deep_sync_time():
+    """새벽 3~4시(KST) 사이인지 판별하여 정밀 동기화 수행 여부 결정"""
+    try:
+        now_kst = datetime.now(pytz.timezone("Asia/Seoul"))
+        return 3 <= now_kst.hour < 4
+    except:
+        return False
+
+@st.cache_data(ttl=60 if is_deep_sync_time() else 600)  # 새벽에는 1분, 평시에는 10분 캐시로 지능적 운영
 def fetch_rs_sheet_data(url):
     try:
         return pd.read_csv(url).dropna(how='all')
