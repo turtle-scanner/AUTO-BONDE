@@ -1443,13 +1443,13 @@ st.markdown(
     .st-expanderHeader > div {{ white-space: nowrap !important; }}
     
     /* [ CHAT ] 카카오톡 스타일 대화방 디자인 */
-    .chat-container { display: flex; flex-direction: column; gap: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 15px; max-height: 600px; overflow-y: auto; }
-    .chat-bubble { max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 0.95rem; line-height: 1.4; position: relative; color: #000; margin-top: 5px; }
-    .chat-bubble.mine { align-self: flex-end; background: #FEE500; border-bottom-right-radius: 2px; }
-    .chat-bubble.others { align-self: flex-start; background: #FFF; border-bottom-left-radius: 2px; }
-    .chat-info { font-size: 0.7rem; color: #888; margin-top: 5px; display: flex; gap: 5px; }
-    .chat-mine .chat-info { justify-content: flex-end; }
-    .chat-user { font-weight: bold; font-size: 0.8rem; margin-top: 10px; color: #DDD; }
+    .chat-container {{ display: flex; flex-direction: column; gap: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 15px; max-height: 600px; overflow-y: auto; }}
+    .chat-bubble {{ max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 0.95rem; line-height: 1.4; position: relative; color: #000; margin-top: 5px; }}
+    .chat-bubble.mine {{ align-self: flex-end; background: #FEE500; border-bottom-right-radius: 2px; }}
+    .chat-bubble.others {{ align-self: flex-start; background: #FFF; border-bottom-left-radius: 2px; }}
+    .chat-info {{ font-size: 0.7rem; color: #888; margin-top: 5px; display: flex; gap: 5px; }}
+    .chat-mine .chat-info {{ justify-content: flex-end; }}
+    .chat-user {{ font-weight: bold; font-size: 0.8rem; margin-top: 10px; color: #DDD; }}
     </style>
 """,
     unsafe_allow_html=True,
