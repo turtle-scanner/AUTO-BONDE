@@ -48,10 +48,10 @@ jobs:
           /usr/bin/pm2 delete dragonfly-bot || true
           /usr/bin/pm2 start gemini_interactive_bot.py --name "dragonfly-bot" --interpreter python3
           
-          # 3. 웹 터미널 가동 (포트 80)
+          # 3. 웹 터미널 가동 (내부 포트 3000)
           cd v6_terminal
           /usr/bin/pm2 delete v6-terminal || true
-          /usr/bin/pm2 start npm --name "v6-terminal" -- start -- -p 80
+          /usr/bin/pm2 start npm --name "v6-terminal" -- start -- -p 3000
           
           /usr/bin/pm2 save
 
@@ -59,7 +59,7 @@ jobs:
         run: |
           sleep 15
           echo "--- NETWORK STATUS ---"
-          sudo ss -tulpn | grep ":80"
+          sudo ss -tulpn | grep ":3000"
           echo "--- PROCESS LIST ---"
           ps aux | grep -E "next|gemini"
           echo "--- LOG PREVIEW ---"
