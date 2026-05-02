@@ -9,7 +9,7 @@ const BGMPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // 전술적이고 몰입감 있는 테크노/앰비언트 트랙 (Royalty Free)
-  const bgmUrl = "https://cdn.pixabay.com/audio/2022/03/15/audio_7833390c36.mp3"; 
+  const bgmUrl = "/bgm.mp3"; 
 
   const togglePlay = () => {
     if (audioRef.current) {
