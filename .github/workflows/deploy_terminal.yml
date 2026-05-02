@@ -16,16 +16,25 @@ jobs:
 
       - name: Kill Existing Processes
         run: |
-          # Kill streamlit and the gemini bot
-          pkill -f "streamlit run app.py" || true
-          pkill -f "python gemini_interactive_bot.py" || true
+          # Kill all existing streamlit and gemini processes to clear ports
+          sudo pkill -f streamlit || true
+          sudo pkill -f gemini_interactive_bot || true
+          sudo lsof -t -i:80 | xargs sudo kill -9 || true
+          sudo lsof -t -i:8501 | xargs sudo kill -9 || true
           sleep 2
+
+      - name: Open Firewall Ports
+        run: |
+          # Force open ports on OS level
+          sudo iptables -I INPUT -p tcp --dport 80 -j ACCEPT || true
+          sudo iptables -I INPUT -p tcp --dport 8501 -j ACCEPT || true
+          sudo ufw allow 80/tcp || true
+          sudo ufw allow 8501/tcp || true
 
       - name: Launch Platinum V6.0 Terminal
         run: |
-          # Use port 80 to match Cloudflare's expected origin port
-          # This requires sudo on most Linux systems
-          sudo nohup streamlit run app.py --server.port 80 --server.headless true > terminal.log 2>&1 &
+          # Revert to stable port 8501 and run as background
+          nohup streamlit run app.py --server.port 8501 --server.headless true > terminal.log 2>&1 &
           
       - name: Launch Gemini Telegram Bot
         run: |
@@ -35,4 +44,7 @@ jobs:
       - name: Verification
         run: |
           sleep 5
-          ps aux | grep streamlit
+          echo "--- ACTIVE PROCESSES ---"
+          ps aux | grep -E "streamlit|gemini"
+          echo "--- PORT LISTENING STATUS ---"
+          sudo netstat -tulpn | grep -E "80|8501"
