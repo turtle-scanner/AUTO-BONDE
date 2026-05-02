@@ -106,13 +106,13 @@ export default function RootLayout({
               <div className="nav-group">
                 <div className="group-header">[ STRATEGY ] 8. AI 거장들의 전술</div>
                 <div className="sub-menu">
-                  <Link href="/builder" className="sub-item-link"><div className="sub-item">8-a. [ INTRO ] AI 요원 및 거장 소개</div></Link>
-                  <Link href="/builder" className="sub-item-link"><div className="sub-item">8-b. [ MANUAL ] 거장의 실전 전술 매뉴얼</div></Link>
-                  <Link href="/builder" className="sub-item-link"><div className="sub-item">8-c. [ CHECKLIST ] 진입 전 필수 체크리스트</div></Link>
-                  <Link href="/builder" className="sub-item-link"><div className="sub-item">8-d. [ LIBRARY ] 추천 필독서 및 전술 라이브러리</div></Link>
-                  <Link href="/builder" className="sub-item-link"><div className="sub-item">8-e. [ QUOTE ] 오늘의 거장 명언</div></Link>
-                  <Link href="/builder" className="sub-item-link"><div className="sub-item">8-f. [ LOGS ] AI 자동매매 실전 기록</div></Link>
-                  <Link href="/builder" className="sub-item-link"><div className="sub-item">8-g. [ PERFORMANCE ] AI 수익률 전격 공개</div></Link>
+                  <Link href="/strategy/intro" className="sub-item-link"><div className="sub-item">8-a. [ INTRO ] AI 요원 및 거장 소개</div></Link>
+                  <Link href="/strategy/manual" className="sub-item-link"><div className="sub-item">8-b. [ MANUAL ] 거장의 실전 전술 매뉴얼</div></Link>
+                  <Link href="/strategy/checklist" className="sub-item-link"><div className="sub-item">8-c. [ CHECKLIST ] 진입 전 필수 체크리스트</div></Link>
+                  <Link href="/strategy/library" className="sub-item-link"><div className="sub-item">8-d. [ LIBRARY ] 추천 필독서 및 전술 라이브러리</div></Link>
+                  <Link href="/strategy/quote" className="sub-item-link"><div className="sub-item">8-e. [ QUOTE ] 오늘의 거장 명언</div></Link>
+                  <Link href="/strategy/logs" className="sub-item-link"><div className="sub-item">8-f. [ LOGS ] AI 자동매매 실전 기록</div></Link>
+                  <Link href="/strategy/performance" className="sub-item-link"><div className="sub-item">8-g. [ PERFORMANCE ] AI 수익률 전격 공개</div></Link>
                 </div>
               </div>
             </nav>

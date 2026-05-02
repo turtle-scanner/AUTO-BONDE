@@ -1,49 +1,98 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import GlassCard from '@/components/GlassCard';
-import { FileText, Plus, ChevronDown, Edit3, Trash2, User } from 'lucide-react';
+import { FileText, ChevronDown, Edit3, Save } from 'lucide-react';
+
+interface Post {
+  id: number;
+  title: string;
+  date: string;
+  author: string;
+  content: string;
+}
+
+const STORAGE_KEY = 'dragonfly_summary_posts';
+
+const defaultPosts: Post[] = [
+  {
+    id: 1,
+    title: "투자 용어사전",
+    date: "2026-05-02 12:16",
+    author: "cntfed",
+    content: `지연 반응 (Delayed Reaction): 강력한 실적이나 뉴스(EP)로 주가가 급등한 직후, 바로 추격 매수하지 않고 주가가 옆으로 기며 변동성이 잦아들 때까지 기다리는 구간입니다.\nS&P 500: 미국 증시를 대표하는 500개 대형 기업의 주가를 지수로 나타낸 것으로, 시장 전체의 건강 상태를 파악하는 핵심 척도입니다.\n확정된 상승세 (Confirmed Uptrend): IBD(Investors.com)의 진단 기준에 따라 주요 지수가 중요한 기술적 지지선 위에서 견고하게 상승하고 있는 안전한 시장 상태를 의미합니다.\nRS 지수 (Relative Strength): 시장의 다른 종목들보다 얼마나 더 강하게 움직이는지 나타내는 상대 강도 지표로, 보통 70~90 이상의 주도주를 선별할 때 사용합니다.\n피벗구간 (Pivot Point/EP): 주가가 에너지를 응축하다가 강력한 촉매제(EP)를 만나 돌파하기 직전의 변동성 축소 구간, 즉 대가들이 노리는 매수 급소입니다.`
+  }
+];
 
 export default function MarketSummaryPage() {
-  const [isAdmin, setIsAdmin] = useState(true);
+  const [isAdmin] = useState(true);
   const [isWriteOpen, setIsWriteOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      title: "투자 용어사전",
-      date: "2026-05-02 12:16",
-      author: "cntfed",
-      content: `지연 반응 (Delayed Reaction): 강력한 실적이나 뉴스(EP)로 주가가 급등한 직후, 바로 추격 매수하지 않고 주가가 옆으로 기며 변동성이 잦아들 때까지 기다리는 구간입니다.\nS&P 500: 미국 증시를 대표하는 500개 대형 기업의 주가를 지수로 나타낸 것으로, 시장 전체의 건강 상태를 파악하는 핵심 척도입니다.\n확정된 상승세 (Confirmed Uptrend): IBD(Investors.com)의 진단 기준에 따라 주요 지수가 중요한 기술적 지지선 위에서 견고하게 상승하고 있는 안전한 시장 상태를 의미합니다.\nRS 지수 (Relative Strength): 시장의 다른 종목들보다 얼마나 더 강하게 움직이는지 나타내는 상대 강도 지표로, 보통 70~90 이상의 주도주를 선별할 때 사용합니다.\n피벗구간 (Pivot Point/EP): 주가가 에너지를 응축하다가 강력한 촉매제(EP)를 만나 돌파하기 직전의 변동성 축소 구간, 즉 대가들이 노리는 매수 급소입니다.`
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [loaded, setLoaded] = useState(false);
+
+  // 로컬 스토리지에서 데이터 로드
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        setPosts(JSON.parse(saved));
+      } else {
+        setPosts(defaultPosts);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultPosts));
+      }
+    } catch {
+      setPosts(defaultPosts);
     }
-  ]);
+    setLoaded(true);
+  }, []);
+
+  // 데이터 변경 시 자동 저장
+  useEffect(() => {
+    if (loaded && posts.length >= 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+    }
+  }, [posts, loaded]);
 
   const handlePublish = () => {
     if (!newTitle || !newContent) {
       alert("제목과 내용을 모두 입력해 주십시오, 사령관님.");
       return;
     }
-
-    const newPost = {
+    const newPost: Post = {
       id: Date.now(),
       title: newTitle,
-      date: new Date().toLocaleString(),
+      date: new Date().toLocaleString('ko-KR'),
       author: "cntfed",
       content: newContent
     };
-
-    setPosts([newPost, ...posts]);
+    setPosts(prev => [newPost, ...prev]);
     setNewTitle('');
     setNewContent('');
     setIsWriteOpen(false);
-    alert("전술 보고서가 성공적으로 게시되었습니다.");
+    alert("✅ 전술 보고서가 저장 및 게시되었습니다.");
   };
 
   const handleDelete = (id: number) => {
     if (confirm("이 전술 보고서를 말소하시겠습니까?")) {
-      setPosts(posts.filter(p => p.id !== id));
+      setPosts(prev => prev.filter(p => p.id !== id));
     }
+  };
+
+  const startEdit = (post: Post) => {
+    setEditingId(post.id);
+    setEditTitle(post.title);
+    setEditContent(post.content);
+  };
+
+  const handleSaveEdit = (id: number) => {
+    setPosts(prev => prev.map(p => p.id === id ? { ...p, title: editTitle, content: editContent, date: new Date().toLocaleString('ko-KR') + ' (수정됨)' } : p));
+    setEditingId(null);
+    alert("✅ 수정 사항이 저장되었습니다.");
   };
 
   return (
@@ -56,32 +105,19 @@ export default function MarketSummaryPage() {
 
       {isAdmin && (
         <div className="admin-write-section">
-          <button 
-            className="write-toggle-btn glass"
-            onClick={() => setIsWriteOpen(!isWriteOpen)}
-          >
+          <button className="write-toggle-btn glass" onClick={() => setIsWriteOpen(!isWriteOpen)}>
             <ChevronDown size={16} className={isWriteOpen ? "rotate" : ""} />
             <FileText size={16} /> [ ADMIN ] 시장 요약 신규 작성
           </button>
-          
           {isWriteOpen && (
             <GlassCard className="write-form-card animate-slide-down">
               <div className="form-group">
-                <input 
-                  type="text" 
-                  placeholder="제목을 입력하세요" 
-                  className="glass-input title-input"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                />
-                <textarea 
-                  placeholder="전술적 분석 내용을 입력하세요" 
-                  className="glass-input content-input" 
-                  value={newContent}
-                  onChange={(e) => setNewContent(e.target.value)}
-                />
+                <input type="text" placeholder="제목을 입력하세요" className="glass-input title-input" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
+                <textarea placeholder="전술적 분석 내용을 입력하세요" className="glass-input content-input" value={newContent} onChange={(e) => setNewContent(e.target.value)} />
               </div>
-              <button className="submit-btn glass" onClick={handlePublish}>전술 보고서 게시</button>
+              <button className="submit-btn glass" onClick={handlePublish}>
+                <Save size={16} /> 전술 보고서 저장 및 게시
+              </button>
             </GlassCard>
           )}
         </div>
@@ -101,193 +137,74 @@ export default function MarketSummaryPage() {
       <div className="post-list">
         {posts.map((post) => (
           <GlassCard key={post.id} className="post-card">
-            <div className="post-header">
-              <h3 className="post-title">{post.title}</h3>
-              <span className="post-date">{post.date}</span>
-            </div>
-            <div className="post-body">
-              {post.content.split('\n').map((line, i) => (
-                <p key={i}>{line}</p>
-              ))}
-            </div>
-            <div className="post-footer">
-              <span className="author-sig">Commander: {post.author}</span>
-            </div>
-            {isAdmin && (
-              <div className="post-actions">
-                <button className="action-btn edit">수정</button>
-                <button className="action-btn delete" onClick={() => handleDelete(post.id)}>삭제</button>
+            {editingId === post.id ? (
+              <div className="edit-form">
+                <input type="text" className="glass-input title-input" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                <textarea className="glass-input content-input" value={editContent} onChange={(e) => setEditContent(e.target.value)} />
+                <div className="post-actions">
+                  <button className="action-btn save" onClick={() => handleSaveEdit(post.id)}>💾 저장</button>
+                  <button className="action-btn cancel" onClick={() => setEditingId(null)}>취소</button>
+                </div>
               </div>
+            ) : (
+              <>
+                <div className="post-header">
+                  <h3 className="post-title">{post.title}</h3>
+                  <span className="post-date">{post.date}</span>
+                </div>
+                <div className="post-body">
+                  {post.content.split('\n').map((line, i) => (<p key={i}>{line}</p>))}
+                </div>
+                <div className="post-footer">
+                  <span className="author-sig">Commander: {post.author}</span>
+                </div>
+                {isAdmin && (
+                  <div className="post-actions">
+                    <button className="action-btn edit" onClick={() => startEdit(post)}>수정</button>
+                    <button className="action-btn delete" onClick={() => handleDelete(post.id)}>삭제</button>
+                  </div>
+                )}
+              </>
             )}
           </GlassCard>
         ))}
       </div>
 
       <style jsx>{`
-        .summary-container {
-          padding: 40px;
-          max-width: 1200px;
-          margin: 0 auto;
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-        }
-
-        .summary-title {
-          font-size: 2.2rem;
-          font-weight: 900;
-          color: white;
-        }
-
+        .summary-container { padding: 40px; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+        .summary-title { font-size: 2.2rem; font-weight: 900; color: white; }
         .summary-title .tag { color: var(--primary); margin-right: 12px; }
-
-        .admin-write-section {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .write-toggle-btn {
-          width: 100%;
-          padding: 12px 20px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          font-size: 0.85rem;
-          font-weight: 800;
-          color: #e2e8f0;
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid var(--card-border);
-          border-radius: 8px;
-          cursor: pointer;
-        }
-
+        .admin-write-section { display: flex; flex-direction: column; gap: 12px; }
+        .write-toggle-btn { width: 100%; padding: 12px 20px; display: flex; align-items: center; gap: 12px; font-size: 0.85rem; font-weight: 800; color: #e2e8f0; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); border-radius: 8px; cursor: pointer; }
         .write-form-card { margin-top: 8px; padding: 24px; }
-
-        .glass-input {
-          width: 100%;
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid var(--card-border);
-          border-radius: 8px;
-          padding: 12px;
-          color: white;
-          outline: none;
-          margin-bottom: 12px;
-        }
-
+        .glass-input { width: 100%; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; color: white; outline: none; margin-bottom: 12px; font-family: inherit; font-size: 0.95rem; }
+        .glass-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(0,242,255,0.1); }
         .content-input { min-height: 200px; resize: vertical; }
-
-        .submit-btn {
-          padding: 10px 24px;
-          background: var(--primary);
-          color: black;
-          font-weight: 800;
-          border-radius: 6px;
-          cursor: pointer;
-        }
-
-        .pagination-bar {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 20px;
-          padding: 12px;
-          border-radius: 8px;
-          background: rgba(0, 0, 0, 0.2);
-        }
-
+        .submit-btn { padding: 10px 24px; background: var(--primary); color: black; font-weight: 800; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; border: none; font-size: 0.9rem; }
+        .submit-btn:hover { opacity: 0.9; }
+        .pagination-bar { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.2); }
         .pagination-bar .label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
-
-        .page-selector {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          background: #1e293b;
-          padding: 4px 12px;
-          border-radius: 6px;
-          border: 1px solid var(--card-border);
-        }
-
+        .page-selector { display: flex; align-items: center; gap: 12px; background: #1e293b; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--card-border); }
         .page-btn { background: transparent; border: none; color: white; font-weight: 800; font-size: 0.9rem; }
         .page-controls { display: flex; gap: 8px; }
         .ctrl-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; }
-
-        .post-list {
-          display: flex;
-          flex-direction: column;
-          gap: 32px;
-        }
-
-        .post-card {
-          padding: 40px;
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid var(--card-border);
-          position: relative;
-        }
-
-        .post-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 32px;
-        }
-
-        .post-title {
-          font-size: 1.8rem;
-          font-weight: 900;
-          color: #fbbf24; /* Tactical Yellow */
-          letter-spacing: -0.01em;
-        }
-
-        .post-date {
-          font-size: 0.8rem;
-          color: var(--text-muted);
-          font-family: 'Fira Code', monospace;
-        }
-
-        .post-body {
-          font-size: 1.05rem;
-          line-height: 1.7;
-          color: #e2e8f0;
-          margin-bottom: 40px;
-          white-space: pre-wrap;
-        }
-
+        .post-list { display: flex; flex-direction: column; gap: 32px; }
+        .post-card { padding: 40px; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); }
+        .post-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+        .post-title { font-size: 1.8rem; font-weight: 900; color: #fbbf24; }
+        .post-date { font-size: 0.8rem; color: var(--text-muted); font-family: 'Fira Code', monospace; }
+        .post-body { font-size: 1.05rem; line-height: 1.7; color: #e2e8f0; margin-bottom: 40px; white-space: pre-wrap; }
         .post-body p { margin-bottom: 12px; }
-
-        .post-footer {
-          display: flex;
-          justify-content: flex-end;
-          border-top: 1px solid rgba(255, 255, 255, 0.05);
-          padding-top: 20px;
-        }
-
-        .author-sig {
-          font-size: 0.85rem;
-          color: var(--text-muted);
-          font-style: italic;
-        }
-
-        .post-actions {
-          display: flex;
-          gap: 12px;
-          margin-top: 24px;
-        }
-
-        .action-btn {
-          padding: 6px 16px;
-          border-radius: 4px;
-          font-size: 0.8rem;
-          font-weight: 800;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .edit { background: rgba(255, 255, 255, 0.05); border: 1px solid #ff0055; color: #ff0055; }
-        .delete { background: rgba(255, 0, 85, 0.1); border: 1px solid #ff0055; color: #ff0055; }
-
-        .action-btn:hover { background: #ff0055; color: white; }
-
+        .post-footer { display: flex; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; }
+        .author-sig { font-size: 0.85rem; color: var(--text-muted); font-style: italic; }
+        .post-actions { display: flex; gap: 12px; margin-top: 24px; }
+        .action-btn { padding: 6px 16px; border-radius: 4px; font-size: 0.8rem; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+        .edit { background: rgba(255,255,255,0.05); border: 1px solid #ff0055; color: #ff0055; }
+        .delete { background: rgba(255,0,85,0.1); border: 1px solid #ff0055; color: #ff0055; }
+        .save { background: rgba(0,242,255,0.1); border: 1px solid var(--primary); color: var(--primary); }
+        .cancel { background: rgba(255,255,255,0.05); border: 1px solid var(--text-muted); color: var(--text-muted); }
+        .action-btn:hover { opacity: 0.8; }
+        .edit-form { display: flex; flex-direction: column; gap: 12px; }
         .rotate { transform: rotate(180deg); }
       `}</style>
     </div>
