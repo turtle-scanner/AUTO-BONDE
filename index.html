@@ -176,29 +176,24 @@
         .hero-text h2 { font-size: 2.5rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem; }
         .hero-text p { font-size: 1.1rem; color: var(--text-main); opacity: 0.9; }
 
-        /* --- Mission Grid --- */
-        .mission-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
-            margin-bottom: 2rem;
+        /* --- Sidebar Navigation --- */
+        .dashboard-container { display: flex; gap: 2rem; min-height: calc(100vh - 200px); }
+        .sidebar-nav {
+            width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.8rem;
         }
-        .mission-card {
-            background: var(--card-bg); backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border); border-radius: 16px;
-            padding: 1.2rem; text-align: center; cursor: pointer;
-            transition: all 0.3s; display: flex; flex-direction: column; align-items: center; gap: 0.8rem;
+        .nav-item {
+            background: var(--card-bg); border: 1px solid var(--glass-border);
+            padding: 1rem 1.5rem; border-radius: 12px; cursor: pointer;
+            display: flex; align-items: center; gap: 1rem; transition: 0.3s;
+            color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
         }
-        .mission-card:hover {
-            transform: translateY(-5px); border-color: var(--primary);
-            background: rgba(254, 240, 27, 0.05);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        }
-        .mission-icon {
-            width: 40px; height: 40px; background: rgba(255,255,255,0.03);
-            border-radius: 10px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; color: var(--primary);
-        }
-        .mission-card h3 { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
-        .mission-card p { font-size: 0.7rem; color: var(--text-muted); }
+        .nav-item i { width: 20px; font-size: 1.1rem; color: var(--primary); opacity: 0.8; }
+        .nav-item:hover { background: rgba(254, 240, 27, 0.05); border-color: var(--primary); color: white; }
+        .nav-item.active { background: var(--primary); color: #000; border-color: var(--primary); }
+        .nav-item.active i { color: #000; opacity: 1; }
+
+        .main-display { flex-grow: 1; min-width: 0; }
+        #module-content { animation: fadeIn 0.4s ease-out; }
 
     </style>
 </head>
@@ -283,102 +278,103 @@
             </div>
         </header>
 
-        <div class="stat-grid">
-            <div class="glass-card stat-card">
-                <div class="stat-label">Total Assets</div>
-                <div class="stat-value">₩128,450,000</div>
-                <div class="stat-delta up">▲ ₩3,120,000 (+2.4%)</div>
-            </div>
-            <div class="glass-card stat-card">
-                <div class="stat-label">Active Positions</div>
-                <div class="stat-value">8 Stocks</div>
-                <div class="stat-label" style="margin-top: 0.5rem;">Avg Holding: 4.2 Days</div>
-            </div>
-            <div class="glass-card stat-card">
-                <div class="stat-label">Today's P/L</div>
-                <div class="stat-value up">+₩1,850,200</div>
-                <div class="stat-label" style="margin-top: 0.5rem;">14 Executed Trades</div>
-            </div>
-            <div class="glass-card stat-card">
-                <div class="stat-label">Risk Exposure</div>
-                <div class="stat-value" style="color: var(--primary);">MODERATE</div>
-                <div class="stat-delta down">VIX: 18.2 (+1.5%)</div>
-            </div>
-        </div>
-
-        <div class="grid-layout">
-            <div class="main-col">
-                <div class="hero-banner">
-                    <div class="hero-text">
-                        <h2>PLATINUM COMMAND V6.0</h2>
-                        <p>Stock Dragonfly 전용 알고리즘 엔진 가동 중...</p>
-                    </div>
+        <div class="dashboard-container">
+            <aside class="sidebar-nav">
+                <div class="nav-item active" onclick="loadMission('default')">
+                    <i class="fa-solid fa-house"></i>
+                    <span>홈 대시보드</span>
                 </div>
-
-                <div class="mission-grid">
-                    <div class="mission-card" onclick="alert('사령부 본부 진입 중...')">
-                        <div class="mission-icon"><i class="fa-solid fa-building-shield"></i></div>
-                        <h3>1. 본부 사령부</h3>
-                        <p>HQ & 인적 자원</p>
-                    </div>
-                    <div class="mission-card" onclick="alert('시장 상황실 진입 중...')">
-                        <div class="mission-icon"><i class="fa-solid fa-satellite-dish"></i></div>
-                        <h3>2. 시장 상황실</h3>
-                        <p>트렌드 및 히트맵</p>
-                    </div>
-                    <div class="mission-card" onclick="alert('주도주 추격대 진입 중...')">
-                        <div class="mission-icon"><i class="fa-solid fa-crosshairs"></i></div>
-                        <h3>3. 주도주 추격대</h3>
-                        <p>타점 스캐너</p>
-                    </div>
-                    <div class="mission-card" onclick="alert('전략 및 리스크 진입 중...')">
-                        <div class="mission-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                        <h3>4. 전략 및 리스크</h3>
-                        <p>리스크 계산기</p>
-                    </div>
-                    <div class="mission-card" onclick="alert('마스터 훈련소 진입 중...')">
-                        <div class="mission-icon"><i class="fa-solid fa-graduation-cap"></i></div>
-                        <h3>5. 마스터 훈련소</h3>
-                        <p>차트 공부 & 시험</p>
-                    </div>
-                    <div class="mission-card" onclick="alert('안티그래비티 광장 진입 중...')">
-                        <div class="mission-icon"><i class="fa-solid fa-comments"></i></div>
-                        <h3>6. 안티그래비티 광장</h3>
-                        <p>출석체크 & 소통방</p>
-                    </div>
-                    <div class="mission-card" onclick="alert('자동매매 사령부 진입 중...')">
-                        <div class="mission-icon"><i class="fa-solid fa-robot"></i></div>
-                        <h3>7. 자동매매 사령부</h3>
-                        <p>전략 엔진 가동</p>
-                    </div>
-                    <div class="mission-card" onclick="alert('AI 거장들의 전술 진입 중...')">
-                        <div class="mission-icon"><i class="fa-solid fa-brain"></i></div>
-                        <h3>8. AI 거장들의 전술</h3>
-                        <p>실전 전술 매뉴얼</p>
-                    </div>
+                <div class="nav-item" onclick="loadMission('1_hq')">
+                    <i class="fa-solid fa-building-shield"></i>
+                    <span>1. 본부 사령부</span>
                 </div>
-
-                <div class="glass-card">
-                    <div class="card-title"><i class="fa-solid fa-chart-line"></i> Market Overview (NASDAQ)</div>
-                    <div id="main-chart" class="chart-container"></div>
+                <div class="nav-item" onclick="loadMission('2_market')">
+                    <i class="fa-solid fa-satellite-dish"></i>
+                    <span>2. 시장 상황실</span>
                 </div>
-            </div>
+                <div class="nav-item" onclick="loadMission('3_target')">
+                    <i class="fa-solid fa-crosshairs"></i>
+                    <span>3. 주도주 추격대</span>
+                </div>
+                <div class="nav-item" onclick="loadMission('4_risk')">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>4. 전략 및 리스크</span>
+                </div>
+                <div class="nav-item" onclick="loadMission('5_academy')">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>5. 마스터 훈련소</span>
+                </div>
+                <div class="nav-item" onclick="loadMission('6_square')">
+                    <i class="fa-solid fa-comments"></i>
+                    <span>6. 안티그래비티 광장</span>
+                </div>
+                <div class="nav-item" onclick="loadMission('7_auto')">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>7. 자동매매 사령부</span>
+                </div>
+                <div class="nav-item" onclick="loadMission('8_strategy')">
+                    <i class="fa-solid fa-brain"></i>
+                    <span>8. AI 거장들의 전술</span>
+                </div>
+            </aside>
 
-            <div class="side-col">
-                <div class="glass-card">
-                    <div class="card-title"><i class="fa-solid fa-users-viewfinder"></i> Operative Feed</div>
-                    <div class="feed-list">
-                        <div class="feed-item">
-                            <div class="op-avatar" style="background: var(--accent-purple);">W</div>
-                            <div class="feed-content">
-                                <h4>윌리엄 오닐 [AI]</h4>
-                                <p>CAN SLIM 조건 충족 종목 포착. 컵앤핸들 돌파 구간을 주시하십시오.</p>
-                                <span class="feed-time">2 mins ago</span>
+            <main class="main-display">
+                <div id="module-content">
+                    <div class="hero-banner">
+                        <div class="hero-text">
+                            <h2>PLATINUM COMMAND V6.0</h2>
+                            <p>Stock Dragonfly 전용 알고리즘 엔진 가동 중...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-grid">
+                        <div class="glass-card stat-card">
+                            <div class="stat-label">Total Assets</div>
+                            <div class="stat-value">₩128,450,000</div>
+                            <div class="stat-delta up">▲ ₩3,120,000 (+2.4%)</div>
+                        </div>
+                        <div class="glass-card stat-card">
+                            <div class="stat-label">Active Positions</div>
+                            <div class="stat-value">8 Stocks</div>
+                            <div class="stat-label" style="margin-top: 0.5rem;">Avg Holding: 4.2 Days</div>
+                        </div>
+                        <div class="glass-card stat-card">
+                            <div class="stat-label">Today's P/L</div>
+                            <div class="stat-value up">+₩1,850,200</div>
+                            <div class="stat-label" style="margin-top: 0.5rem;">14 Executed Trades</div>
+                        </div>
+                        <div class="glass-card stat-card">
+                            <div class="stat-label">Risk Exposure</div>
+                            <div class="stat-value" style="color: var(--primary);">MODERATE</div>
+                            <div class="stat-delta down">VIX: 18.2 (+1.5%)</div>
+                        </div>
+                    </div>
+
+                    <div class="grid-layout" style="grid-template-columns: 1fr 350px;">
+                        <div class="main-col">
+                            <div class="glass-card">
+                                <div class="card-title"><i class="fa-solid fa-chart-line"></i> Market Overview (NASDAQ)</div>
+                                <div id="main-chart" class="chart-container"></div>
+                            </div>
+                        </div>
+                        <div class="side-col">
+                            <div class="glass-card">
+                                <div class="card-title"><i class="fa-solid fa-users-viewfinder"></i> Operative Feed</div>
+                                <div class="feed-list">
+                                    <div class="feed-item">
+                                        <div class="op-avatar" style="background: var(--accent-purple);">W</div>
+                                        <div class="feed-content">
+                                            <h4>윌리엄 오닐 [AI]</h4>
+                                            <p>CAN SLIM 조건 충족 종목 포착. 컵앤핸들 돌파 구간을 주시하십시오.</p>
+                                            <span class="feed-time">2 mins ago</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
 
@@ -525,9 +521,46 @@
 
         function initDashboard() {
             const chartDom = document.getElementById('main-chart');
-            const chart = LightweightCharts.createChart(chartDom, { width: chartDom.clientWidth, height: 400, layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#94a3b8' }, grid: { vertLines: { color: 'rgba(255,255,255,0.05)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } } });
-            const lineSeries = chart.addLineSeries({ color: '#fef01b', lineWidth: 2 });
-            lineSeries.setData(Array.from({ length: 50 }, (_, i) => ({ time: 1700000000 + i * 86400, value: 800 + Math.random() * 200 })));
+            if (chartDom) {
+                const chart = LightweightCharts.createChart(chartDom, { width: chartDom.clientWidth, height: 400, layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#94a3b8' }, grid: { vertLines: { color: 'rgba(255,255,255,0.05)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } } });
+                const lineSeries = chart.addLineSeries({ color: '#fef01b', lineWidth: 2 });
+                lineSeries.setData(Array.from({ length: 50 }, (_, i) => ({ time: 1700000000 + i * 86400, value: 800 + Math.random() * 200 })));
+            }
+        }
+
+        async function loadMission(name) {
+            // Update active state
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const activeNav = document.querySelector(`.nav-item[onclick="loadMission('${name}')"]`);
+            if (activeNav) activeNav.classList.add('active');
+
+            const contentArea = document.getElementById('module-content');
+            if (name === 'default') {
+                location.reload(); // Quick way to restore home for now
+                return;
+            }
+
+            try {
+                const response = await fetch(`missions/${name}.html`);
+                if (!response.ok) throw new Error('Module not found');
+                const html = await response.text();
+                
+                // Extract body content only
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const bodyContent = doc.body.innerHTML;
+                
+                contentArea.innerHTML = bodyContent;
+                contentArea.classList.remove('fadeIn');
+                void contentArea.offsetWidth; // Trigger reflow
+                contentArea.classList.add('fadeIn');
+            } catch (err) {
+                contentArea.innerHTML = `<div class="glass-card" style="text-align: center; padding: 5rem;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;"></i>
+                    <h2>연결 오류</h2>
+                    <p style="color: var(--text-muted);">${name} 모듈을 사령부 서버에서 불러올 수 없습니다.</p>
+                </div>`;
+            }
         }
 
         checkNavigation();

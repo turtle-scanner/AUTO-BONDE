@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>HQ Command | Stock Dragonfly</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #05070a;
+            --card-bg: rgba(15, 18, 25, 0.8);
+            --primary: #fef01b;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+        body { background: var(--bg-color); color: var(--text-main); font-family: 'Outfit', sans-serif; padding: 2rem; }
+        .module-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; }
+        .module-header i { font-size: 2rem; color: var(--primary); }
+        .module-header h1 { font-size: 1.8rem; font-weight: 800; }
+        .glass-card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 2rem; margin-bottom: 1.5rem; }
+        .back-btn { display: inline-block; padding: 0.8rem 1.5rem; background: var(--glass-border); border-radius: 12px; color: white; text-decoration: none; font-weight: 600; margin-bottom: 2rem; transition: 0.3s; }
+        .back-btn:hover { background: var(--primary); color: #000; }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> 사령부 복귀</a>
+    <div class="module-header">
+        <i class="fa-solid fa-building-shield"></i>
+        <h1>1. 본부 사령부 (HQ)</h1>
+    </div>
+    <div class="glass-card">
+        <h3>사령부 핵심 통제 시스템</h3>
+        <p style="color: var(--text-muted); margin-top: 1rem;">계정 보안, 인적 자원 승인 및 시스템 설정을 관리하는 최상위 노드입니다.</p>
+        <div style="margin-top: 2rem; display: grid; gap: 1rem;">
+            <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border-left: 4px solid var(--primary);">
+                <b>[ ADMIN ] 관리자 승인 센터</b> - 대기 요원 승인 및 권한 부여
+            </div>
+            <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border-left: 4px solid var(--primary);">
+                <b>[ HR ] HQ 인적 자원 사령부</b> - 정예 요원 인적 정보 관리
+            </div>
+            <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border-left: 4px solid var(--primary);">
+                <b>[ SECURE ] 계정 보안 및 관리</b> - 이중 인증 및 세션 제어
+            </div>
+        </div>
+    </div>
+</body>
+</html>
