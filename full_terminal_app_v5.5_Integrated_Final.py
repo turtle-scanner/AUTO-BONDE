@@ -2163,55 +2163,62 @@ def get_pre_breakout_alert():
 
 breakout_msg = get_pre_breakout_alert() if current_user else "로그인 필요"
 
-# --- [ USER CONTROL ] 상단 프리미엄 제어판 (로그인 정보 & 접속 시간 & 로그아웃) ---
+# --- [ USER CONTROL ] 상단 통합 관제 패널 (ID + ACTIVE + LOGOUT) ---
 if current_user:
-    # 접속 시간 계산
+    # 1. 접속 시간 계산
     login_ts = st.session_state.get("login_time", time.time())
     elapsed_sec = int(time.time() - login_ts)
     m, s = divmod(elapsed_sec, 60)
     h, m = divmod(m, 60)
     duration_str = f"{h:02d}:{m:02d}:{s:02d}" if h > 0 else f"{m:02d}:{s:02d}"
 
+    # 2. 통합 패널 레이아웃 (우측 상단 고정 효과)
     st.markdown(
         f"""
-        <div style='position: fixed; top: 15px; right: 20px; z-index: 10001; display: flex; align-items: center; gap: 12px;'>
-            <div style='background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(15px); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 12px; padding: 8px 18px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: flex-end;'>
-                <div style='display: flex; align-items: center; gap: 8px;'>
-                    <span style='color: #888; font-size: 0.75rem; font-weight: 500;'>COMMANDER</span>
-                    <b style='color: #FFD700; font-size: 1rem; letter-spacing: 0.5px;'>{current_user}</b>
+        <div style='position: fixed; top: 15px; right: 20px; z-index: 10001;'>
+            <div style='background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(0, 255, 0, 0.3); border-radius: 15px; padding: 12px 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); border-top: 3px solid #00FF00;'>
+                <div style='text-align: right; margin-bottom: 5px;'>
+                    <span style='color: #888; font-size: 0.7rem; font-weight: 900; letter-spacing: 1px;'>COMMANDER</span><br>
+                    <b style='color: #FFD700; font-size: 1.1rem; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);'>{current_user}</b>
                 </div>
-                <div style='display: flex; align-items: center; gap: 6px; margin-top: 2px;'>
-                    <div style='width: 6px; height: 6px; background: #00FF00; border-radius: 50%; box-shadow: 0 0 8px #00FF00;'></div>
-                    <span style='color: #00FF00; font-family: "Courier New", monospace; font-size: 0.8rem; font-weight: 700;'>ACTIVE {duration_str}</span>
+                <div style='display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 12px;'>
+                    <div style='width: 8px; height: 8px; background: #00FF00; border-radius: 50%; box-shadow: 0 0 10px #00FF00; animation: pulse 1.5s infinite;'></div>
+                    <span style='color: #00FF00; font-family: "Courier New", monospace; font-size: 0.95rem; font-weight: 800; text-shadow: 0 0 5px #00FF00;'>ACTIVE {duration_str}</span>
                 </div>
             </div>
         </div>
         <style>
+            @keyframes pulse {{
+                0% {{ opacity: 1; transform: scale(1); }}
+                50% {{ opacity: 0.5; transform: scale(1.2); }}
+                100% {{ opacity: 1; transform: scale(1); }}
+            }}
             .stButton > button[kind="secondary"] {{
-                background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)) !important;
-                border: 1px solid rgba(255,255,255,0.2) !important;
-                color: #EEE !important;
-                border-radius: 10px !important;
-                font-size: 0.75rem !important;
-                font-weight: 800 !important;
+                background: linear-gradient(135deg, rgba(255, 0, 0, 0.2), rgba(0, 0, 0, 0.8)) !important;
+                border: 1px solid rgba(255, 0, 0, 0.5) !important;
+                color: #FF4B4B !important;
+                border-radius: 8px !important;
+                font-size: 0.8rem !important;
+                font-weight: 900 !important;
+                letter-spacing: 1px !important;
+                height: 35px !important;
                 transition: all 0.3s ease !important;
-                height: 42px !important;
             }}
             .stButton > button[kind="secondary"]:hover {{
-                border-color: #FF4B4B !important;
-                color: #FF4B4B !important;
-                box-shadow: 0 0 15px rgba(255, 75, 75, 0.2) !important;
+                background: #FF4B4B !important;
+                color: #FFF !important;
+                box-shadow: 0 0 20px rgba(255, 75, 75, 0.5) !important;
             }}
         </style>
         """,
         unsafe_allow_html=True
     )
     
-    # 로그아웃 버튼 위치 조정 (Streamlit 버튼은 별도 컬럼으로 배치하여 기능 유지)
-    uc_col_space, uc_col_btn = st.columns([8.8, 1.2])
-    with uc_col_btn:
-        st.write("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-        if st.button("LOGOUT", key="top_logout_btn_new"):
+    # 3. 실질적인 로그아웃 버튼 (위치 고정을 위해 컬럼 활용)
+    uc_col_1, uc_col_2 = st.columns([8.5, 1.5])
+    with uc_col_2:
+        st.write("<div style='height: 80px;'></div>", unsafe_allow_html=True) # 패널 아래로 버튼 밀어내기
+        if st.button("LOGOUT", key="integrated_logout_btn"):
             st.session_state.clear()
             st.rerun()
 
