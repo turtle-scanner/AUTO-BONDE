@@ -13,7 +13,9 @@ export function useMarketData() {
     // Note: In production, this would be your server's URL
     const connect = () => {
       if (typeof window === 'undefined' || !window.WebSocket) return;
-      ws.current = new WebSocket('wss://stockdragonfly.cloud/ws/market');
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.hostname === 'localhost' ? 'localhost:8000' : 'stockdragonfly.cloud';
+      ws.current = new WebSocket(`${protocol}//${host}/ws/market`);
 
       ws.current.onopen = () => {
         console.log("WebSocket Connected");

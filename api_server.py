@@ -29,8 +29,15 @@ market_cache = {
 
 async def fetch_real_market_data():
     """yfinance를 통해 실제 데이터를 갱신하는 루프"""
-    tickers = ["^KS11", "^IXIC", "USDKRW=X", "NVDA"]
-    mapping = {"^KS11": "KOSPI", "^IXIC": "NASDAQ", "USDKRW=X": "USD/KRW", "NVDA": "NVDA"}
+    tickers = ["^KS11", "^KQ11", "^IXIC", "^GSPC", "USDKRW=X", "NVDA"]
+    mapping = {
+        "^KS11": "KOSPI", 
+        "^KQ11": "KOSDAQ", 
+        "^IXIC": "NASDAQ", 
+        "^GSPC": "S&P 500", 
+        "USDKRW=X": "USD/KRW", 
+        "NVDA": "NVDA"
+    }
     
     while True:
         try:

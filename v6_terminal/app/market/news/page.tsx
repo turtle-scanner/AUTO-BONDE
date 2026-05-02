@@ -80,10 +80,10 @@ export default function MarketIntelligenceUpgrade() {
                     <span className="news-impact high">HIGH IMPACT</span>
                   </div>
                   <div className="news-text">
-                    {i === 1 ? "U.S. Tech Giants Surge as AI Infrastructure Spending Reaches Record Highs" : 
-                     i === 2 ? "Federal Reserve Officials Hint at 'Higher for Longer' Interest Rate Strategy" :
-                     i === 3 ? "South Korean Export Data Shows Robust Growth in Semiconductor Sector" :
-                     "Global Oil Markets React to Heightened Geopolitical Tensions in Energy Corridors"}
+                    {i === 1 ? "미국 빅테크 기업들, AI 인프라 지출 사상 최고치 기록하며 급등" : 
+                     i === 2 ? "연준 인사들, '고금리 장기화' 금리 전략 유지 가능성 시사" :
+                     i === 3 ? "한국 수출 데이터, 반도체 섹터의 강력한 성장세 확인" :
+                     "글로벌 석유 시장, 에너지 통로의 지정학적 긴장 고조에 반응"}
                   </div>
                 </div>
               </div>

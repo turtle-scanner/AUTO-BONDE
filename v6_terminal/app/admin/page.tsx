@@ -46,10 +46,8 @@ export default function AdminCenter() {
           { id: "sebinhi", rank: "회원", location: "인천", experience: "5-10년", age: "40대", motivation: "경제적 자유", joined_at: "2026-04-19 2:57" },
           { id: "popsong98", rank: "회원", location: "서울", experience: "1-3년", age: "20대 이하", motivation: "파이어족 되고 싶습니다!!", joined_at: "2026-04-19 3:16" },
           { id: "MoneySnipper", rank: "회원", location: "서울", experience: "3-5년", age: "30대", motivation: "빠른 은퇴", joined_at: "2026-04-19 3:26" },
-          { id: "wlgh8654", rank: "회원", location: "서울", experience: "5-10년", age: "40대", motivation: "미국주식을 통하여 경제적 자유를 얻고자 가입", joined_at: "2026-04-19 3:49" },
-          { id: "hjrubbi", rank: "회원", location: "청주", experience: "-", age: "40대", motivation: "-", joined_at: "2026-04-19 3:49" },
-          { id: "dkdkqldy78", rank: "회원", location: "경기", experience: "1년 미만", age: "30대", motivation: "가장으로서 주식 투자 시작", joined_at: "2026-05-01 22:28" },
-          { id: "rice4657", rank: "회원", location: "서울", experience: "1년 미만", age: "30대", motivation: "경제적 자유", joined_at: "2026-05-01 23:42" },
+          { id: "wlgh8654", rank: "회원", location: "서울", experience: "5-10년", age: "40대", motivation: "미국주식을 통한 경제적 자유 및 적극 활동", joined_at: "2026-04-19 3:49" },
+          { id: "hjrubbi", rank: "회원", location: "청주", experience: "-", age: "40대", motivation: "성별: 여 (추가 인원)", joined_at: "2026-04-19 3:50" },
         ]);
       } finally {
         setIsLoading(false);

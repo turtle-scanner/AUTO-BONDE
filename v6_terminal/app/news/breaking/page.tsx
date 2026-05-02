@@ -20,7 +20,7 @@ export default function BreakingNewsDashboard() {
       id: 1,
       time: '14:24',
       source: 'REUTERS',
-      title: 'U.S. Manufacturing Data Beats Expectations, Dollar Strengthens',
+      title: '미국 제조업 데이터 예상치 상회, 달러 강세 지속',
       category: 'ECONOMY',
       sentiment: 'BULLISH',
       isUrgent: true
@@ -29,7 +29,7 @@ export default function BreakingNewsDashboard() {
       id: 2,
       time: '14:15',
       source: 'BLOOMBERG',
-      title: 'Nvidia Partners with Major Cloud Providers for Next-Gen AI Chips',
+      title: '엔비디아, 차세대 AI 칩 공급 위해 주요 클라우드 업체와 파트너십 체결',
       category: 'TECH',
       sentiment: 'BULLISH',
       isUrgent: false
@@ -38,7 +38,7 @@ export default function BreakingNewsDashboard() {
       id: 3,
       time: '13:58',
       source: 'CNBC',
-      title: 'Federal Reserve Signals Possible Rate Cut Postponement',
+      title: '연준, 인플레이션 우려로 인해 금리 인하 연기 가능성 시사',
       category: 'POLICY',
       sentiment: 'BEARISH',
       isUrgent: true
@@ -47,7 +47,7 @@ export default function BreakingNewsDashboard() {
       id: 4,
       time: '13:30',
       source: 'YAHOO FINANCE',
-      title: 'Oil Prices Dip Amid Global Supply Surge Concerns',
+      title: '글로벌 공급 과잉 우려 속에 유가 소폭 하락',
       category: 'ENERGY',
       sentiment: 'BEARISH',
       isUrgent: false
@@ -56,7 +56,7 @@ export default function BreakingNewsDashboard() {
       id: 5,
       time: '12:45',
       source: 'MARKETWATCH',
-      title: 'Retail Sales Flat as Consumer Spending Cools in April',
+      title: '4월 소비자 지출 둔화로 소매 판매 정체',
       category: 'ECONOMY',
       sentiment: 'NEUTRAL',
       isUrgent: false

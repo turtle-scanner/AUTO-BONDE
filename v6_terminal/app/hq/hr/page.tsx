@@ -6,10 +6,10 @@ import { Users, UserPlus, Award, Briefcase, TrendingUp } from 'lucide-react';
 
 export default function HRDepartment() {
   const staffStats = [
-    { label: "전체 대원", val: "1,248", icon: <Users size={20} />, color: "#0ea5e9" },
-    { label: "신규 임관", val: "+12", icon: <UserPlus size={20} />, color: "#10b981" },
-    { label: "훈장 수여자", val: "45", icon: <Award size={20} />, color: "#fbbf24" },
-    { label: "작전 투입중", val: "892", icon: <Briefcase size={20} />, color: "#ff0055" }
+    { label: "전체 대원", val: "7", icon: <Users size={20} />, color: "#0ea5e9" },
+    { label: "신규 임관", val: "+1", icon: <UserPlus size={20} />, color: "#10b981" },
+    { label: "훈장 수여자", val: "1", icon: <Award size={20} />, color: "#fbbf24" },
+    { label: "작전 투입중", val: "7", icon: <Briefcase size={20} />, color: "#ff0055" }
   ];
 
   return (

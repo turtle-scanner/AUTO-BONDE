@@ -32,7 +32,6 @@ const EXAM_QUESTIONS = [
   { q: "SEPA 전략에서 '진입 포인트'의 기준은?", options: ["52주 저가 근처", "VCP 등 정형화된 패턴의 피벗 포인트 돌파", "이동평균선 하향 이탈", "PER 10배 이하"], answer: 1 },
   { q: "본데에서 '홀딩 원칙'이란?", options: ["무조건 1년 보유", "추세가 살아있고 손절선을 이탈하지 않는 한 유지", "10% 수익 시 무조건 매도", "뉴스 나오면 매도"], answer: 1 },
   { q: "스윙 트레이딩의 평균 보유 기간은?", options: ["수 분~수 시간", "수 일~수 주", "수 년", "10년 이상"], answer: 1 },
-  { q: "본데 사령부의 핵심 정신은?", options: ["빠른 단타로 수익 극대화", "철저한 원칙과 데이터 기반의 공격적 주도주 투자", "무조건 분산 투자", "배당주 장기 투자"], answer: 1 },
 ];
 
 export default function LoginPage() {
@@ -44,6 +43,30 @@ export default function LoginPage() {
   const [examScore, setExamScore] = useState(0);
   const [currentQ, setCurrentQ] = useState(0);
   const [loginError, setLoginError] = useState('');
+  const [timeLeft, setTimeLeft] = useState(900); // 15분 (900초)
+
+  // Timer logic
+  useEffect(() => {
+    if (mode === 'exam' && !examDone && timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            submitExam();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [mode, examDone, timeLeft]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   const SHEET_ID = '1xjbe9SF0HsxwY_Uy3NC2tT92BqK0nhArUaYU16Q0p9M';
 
@@ -113,7 +136,7 @@ export default function LoginPage() {
             ) : (
               <>
                 <p style={{ color: '#888', marginBottom: '20px' }}>25문제 이상 맞춰야 합격입니다. (부족: {25 - examScore}문제)</p>
-                <button style={styles.secondaryBtn} onClick={() => { setExamDone(false); setExamAnswers(new Array(30).fill(-1)); setCurrentQ(0); }}>다시 도전</button>
+                <button style={styles.secondaryBtn} onClick={() => { setExamDone(false); setExamAnswers(new Array(30).fill(-1)); setCurrentQ(0); setTimeLeft(900); }}>다시 도전</button>
               </>
             )}
           </div>
@@ -125,7 +148,10 @@ export default function LoginPage() {
       <div style={styles.overlay}>
         <div style={{ ...styles.card, maxWidth: '600px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-            <span style={{ color: '#d4af37', fontFamily: 'Orbitron' }}>[ 자격심사 ]</span>
+            <div style={{ textAlign: 'left' }}>
+              <span style={{ color: '#d4af37', fontFamily: 'Orbitron', display: 'block', fontSize: '0.8rem' }}>[ 자격심사 ]</span>
+              <span style={{ color: timeLeft < 60 ? '#ef4444' : '#fff', fontSize: '1.2rem', fontWeight: 900 }}>{formatTime(timeLeft)}</span>
+            </div>
             <span style={{ color: '#888' }}>{currentQ + 1} / {EXAM_QUESTIONS.length}</span>
           </div>
           <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
@@ -219,6 +245,7 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
 const styles: Record<string, React.CSSProperties> = {
   overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: '#05070a', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, fontFamily: 'Inter, sans-serif' },
