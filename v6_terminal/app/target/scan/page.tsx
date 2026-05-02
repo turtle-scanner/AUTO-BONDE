@@ -16,10 +16,23 @@ export default function TargetScanPage() {
   }, []);
 
   return (
-    <div className="scan-page animate-fade-in">
       <div className="section-header">
-        <h1 className="gradient-text">3-a. [ SCAN ] 주도주 타점 스캐너</h1>
+        <div className="header-top">
+          <h1 className="gradient-text">3-a. [ SCAN ] 주도주 타점 스캐너</h1>
+          <span className="live-badge">LIVE SCANNING</span>
+        </div>
         <p className="subtitle">본데의 매수 정신: "압도적 거래량과 완벽한 추세의 교차점"</p>
+      </div>
+
+      {/* Tactical Banner */}
+      <div className="tactical-banner glass">
+        <div className="banner-content">
+          <span className="banner-tag">[ BONDE'S TACTICAL NOTES ]</span>
+          <p className="banner-text">
+            "스캐너에 포착된 종목은 단순한 숫자가 아니다. 시장의 에너지가 임계점에 도달했음을 알리는 신호탄이다. 
+            VCP 패턴의 수축이 끝나는 지점에서 거래량이 동반될 때 사령부의 공격은 시작된다."
+          </p>
+        </div>
       </div>
 
       <div className="scanner-container glass">

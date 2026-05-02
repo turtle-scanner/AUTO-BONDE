@@ -173,3 +173,62 @@ body {
 .animate-fade-in {
   animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+
+/* --- [ TACTICAL BANNER & HEADERS ] --- */
+.section-header, .rank-header {
+  margin-bottom: 24px;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.live-badge, .rank-badge-live {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  letter-spacing: 0.05em;
+}
+
+.subtitle, .rank-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.tactical-banner {
+  padding: 24px;
+  margin-bottom: 32px;
+  border-left: 4px solid var(--primary);
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.05) 0%, transparent 100%);
+}
+
+.banner-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.banner-tag {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: var(--primary);
+  letter-spacing: 2px;
+}
+
+.banner-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #e2e8f0;
+  font-style: italic;
+}
+

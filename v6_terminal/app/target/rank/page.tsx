@@ -34,10 +34,24 @@ export default function RankPage() {
   return (
     <div className="rank-container animate-fade-in">
       <div className="rank-header">
-        <h1 className="rank-title">
-          <Trophy size={32} className="title-icon" /> [ RANK ] 주도주 랭킹 TOP 50
-        </h1>
+        <div className="header-top">
+          <h1 className="rank-title">
+            <Trophy size={32} className="title-icon" /> [ RANK ] 주도주 랭킹 TOP 50
+          </h1>
+          <span className="rank-badge-live">DATA SYNCED</span>
+        </div>
         <p className="rank-subtitle">구글 시트 빅데이터 기반 · 최근 언급 빈도 + 누적 스코어 종합 랭킹</p>
+      </div>
+
+      {/* Tactical Banner */}
+      <div className="tactical-banner glass">
+        <div className="banner-content">
+          <span className="banner-tag">[ BONDE'S TACTICAL NOTES ]</span>
+          <p className="banner-text">
+            "순위는 거짓말을 하지 않는다. 언급 빈도가 높아진다는 것은 기관과 세력의 관심이 쏠리고 있다는 증거다. 
+            TOP 3 종목의 RS(상대강도) 변화를 매일 아침 9시 이전에 반드시 체크하라."
+          </p>
+        </div>
       </div>
 
       <div className="podium">
