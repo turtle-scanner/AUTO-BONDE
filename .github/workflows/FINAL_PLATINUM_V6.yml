@@ -1,0 +1,50 @@
+name: FINAL PLATINUM V6
+
+on:
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  final_deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Sync Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Ultimate Cleanup
+        run: |
+          # Kill EVERYTHING using port 8501 or 80 regardless of user/process name
+          sudo fuser -k 8501/tcp || true
+          sudo fuser -k 80/tcp || true
+          sudo pkill -9 -f streamlit || true
+          sudo pkill -9 -f python || true
+          sleep 2
+
+      - name: OS Firewall Open
+        run: |
+          sudo iptables -I INPUT -p tcp --dport 80 -j ACCEPT || true
+          sudo iptables -I INPUT -p tcp --dport 8501 -j ACCEPT || true
+
+      - name: Launch Platinum V6.0 Terminal
+        run: |
+          # Use absolute path to ensure streamlit is found
+          # Use port 80 for direct Cloudflare proxying
+          sudo nohup /home/ubuntu/.local/bin/streamlit run app.py --server.port 80 --server.address 0.0.0.0 --server.headless true --server.enableCORS false --server.enableXsrfProtection false > terminal.log 2>&1 &
+          
+      - name: Launch Gemini Telegram Bot
+        run: |
+          nohup python gemini_interactive_bot.py > bot.log 2>&1 &
+          disown
+          
+      - name: Final Verification
+        run: |
+          sleep 10
+          echo "--- NETWORK STATUS ---"
+          sudo ss -tulpn | grep -E "80|8501"
+          echo "--- PROCESS LIST ---"
+          ps aux | grep -E "streamlit|gemini"
+          echo "--- LOG PREVIEW ---"
+          tail -n 20 terminal.log
