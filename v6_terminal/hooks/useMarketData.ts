@@ -13,7 +13,7 @@ export function useMarketData() {
     // Note: In production, this would be your server's URL
     const connect = () => {
       if (typeof window === 'undefined' || !window.WebSocket) return;
-      ws.current = new WebSocket('ws://localhost:8000/ws/market');
+      ws.current = new WebSocket('ws://168.107.63.46:8000/ws/market');
 
       ws.current.onopen = () => {
         console.log("WebSocket Connected");
