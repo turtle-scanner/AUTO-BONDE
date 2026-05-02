@@ -76,7 +76,7 @@ export default function Dashboard() {
           <GlassCard className="strategic-banner">
             <div className="banner-content">
               <div className="banner-visual">
-                <img src="/dragonfly_mascot.png" alt="Dragonfly Command" className="dragonfly-img" />
+                <img src="/dragonfly_elite.png" alt="Dragonfly Command" className="dragonfly-img" />
                 <div className="radar-ping"></div>
               </div>
               <div className="banner-text">
