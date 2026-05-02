@@ -25,43 +25,30 @@ import requests
 from urllib3.exceptions import InsecureRequestWarning
 
 TICKER_NAME_MAP = {
-    "NVDA": "엔비디아",
-    "TSLA": "테슬라",
-    "AAPL": "애플",
-    "MSFT": "마이크로소프트",
-    "PLTR": "팔란티어",
-    "SMCI": "슈퍼마이크로",
-    "AMD": "AMD",
-    "META": "메타",
-    "GOOGL": "구글",
-    "AVGO": "브로드컴",
-    "CRWD": "크라우드스트라이크",
-    "005930.KS": "삼성전자",
-    "000660.KS": "SK하이닉스",
-    "196170.KQ": "알테오젠",
-    "042700.KS": "한미반도체",
-    "105560.KS": "KB금융",
-    "055550.KS": "신한지주",
-    "005490.KS": "POSCO홀딩스",
-    "000270.KS": "기아",
-    "066570.KS": "LG전자",
-    "035720.KS": "카카오",
-    "035420.KS": "NAVER",
-    "005380.KS": "현대차",
-    "000810.KS": "삼성화재",
-    "NFLX": "넷플릭스",
-    "MSTR": "마이크로스트래티지",
-    "COIN": "코인베이스",
-    "MARA": "마라톤디지털",
-    "PANW": "팔로알토",
-    "SNOW": "스노우플레이크",
-    "STX": "씨게이트",
-    "WDC": "웨스턴디지털",
-    "247540.KQ": "에코프로비엠",
-    "277810.KQ": "에코프로",
-    "091990.KQ": "셀트리온헬스케어",
-    "293490.KQ": "카카오게임즈",
-    "086520.KQ": "에코프로",
+    # --- [ US / NASDAQ / NYSE ] ---
+    "NVDA": "엔비디아", "TSLA": "테슬라", "AAPL": "애플", "MSFT": "마이크로소프트", "GOOGL": "구글",
+    "AMZN": "아마존", "META": "메타", "AVGO": "브로드컴", "NFLX": "넷플릭스", "AMD": "AMD",
+    "SMCI": "슈퍼마이크로", "CRWD": "크라우드스트라이크", "PLTR": "팔란티어", "MSTR": "마이크로스트래티지",
+    "COIN": "코인베이스", "MARA": "마라톤디지털", "PANW": "팔로알토", "SNOW": "스노우플레이크",
+    "ARM": "ARM", "STX": "씨게이트", "WDC": "웨스턴디지털", "TSM": "TSMC", "ASML": "ASML",
+    "MU": "마이크론", "QCOM": "퀄컴", "INTC": "인텔", "AMAT": "어플라이드", "LRCX": "램리서치",
+    "DELL": "델", "VRT": "버티브", "HOOD": "로빈후드", "LLY": "일라이릴리", "NVO": "노보노디스크",
+    "V": "비자", "MA": "마스터카드", "JPM": "JP모건", "GME": "게임스탑", "DJT": "트럼프미디어",
+
+    # --- [ KR / KOSPI ] ---
+    "005930.KS": "삼성전자", "000660.KS": "SK하이닉스", "005380.KS": "현대차", "000270.KS": "기아",
+    "068270.KS": "셀트리온", "005490.KS": "POSCO홀딩스", "051910.KS": "LG화학", "035420.KS": "NAVER",
+    "035720.KS": "카카오", "105560.KS": "KB금융", "055550.KS": "신한지주", "000810.KS": "삼성화재",
+    "032830.KS": "삼성생명", "196170.KQ": "알테오젠", "042700.KS": "한미반도체", "001240.KS": "한미약품",
+    "012450.KS": "한화에어로", "000100.KS": "유한양행", "010620.KS": "현대미포", "028260.KS": "삼성물산",
+    "010130.KS": "고려아연", "006400.KS": "삼성SDI", "373220.KS": "LG엔솔", "003670.KS": "포스코퓨처엠",
+
+    # --- [ KR / KOSDAQ ] ---
+    "247540.KQ": "에코프로비엠", "086520.KQ": "에코프로", "091990.KQ": "셀트리온헬스케어", "293490.KQ": "카카오게임즈",
+    "403870.KQ": "HPSP", "066970.KQ": "엘앤에프", "145020.KQ": "휴젤", "028300.KQ": "HLB",
+    "214450.KQ": "파마리서치", "035900.KQ": "제이시스메디칼", "039030.KQ": "이오테크닉스", "277810.KQ": "레인보우로보",
+    "112040.KQ": "위메이드", "058470.KQ": "리노공업", "067160.KQ": "아프리카TV", "036930.KQ": "주성엔지니어링",
+    "041510.KQ": "에스엠", "022100.KQ": "포스코DX", "060250.KQ": "NHNKCP", "253450.KQ": "스튜디오드래곤"
 }
 REVERSE_TICKER_MAP = {v: k for k, v in TICKER_NAME_MAP.items()}
 
@@ -2978,87 +2965,6 @@ elif page.startswith("8-d."):
             """,
                 unsafe_allow_html=True,
             )
-        # --- [ NEW ] 전체 시장 요약 게시판 (Pagination + Admin CRUD) ---
-        st.divider()
-        st.markdown("### 📊 [ SUMMARY ] 전체 시장 요약 (Command Post)")
-        
-        # 데이터 로드
-        if os.path.exists(MARKET_SUMMARIES_FILE):
-            df_ms = pd.read_csv(MARKET_SUMMARIES_FILE)
-            df_ms = df_ms.sort_values(by="날짜", ascending=False).reset_index(drop=True)
-        else:
-            df_ms = pd.DataFrame(columns=["날짜", "제목", "내용", "작성자"])
-
-        # [ ADMIN ] 글쓰기 폼
-        if is_admin:
-            with st.expander("📝 [ ADMIN ] 시장 요약 신규 작성", expanded=False):
-                with st.form("new_market_summary"):
-                    new_title = st.text_input("제목", placeholder="오늘의 시장 핵심 요약")
-                    new_content = st.text_area("내용", placeholder="상세 내용을 입력하세요...", height=150)
-                    if st.form_submit_button("사령부 공표"):
-                        if new_title and new_content:
-                            new_row = pd.DataFrame([[
-                                datetime.now(pytz.timezone("Asia/Seoul")).strftime("%Y-%m-%d %H:%M"),
-                                new_title, new_content, current_user
-                            ]], columns=["날짜", "제목", "내용", "작성자"])
-                            df_ms = pd.concat([new_row, df_ms], ignore_index=True)
-                            df_ms.to_csv(MARKET_SUMMARIES_FILE, index=False)
-                            st.success("✅ 새로운 시장 요약이 공표되었습니다.")
-                            st.rerun()
-                        else:
-                            st.warning("제목과 내용을 모두 입력하십시오.")
-
-        # [ VIEW ] 게시글 출력 및 페이지네이션
-        if not df_ms.empty:
-            items_per_page = 3
-            total_pages = (len(df_ms) - 1) // items_per_page + 1
-            if "ms_page" not in st.session_state: st.session_state.ms_page = 1
-            
-            c_p1, c_p2, c_p3 = st.columns([1, 1, 1])
-            with c_p2:
-                page_sel = st.number_input("Summary Page", min_value=1, max_value=total_pages, value=st.session_state.ms_page, key="ms_page_input")
-                st.session_state.ms_page = page_sel
-
-            start_idx = (st.session_state.ms_page - 1) * items_per_page
-            end_idx = start_idx + items_per_page
-            
-            for idx, row in df_ms.iloc[start_idx:end_idx].iterrows():
-                st.markdown(f"""
-                <div class='glass-card' style='padding: 20px; border-left: 5px solid #FFD700; margin-bottom: 15px;'>
-                    <div style='display: flex; justify-content: space-between; align-items: flex-start;'>
-                        <h4 style='margin: 0; color: #FFD700; font-size: 1.1rem;'>{row['제목']}</h4>
-                        <small style='color: #666;'>{row['날짜']}</small>
-                    </div>
-                    <div style='color: #DDD; margin-top: 15px; white-space: pre-wrap; font-size: 0.95rem; line-height: 1.6;'>{row['내용']}</div>
-                    <div style='text-align: right; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;'>
-                        <small style='color: #555;'>Commander: {row['작성자']}</small>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                if is_admin:
-                    ca1, ca2, _ = st.columns([1, 1, 4])
-                    with ca1:
-                        if st.button("수정", key=f"edit_ms_{idx}"):
-                            st.session_state[f"editing_ms_{idx}"] = True
-                    with ca2:
-                        if st.button("삭제", key=f"del_ms_{idx}"):
-                            df_ms = df_ms.drop(idx).reset_index(drop=True)
-                            df_ms.to_csv(MARKET_SUMMARIES_FILE, index=False)
-                            st.rerun()
-                    
-                    if st.session_state.get(f"editing_ms_{idx}"):
-                        with st.form(f"f_edit_ms_{idx}"):
-                            et = st.text_input("제목 수정", value=row['제목'])
-                            ec = st.text_area("내용 수정", value=row['내용'], height=150)
-                            if st.form_submit_button("수정 완료"):
-                                df_ms.at[idx, '제목'] = et
-                                df_ms.at[idx, '내용'] = ec
-                                df_ms.to_csv(MARKET_SUMMARIES_FILE, index=False)
-                                del st.session_state[f"editing_ms_{idx}"]
-                                st.rerun()
-        else:
-            st.info("사령부에서 공표된 시장 요약이 아직 없습니다.")
 
 elif page.startswith("8-e."):
     st.header("[ QUOTE ] 거장의 한마디 (Mindset)")
@@ -3125,7 +3031,7 @@ elif page.startswith("8-a."):
         {
             "name": "6. 한샘 요원 (Hanssem)",
             "title": "안정적인 농사매매의 달인",
-            "desc": "급등주보다는 씨를 뿌리고 수확하는 '농사매매' 기법을 지향합니다. 철저한 분할 매수와 자금 관리로 꾸준한 우상향 곡선을 그려냅니다.",
+            "desc": "급등주보다는 씨를 뿌리고 수확하는 '농사매매' 기법을 지향합니다. 철저한 분할 매수와 자금 관리로 꾸준한 우상향 곡선을 그려낸다.",
             "strategy": "분할 매수 / 농사 매매 / 리스크 관리",
             "icon": "🚜",
         },
@@ -3612,7 +3518,34 @@ elif page.startswith("6-a."):
     st.subheader("[ LIVE ] 실시간 출석 현황")
     df_att = safe_read_csv(ATTENDANCE_FILE, columns=["시간", "아이디", "인사", "등급"])
     if not df_att.empty:
-        st.dataframe(df_att.sort_values("시간", ascending=False), use_container_width=True, hide_index=True)
+        df_att = df_att.sort_values("시간", ascending=False).reset_index(drop=True)
+        
+        # [ UI FIX ] 테이블 줄바꿈을 위한 커스텀 스타일 및 HTML 렌더링
+        table_html = """
+        <div style='overflow-x: auto; width: 100%;'>
+            <table style='width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden; font-size: 0.85rem;'>
+                <thead>
+                    <tr style='background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);'>
+                        <th style='padding: 12px; text-align: left; color: #888;'>시간</th>
+                        <th style='padding: 12px; text-align: left; color: #888;'>아이디</th>
+                        <th style='padding: 12px; text-align: left; color: #888; width: 50%;'>인사 (오늘의 다짐)</th>
+                        <th style='padding: 12px; text-align: left; color: #888;'>등급</th>
+                    </tr>
+                </thead>
+                <tbody>
+        """
+        for _, row in df_att.iterrows():
+            g_color = "#FFD700" if row['등급'] in ["방장", "관리자"] else "#AAA"
+            table_html += f"""
+                <tr style='border-bottom: 1px solid rgba(255,255,255,0.03);'>
+                    <td style='padding: 12px; color: #666; white-space: nowrap;'>{row['시간']}</td>
+                    <td style='padding: 12px; color: #EEE;'>{row['아이디']}</td>
+                    <td style='padding: 12px; color: #DDD; word-break: break-all; white-space: normal; line-height: 1.5;'>{row['인사']}</td>
+                    <td style='padding: 12px; color: {g_color}; font-weight: bold;'>{row['등급']}</td>
+                </tr>
+            """
+        table_html += "</tbody></table></div>"
+        st.markdown(table_html, unsafe_allow_html=True)
 
 
 elif page.startswith("6-c."):
@@ -3757,6 +3690,88 @@ elif page.startswith("2-a."):
                             """, unsafe_allow_html=True)
         except Exception as e:
             st.error(f"지수 데이터를 불러오는 중 오류가 발생했습니다: {e}")
+        
+        # --- [ NEW ] 전체 시장 요약 게시판 (2-a 하단 정위치) ---
+        st.divider()
+        st.markdown("### 📊 [ SUMMARY ] 전체 시장 요약 (Command Post)")
+        
+        # 데이터 로드
+        if os.path.exists(MARKET_SUMMARIES_FILE):
+            df_ms = pd.read_csv(MARKET_SUMMARIES_FILE)
+            df_ms = df_ms.sort_values(by="날짜", ascending=False).reset_index(drop=True)
+        else:
+            df_ms = pd.DataFrame(columns=["날짜", "제목", "내용", "작성자"])
+
+        # [ ADMIN ] 글쓰기 폼
+        if is_admin:
+            with st.expander("📝 [ ADMIN ] 시장 요약 신규 작성", expanded=False):
+                with st.form("new_market_summary_v2"):
+                    new_title = st.text_input("제목", placeholder="오늘의 시장 핵심 요약")
+                    new_content = st.text_area("내용", placeholder="상세 내용을 입력하세요...", height=150)
+                    if st.form_submit_button("사령부 공표"):
+                        if new_title and new_content:
+                            new_row = pd.DataFrame([[
+                                datetime.now(pytz.timezone("Asia/Seoul")).strftime("%Y-%m-%d %H:%M"),
+                                new_title, new_content, current_user
+                            ]], columns=["날짜", "제목", "내용", "작성자"])
+                            df_ms = pd.concat([new_row, df_ms], ignore_index=True)
+                            df_ms.to_csv(MARKET_SUMMARIES_FILE, index=False)
+                            st.success("✅ 새로운 시장 요약이 공표되었습니다.")
+                            st.rerun()
+                        else: st.warning("제목과 내용을 모두 입력하십시오.")
+
+        # [ VIEW ] 게시글 출력 및 페이지네이션
+        if not df_ms.empty:
+            items_per_page = 3
+            total_pages = (len(df_ms) - 1) // items_per_page + 1
+            if "ms_page_v2" not in st.session_state: st.session_state.ms_page_v2 = 1
+            
+            cp1, cp2, cp3 = st.columns([1, 1, 1])
+            with cp2:
+                p_input = st.number_input("Summary Page", min_value=1, max_value=total_pages, value=st.session_state.ms_page_v2, key="ms_page_input_v2")
+                st.session_state.ms_page_v2 = p_input
+
+            start_idx = (st.session_state.ms_page_v2 - 1) * items_per_page
+            end_idx = start_idx + items_per_page
+            
+            for idx, row in df_ms.iloc[start_idx:end_idx].iterrows():
+                st.markdown(f"""
+                <div class='glass-card' style='padding: 20px; border-left: 5px solid #FFD700; margin-bottom: 15px;'>
+                    <div style='display: flex; justify-content: space-between; align-items: flex-start;'>
+                        <h4 style='margin: 0; color: #FFD700;'>{row['제목']}</h4>
+                        <small style='color: #666;'>{row['날짜']}</small>
+                    </div>
+                    <div style='color: #DDD; margin-top: 15px; white-space: pre-wrap; font-size: 0.95rem; line-height: 1.6;'>{row['내용']}</div>
+                    <div style='text-align: right; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;'>
+                        <small style='color: #555;'>Commander: {row['작성자']}</small>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if is_admin:
+                    ca1, ca2, _ = st.columns([1, 1, 4])
+                    with ca1:
+                        if st.button("수정", key=f"edit_ms_v2_{idx}"): st.session_state[f"editing_ms_v2_{idx}"] = True
+                    with ca2:
+                        if st.button("삭제", key=f"del_ms_v2_{idx}"):
+                            df_ms = df_ms.drop(idx).reset_index(drop=True)
+                            df_ms.to_csv(MARKET_SUMMARIES_FILE, index=False)
+                            st.rerun()
+                    
+                    if st.session_state.get(f"editing_ms_v2_{idx}"):
+                        with st.form(f"f_edit_ms_v2_{idx}"):
+                            et = st.text_input("제목 수정", value=row['제목'])
+                            ec = st.text_area("내용 수정", value=row['내용'], height=150)
+                            if st.form_submit_button("수정 완료"):
+                                df_ms.at[idx, '제목'] = et
+                                df_ms.at[idx, '내용'] = ec
+                                df_ms.to_csv(MARKET_SUMMARIES_FILE, index=False)
+                                del st.session_state[f"editing_ms_v2_{idx}"]
+                                st.rerun()
+                            if st.form_submit_button("취소"):
+                                del st.session_state[f"editing_ms_v2_{idx}"]
+                                st.rerun()
+        else: st.info("사령부에서 공표된 시장 요약이 아직 없습니다.")
 
 
 elif page.startswith("5-d."):
@@ -4275,51 +4290,62 @@ elif page.startswith("5-f."):
 
 
 elif page.startswith("2-b."):
-    st.header("[ MAP ] 실시간 주도주 히트맵 (Market OverView)")
-    st.markdown(
-        "<div class='glass-card'>사령부 관리 종목 20선의 실시간 수급 현황입니다. (초록: 상승 / 빨강: 하락)</div>",
-        unsafe_allow_html=True,
-    )
-    if st.button("[ RUN ] 실시간 히트맵 데이터 동기화"):
-        tics = list(TICKER_NAME_MAP.keys())
+    st.header("🗺️ [ MAP ] 실시간 주도주 히트맵 (Nasdaq / KOSPI / KOSDAQ)")
+    st.markdown("<div class='glass-card'>글로벌 및 국내 주도주 100선의 실시간 수급 현황입니다. (초록: 상승 / 빨강: 하락)</div>", unsafe_allow_html=True)
+
+    if st.button("🔄 [ SYNC ] 히트맵 데이터 동기화"):
+        st.cache_data.clear()
+        st.rerun()
+
+    with st.spinner("전 시장 수급 지도 생성 중..."):
+        all_tics = list(TICKER_NAME_MAP.keys())
         try:
-            with st.spinner("[ WAIT ] 데이터 수집 중..."):
-                h_data = yf.download(tics, period="2d", progress=False)["Close"]
+            h_data = yf.download(all_tics, period="2d", progress=False)["Close"]
+            if not h_data.empty:
                 changes = ((h_data.iloc[-1] / h_data.iloc[-2]) - 1) * 100
-                df_h = pd.DataFrame(
-                    [
-                        {
-                            "Name": TICKER_NAME_MAP.get(t, t),
-                            "Change": changes.get(t, 0),
-                            "Size": 1,
-                        }
-                        for t in tics
-                    ]
-                )
+                df_h = pd.DataFrame([
+                    {
+                        "Ticker": t,
+                        "Name": TICKER_NAME_MAP.get(t, t),
+                        "Change": changes.get(t, 0),
+                        "Market": "KOSPI" if t.endswith(".KS") else ("KOSDAQ" if t.endswith(".KQ") else "NASDAQ/NYSE")
+                    }
+                    for t in all_tics
+                ]).dropna()
+                
+                import plotly.express as px
                 fig = px.treemap(
-                    df_h,
-                    path=["Name"],
-                    values="Size",
+                    df_h, path=["Market", "Name"], values=[1]*len(df_h),
                     color="Change",
-                    color_continuous_scale="RdYlGn",
-                    color_continuous_midpoint=0,
+                    color_continuous_scale=[[0, "#FF4B4B"], [0.5, "#111"], [1, "#00FF00"]],
+                    range_color=[-5, 5]
                 )
-                fig.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=600)
+                fig.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=700, paper_bgcolor="rgba(0,0,0,0)")
+                fig.update_traces(texttemplate="<b>%{label}</b><br>%{color:.2f}%")
                 st.plotly_chart(fig, use_container_width=True)
-        except Exception as e:
-            st.error(f"오류 발생: {e}")
+            else: st.error("데이터를 불러올 수 없습니다.")
+        except Exception as e: st.error(f"히트맵 오류: {e}")
 
 elif page.startswith("2-c."):
-    st.header("[ SENTIMENT ] 시장 심리 게이지 (Market Sentiment Tracker)")
-    st.markdown(
-        "<div class='glass-card'>글로벌 투자자들의 공포와 탐욕 및 주요 지수 심리를 실시간 추적합니다.</div>",
-        unsafe_allow_html=True,
-    )
-    val, curr_vix, status = get_market_sentiment_score()
+    st.header("🎯 [ LEADERS ] 주도주 정밀 분석 센터 (Alpha-Selection)")
+    st.markdown("<div class='glass-card'>사령부 RS 엔진으로 선별된 상위 50대 주도주 리더보드입니다. (나스닥/코스피/코스닥 통합)</div>", unsafe_allow_html=True)
     
-    st.markdown(f"""
-    <div class="glass-card" style="text-align: center; padding: 40px;">
-        <h3 style="color: #FFD700; margin-bottom: 30px;">GLOBAL SENTIMENT METER</h3>
+    with st.spinner("전 시장 주도주 데이터 수집 중..."):
+        all_watch_tickers = list(TICKER_NAME_MAP.keys())
+        df_leaders = get_leaderboard_data_v9(all_watch_tickers)
+        
+        if not df_leaders.empty:
+            df_leaders = df_leaders.sort_values("RS_Weighted", ascending=False).reset_index(drop=True)
+            df_leaders["Rank"] = df_leaders.index + 1
+            
+            st.markdown("#### 🏆 [ LEADERBOARD ] 통합 주도주 순위")
+            st.dataframe(
+                df_leaders[["Rank", "Name", "Ticker", "Price", "RS_Weighted", "3M_Ret"]].style.format({
+                    "RS_Weighted": "{:.1f}", "3M_Ret": "{:+.1f}%", "Price": "{:,.2f}"
+                }).background_gradient(subset=["RS_Weighted"], cmap="YlOrRd"),
+                use_container_width=True, hide_index=True
+            )
+        else: st.warning("분석 데이터가 부족합니다. 잠시 후 다시 시도해 주세요.")
         <div style="position: relative; width: 300px; height: 150px; margin: 0 auto; overflow: hidden;">
             <svg width="300" height="300" viewBox="0 0 300 300">
                 <path d="M 50 150 A 100 100 0 0 1 250 150" fill="none" stroke="#333" stroke-width="20" />
