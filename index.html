@@ -180,6 +180,10 @@
                 <input type="password" id="login-pw" placeholder="PASSWORD를 입력하세요">
             </div>
             <button class="login-btn" onclick="handleLogin()">ENTER COMMAND CENTER</button>
+            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                <p style="font-size: 0.8rem; color: var(--text-muted);">New Recruit? Get Certified First</p>
+                <button class="login-btn" style="background: var(--glass-bg); color: white; border: 1px solid var(--glass-border); margin-top: 0;" onclick="startJoinProcess()">[ JOIN / EXAM ] 요원 자격 심사</button>
+            </div>
         </div>
     </div>
 
@@ -297,9 +301,15 @@
             const pw = document.getElementById('login-pw').value;
             if (id === 'cntfed' && pw === 'cntfed') {
                 state.isLoggedIn = true;
-                localStorage.setItem('isLoggedIn', 'true');
+                state.isCertified = true; // Admin Bypass
                 checkNavigation();
-            } else { alert('Access ID 또는 Security Key가 일치하지 않습니다.'); }
+            } else { alert('Access ID 또는 Security Key가 일치하지 않습니다.\n(관리자 전용 로그인 페이지입니다)'); }
+        }
+
+        function startJoinProcess() {
+            state.isLoggedIn = true;
+            state.isCertified = false;
+            checkNavigation();
         }
 
         function logout() {
