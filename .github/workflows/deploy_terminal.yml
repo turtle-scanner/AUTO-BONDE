@@ -14,18 +14,20 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Kill Existing Terminal
+      - name: Kill Existing Processes
         run: |
-          # Kill any existing streamlit process running app.py
+          # Kill streamlit and the gemini bot
           pkill -f "streamlit run app.py" || true
+          pkill -f "python gemini_interactive_bot.py" || true
           sleep 2
 
       - name: Launch Platinum V6.0 Terminal
         run: |
-          # Run streamlit in the background
-          # We use port 8501 by default unless the user has a reverse proxy
-          # Given the Cloudflare error, it might be expecting port 80 or 8501
           nohup streamlit run app.py --server.port 8501 --server.headless true > terminal.log 2>&1 &
+          
+      - name: Launch Gemini Telegram Bot
+        run: |
+          nohup python gemini_interactive_bot.py > bot.log 2>&1 &
           disown
           
       - name: Verification
