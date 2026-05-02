@@ -256,6 +256,7 @@ MASTER_GAS_URL = st.secrets.get(
 )
 
 
+@st.cache_data(ttl=3600)
 def get_live_weather(loc):
     try:
         resp = requests.get(f"https://wttr.in/{loc}?format=%t+%h+%C&m", timeout=3)
@@ -267,6 +268,7 @@ def get_live_weather(loc):
     return "15°C 50% Clear"
 
 
+@st.cache_data(ttl=3600)
 def get_sheet_tickers():
     try:
         url = "https://docs.google.com/spreadsheets/d/1xjbe9SF0HsxwY_Uy3NC2tT92BqK0nhArUaYU16Q0p9M/export?format=csv&gid=1499398020"
@@ -474,7 +476,7 @@ def resolve_ticker(query):
     return query.upper()
 
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=1800)
 def get_market_sentiment_score():
     """VIX 및 나스닥 RSI 기반 실전 공포/탐욕 점수 산출"""
     try:
@@ -576,7 +578,7 @@ AI_OPERATIVES = {
 }
 
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=600)
 def load_users():
     # 1. 먼저 로컬 파일 확인 (안전한 로드 사용)
     users = safe_load_json(USER_DB_FILE, {})
@@ -2349,7 +2351,7 @@ now_us = datetime.now(pytz.timezone("America/New_York"))
 
 
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=600)
 def get_top_indices():
     """[ PRO ] 실시간 지수 관제 데이터 페칭 (나스닥/코스피 등 통합)"""
     res = {
