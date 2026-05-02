@@ -1,21 +1,13 @@
-import streamlit as st
-import streamlit.components.v1 as components
+from flask import Flask
 import os
 import pandas as pd
 import json
 
+app = Flask(__name__)
+
 # [ SYSTEM ] STOCK DRAGONFLY V6.0 PLATINUM DEPLOYMENT
-# This script serves the new V6.0 HTML Terminal with BUNDLED MISSION DATA.
+# Flask version (No Streamlit)
 
-st.set_page_config(
-    page_title="STOCK DRAGONFLY V6.0 | Platinum Command",
-    page_icon="https://raw.githubusercontent.com/turtle-scanner/AUTO-BONDE/main/StockDragonfly.png",
-    layout="wide",
-    initial_sidebar_state="collapsed",
-)
-
-# --- DATA BUNDLING (Avoiding Fetch Errors) ---
-@st.cache_data(ttl=300)
 def get_mission_bundle():
     bundle = {}
     mission_dir = "missions"
@@ -26,7 +18,6 @@ def get_mission_bundle():
                     bundle[filename.replace(".html", "")] = f.read()
     return bundle
 
-@st.cache_data(ttl=300)
 def fetch_hq_data():
     USERS_SHEET_URL = "https://docs.google.com/spreadsheets/d/1HbC_U1I78HAdV99X6qS1hmY_RiRGPrHX92AYbBPrIpU/export?format=csv&gid=1180564490"
     try:
@@ -35,33 +26,28 @@ def fetch_hq_data():
     except:
         return {"members": []}
 
-mission_bundle = get_mission_bundle()
-hq_data = fetch_hq_data()
-
-# Hide Streamlit elements
-st.markdown("""
-    <style>
-    #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
-    .block-container {padding: 0rem;}
-    iframe { height: 100vh !important; width: 100vw !important; border: none; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# Bundle Everything into index.html
-html_path = "index.html"
-if os.path.exists(html_path):
-    with open(html_path, "r", encoding="utf-8") as f:
-        html_content = f.read()
+@app.route('/')
+def index():
+    mission_bundle = get_mission_bundle()
+    hq_data = fetch_hq_data()
     
-    # Injecting real-time data AND mission bundle
-    data_injection = f"""
-    <script>
-        window.HQ_DATA = {json.dumps(hq_data, ensure_ascii=False)};
-        window.MISSION_BUNDLE = {json.dumps(mission_bundle, ensure_ascii=False)};
-    </script>
-    """
-    html_content = html_content.replace("<head>", f"<head>{data_injection}")
-    
-    components.html(html_content, height=1500, scrolling=True)
-else:
-    st.error("Error: index.html not found.")
+    html_path = "index.html"
+    if os.path.exists(html_path):
+        with open(html_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+        
+        # 데이터 주입
+        data_injection = f"""
+        <script>
+            window.HQ_DATA = {json.dumps(hq_data, ensure_ascii=False)};
+            window.MISSION_BUNDLE = {json.dumps(mission_bundle, ensure_ascii=False)};
+        </script>
+        """
+        # <head> 태그 바로 뒤에 데이터 삽입
+        return html_content.replace("<head>", f"<head>{data_injection}")
+    else:
+        return "Error: index.html not found.", 404
+
+if __name__ == "__main__":
+    # 서버 실행 (포트 80 또는 원하는 포트)
+    app.run(host='0.0.0.0', port=80)

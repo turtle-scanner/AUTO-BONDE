@@ -1,7 +1,7 @@
-name: FINAL PLATINUM V6
+name: FINAL PLATINUM V6 (Next.js Deploy)
 
 on:
-  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+  workflow_dispatch:
 
 jobs:
   final_deploy:
@@ -10,41 +10,51 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Sync Dependencies
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies (Next.js)
+        run: |
+          cd v6_terminal
+          npm install
+
+      - name: Build Next.js
+        run: |
+          cd v6_terminal
+          npm run build
+
+      - name: Sync Python Dependencies (Bot)
         run: |
           pip install -r requirements.txt
 
       - name: Ultimate Cleanup
         run: |
-          # Kill EVERYTHING using port 8501 or 80 regardless of user/process name
-          sudo fuser -k 8501/tcp || true
+          # 80번 포트 및 기존 프로세스 종료
           sudo fuser -k 80/tcp || true
+          sudo pkill -9 -f next-server || true
           sudo pkill -9 -f streamlit || true
           sudo pkill -9 -f python || true
           sleep 2
 
-      - name: OS Firewall Open
+      - name: Launch Next.js Terminal (Port 80)
         run: |
-          sudo iptables -I INPUT -p tcp --dport 80 -j ACCEPT || true
-          sudo iptables -I INPUT -p tcp --dport 8501 -j ACCEPT || true
+          cd v6_terminal
+          # 80번 포트로 Next.js 실행 (관리자 권한 필요)
+          sudo nohup npm run start -- -p 80 > ../terminal.log 2>&1 &
 
-      - name: Launch Platinum V6.0 Terminal
-        run: |
-          # Use absolute path to ensure streamlit is found
-          # Use port 80 for direct Cloudflare proxying
-          sudo nohup /home/ubuntu/.local/bin/streamlit run app.py --server.port 80 --server.address 0.0.0.0 --server.headless true --server.enableCORS false --server.enableXsrfProtection false > terminal.log 2>&1 &
-          
       - name: Launch Gemini Telegram Bot
         run: |
           nohup python gemini_interactive_bot.py > bot.log 2>&1 &
           disown
-          
+
       - name: Final Verification
         run: |
-          sleep 10
+          sleep 15
           echo "--- NETWORK STATUS ---"
-          sudo ss -tulpn | grep -E "80|8501"
+          sudo ss -tulpn | grep ":80"
           echo "--- PROCESS LIST ---"
-          ps aux | grep -E "streamlit|gemini"
+          ps aux | grep -E "next|gemini"
           echo "--- LOG PREVIEW ---"
           tail -n 20 terminal.log
