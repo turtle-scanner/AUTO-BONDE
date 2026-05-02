@@ -1,162 +1,62 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Music, Volume2, VolumeX, Play, Pause } from 'lucide-react';
 
-// Cyber-ambient BGM engine using Web Audio API
-// Generates a layered, atmospheric electronic soundscape in real-time
 const BGMPlayer: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.3);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const gainRef = useRef<GainNode | null>(null);
-  const nodesRef = useRef<OscillatorNode[]>([]);
-  const lfoRef = useRef<OscillatorNode[]>([]);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const createEngine = useCallback(() => {
-    const ctx = new AudioContext();
-    audioCtxRef.current = ctx;
+  // 브라우저 자동재생 차단을 피하기 위한 로직
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      if (audioRef.current && !isPlaying) {
+        audioRef.current.play().then(() => {
+          setIsPlaying(true);
+        }).catch(err => {
+          console.log("Auto-play blocked, waiting for manual play:", err);
+        });
+      }
+      // 이벤트 한 번만 실행 후 제거
+      window.removeEventListener('click', handleFirstInteraction);
+    };
 
-    const master = ctx.createGain();
-    master.gain.value = volume;
-    master.connect(ctx.destination);
-    gainRef.current = master;
-
-    // Layer 1: Deep sub-bass pad (warm foundation)
-    const sub = ctx.createOscillator();
-    sub.type = 'sine';
-    sub.frequency.value = 55; // A1
-    const subGain = ctx.createGain();
-    subGain.gain.value = 0.15;
-    const subFilter = ctx.createBiquadFilter();
-    subFilter.type = 'lowpass';
-    subFilter.frequency.value = 120;
-    sub.connect(subFilter).connect(subGain).connect(master);
-
-    // Layer 2: Ethereal pad chord (Cm7 voicing)
-    const padNotes = [130.81, 155.56, 196.0, 233.08]; // C3, Eb3, G3, Bb3
-    const padOscs: OscillatorNode[] = [];
-    padNotes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      const g = ctx.createGain();
-      g.gain.value = 0.04;
-      
-      // Subtle detuning for richness
-      osc.detune.value = (i - 1.5) * 4;
-      
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.value = 800;
-      filter.Q.value = 2;
-      
-      osc.connect(filter).connect(g).connect(master);
-      padOscs.push(osc);
-    });
-
-    // Layer 3: High shimmer (octave up, very quiet)
-    const shimmer = ctx.createOscillator();
-    shimmer.type = 'triangle';
-    shimmer.frequency.value = 523.25; // C5
-    const shimGain = ctx.createGain();
-    shimGain.gain.value = 0.015;
-    const shimFilter = ctx.createBiquadFilter();
-    shimFilter.type = 'bandpass';
-    shimFilter.frequency.value = 600;
-    shimFilter.Q.value = 5;
-    shimmer.connect(shimFilter).connect(shimGain).connect(master);
-
-    // LFO 1: Slow volume swell on pad
-    const lfo1 = ctx.createOscillator();
-    lfo1.type = 'sine';
-    lfo1.frequency.value = 0.08; // Very slow breathing
-    const lfo1Gain = ctx.createGain();
-    lfo1Gain.gain.value = 0.02;
-    lfo1.connect(lfo1Gain);
-    padOscs.forEach(osc => {
-      // We can't directly modulate gain param of individual gains easily,
-      // so we modulate the filter frequency for a sweeping effect
-    });
-
-    // LFO 2: Filter sweep on shimmer
-    const lfo2 = ctx.createOscillator();
-    lfo2.type = 'sine';
-    lfo2.frequency.value = 0.05;
-    const lfo2Gain = ctx.createGain();
-    lfo2Gain.gain.value = 300;
-    lfo2.connect(lfo2Gain).connect(shimFilter.frequency);
-
-    // Start all
-    const allOsc = [sub, ...padOscs, shimmer];
-    const allLfo = [lfo1, lfo2];
-    allOsc.forEach(o => o.start());
-    allLfo.forEach(l => l.start());
-    nodesRef.current = allOsc;
-    lfoRef.current = allLfo;
-
-    // Chord progression: slowly shift pad notes every 12 seconds
-    const chords = [
-      [130.81, 155.56, 196.0, 233.08],  // Cm7
-      [116.54, 146.83, 174.61, 220.0],  // Bb maj7
-      [123.47, 155.56, 185.0, 220.0],   // Eb maj
-      [110.0, 138.59, 164.81, 207.65],  // Ab maj7
-    ];
-    let chordIdx = 0;
-    intervalRef.current = setInterval(() => {
-      chordIdx = (chordIdx + 1) % chords.length;
-      const chord = chords[chordIdx];
-      const now = ctx.currentTime;
-      padOscs.forEach((osc, i) => {
-        osc.frequency.linearRampToValueAtTime(chord[i], now + 4); // 4s smooth transition
-      });
-      sub.frequency.linearRampToValueAtTime(chord[0] / 2, now + 4);
-    }, 12000);
-
-  }, [volume]);
+    window.addEventListener('click', handleFirstInteraction);
+    return () => window.removeEventListener('click', handleFirstInteraction);
+  }, [isPlaying]);
 
   const togglePlay = () => {
-    if (isPlaying) {
-      // Stop
-      nodesRef.current.forEach(o => { try { o.stop(); } catch(e){} });
-      lfoRef.current.forEach(l => { try { l.stop(); } catch(e){} });
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      if (audioCtxRef.current) audioCtxRef.current.close();
-      audioCtxRef.current = null;
-      nodesRef.current = [];
-      lfoRef.current = [];
-      setIsPlaying(false);
-    } else {
-      // Start
-      createEngine();
-      setIsPlaying(true);
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
     }
   };
 
   useEffect(() => {
-    if (gainRef.current) {
-      gainRef.current.gain.value = volume;
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
     }
   }, [volume]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      nodesRef.current.forEach(o => { try { o.stop(); } catch(e){} });
-      lfoRef.current.forEach(l => { try { l.stop(); } catch(e){} });
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      if (audioCtxRef.current) audioCtxRef.current.close();
-    };
-  }, []);
-
   return (
     <div className="bgm-player glass">
+      <audio 
+        ref={audioRef} 
+        src="/bgm.mp3" 
+        loop 
+        preload="auto"
+      />
+      
       <div className="status-dot-container">
         <div className={`status-dot ${isPlaying ? 'active' : ''}`}></div>
       </div>
 
-      <button className="control-btn" onClick={togglePlay}>
+      <button className="control-btn" onClick={togglePlay} title={isPlaying ? "Pause" : "Play"}>
         {isPlaying ? <Pause size={16} fill="white" /> : <Play size={16} fill="white" />}
       </button>
 
@@ -172,7 +72,7 @@ const BGMPlayer: React.FC = () => {
         />
       </div>
 
-      <span className="track-info">CYBER_AMBIENT_v6.0</span>
+      <span className="track-info">COMMAND_CENTER_BGM</span>
 
       <style jsx>{`
         .bgm-player {
@@ -187,6 +87,7 @@ const BGMPlayer: React.FC = () => {
           z-index: 1000;
           box-shadow: 0 10px 30px rgba(0,0,0,0.5);
           backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .status-dot-container {
@@ -208,8 +109,8 @@ const BGMPlayer: React.FC = () => {
         }
 
         .status-dot.active {
-          background: var(--primary);
-          box-shadow: 0 0 10px var(--primary-glow);
+          background: #00ff88;
+          box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
           animation: pulse 1s infinite;
         }
 
@@ -238,12 +139,12 @@ const BGMPlayer: React.FC = () => {
           display: flex;
           align-items: center;
           gap: 8px;
-          color: var(--text-muted);
+          color: rgba(255, 255, 255, 0.5);
         }
 
         .volume-control input {
           width: 60px;
-          accent-color: var(--primary);
+          accent-color: #00ff88;
           cursor: pointer;
         }
 
@@ -251,8 +152,8 @@ const BGMPlayer: React.FC = () => {
           font-size: 0.7rem;
           font-weight: 800;
           letter-spacing: 0.1em;
-          color: var(--text-muted);
-          border-left: 1px solid var(--card-border);
+          color: rgba(255, 255, 255, 0.4);
+          border-left: 1px solid rgba(255, 255, 255, 0.1);
           padding-left: 16px;
         }
       `}</style>
