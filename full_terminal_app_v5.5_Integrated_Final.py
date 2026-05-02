@@ -63,23 +63,11 @@ TICKER_NAME_MAP = {
 }
 REVERSE_TICKER_MAP = {v: k for k, v in TICKER_NAME_MAP.items()}
 
-@st.cache_data(ttl=86400)
 def get_stock_name(ticker):
-    """티커로부터 한글/영문 종목명 획득 (맵에 없으면 yfinance 시도)"""
+    """티커로부터 한글/영문 종목명 획득 (맵 우선 참조로 속도 최적화)"""
     if ticker in TICKER_NAME_MAP:
         return TICKER_NAME_MAP[ticker]
-    
-    try:
-        # yfinance를 통해 종목명 획득 시도 (타임아웃 및 속도 고려)
-        tk = yf.Ticker(ticker)
-        # info 대신 fast_info를 시도하거나 info를 짧게 사용
-        info = tk.info
-        name = info.get("longName") or info.get("shortName") or info.get("symbol")
-        if name:
-            return name
-    except:
-        pass
-    
+    # 네트워크 지연 방지를 위해 yfinance 호출 최소화 (필요시 캐시 활용)
     return ticker
 
 # --- [ SYSTEM ] [GLOBAL HELPER] SSL Fix for Environments with Certificate Issues ---
@@ -2738,30 +2726,35 @@ elif page.startswith("2-c."):
             st.warning("분석할 수 있는 주도주 데이터가 충분하지 않습니다. 스캐너를 먼저 가동해 주세요.")
 
 
+@st.cache_data(ttl=300)  # 5분간 캐시 유지로 속도 극대화
+def fetch_rs_sheet_data(url):
+    try:
+        return pd.read_csv(url).dropna(how='all')
+    except:
+        return pd.DataFrame()
+
 elif page.startswith("3-c."):
     try:
         st.header("📊 [ ANALYSIS ] 주도주 강도 분석 (Google Sheet RS)")
         st.markdown("<div class='glass-card'>사령부 공인 구글 스프레드시트 'RS' 탭의 실시간 상대강도 데이터입니다.</div>", unsafe_allow_html=True)
         
-        with st.spinner("구글 시트 RS 데이터 동기화 중..."):
-            # [ DATA SOURCE ] 구글 스프레드시트 RS 탭 (gid=2082735174)
-            sheet_id = "1HbC_U1I78HAdV99X6qS1hmY_RiRGPrHX92AYbBPrIpU"
-            gid = "2082735174"
-            csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
-            
-            df_rs = pd.read_csv(csv_url).dropna(how='all')
-            
-            if not df_rs.empty:
-                st.markdown("#### 🚀 [ LIVE ] 상대강도(RS) 통합 분석 테이블")
-                st.dataframe(
-                    df_rs.style.background_gradient(cmap="Greens", subset=[df_rs.columns[2]] if len(df_rs.columns) > 2 else None),
-                    use_container_width=True, hide_index=True
-                )
-            else:
-                st.warning("데이터가 비어 있습니다.")
+        # [ DATA SOURCE ] 구글 스프레드시트 RS 탭 (gid=2082735174)
+        sheet_id = "1HbC_U1I78HAdV99X6qS1hmY_RiRGPrHX92AYbBPrIpU"
+        gid = "2082735174"
+        csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+        
+        df_rs = fetch_rs_sheet_data(csv_url)
+        
+        if not df_rs.empty:
+            st.markdown("#### 🚀 [ LIVE ] 상대강도(RS) 통합 분석 테이블")
+            st.dataframe(
+                df_rs.style.background_gradient(cmap="Greens", subset=[df_rs.columns[2]] if len(df_rs.columns) > 2 else None),
+                use_container_width=True, hide_index=True
+            )
+        else:
+            st.warning("데이터가 비어 있거나 로드 중입니다.")
     except Exception as e:
         st.error(f"데이터 로드 실패: {e}")
-        st.info("사령부 무중단 운영 모드 가동 중...")
 
 elif page.startswith("3-b."):
     st.header("🚀 주도주 랭킹 TOP 50 (RS 리더보드)")
