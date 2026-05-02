@@ -53,11 +53,14 @@ jobs:
           /usr/bin/pm2 delete api-server || true
           /usr/bin/pm2 start api_server.py --name "api-server" --interpreter python3
           
-          # 2. 제미나이 텔레그램 봇 가동
+          # 3. 자동 매매 및 봇 가동
           /usr/bin/pm2 delete dragonfly-bot || true
           /usr/bin/pm2 start gemini_interactive_bot.py --name "dragonfly-bot" --interpreter python3
           
-          # 3. 웹 터미널 가동 (내부 포트 3000)
+          /usr/bin/pm2 delete headless-trader || true
+          /usr/bin/pm2 start headless_dragonfly_bot.py --name "headless-trader" --interpreter python3
+          
+          # 4. 웹 터미널 가동 (내부 포트 3000)
           cd v6_terminal
           /usr/bin/pm2 delete v6-terminal || true
           /usr/bin/pm2 start npm --name "v6-terminal" -- start -- -p 3000

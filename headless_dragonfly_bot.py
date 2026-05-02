@@ -423,4 +423,11 @@ def run_headless_cycle():
     log_combat("✅ 사이클 종료")
 
 if __name__ == "__main__":
-    run_headless_cycle()
+    while True:
+        try:
+            run_headless_cycle()
+        except Exception as e:
+            log_combat(f"메인 루프 치명적 오류: {e}", "ERROR")
+        
+        log_combat("💤 다음 교전 사이클까지 30분간 대기합니다.")
+        time.sleep(1800) # 30분 대기
