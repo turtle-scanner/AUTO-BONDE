@@ -31,12 +31,18 @@ jobs:
 
       - name: Ultimate Cleanup
         run: |
-          # 80번 포트 및 기존 프로세스 종료
+          # 80번 포트(웹) 및 기존 Next.js 프로세스만 종료
           sudo fuser -k 80/tcp || true
           sudo pkill -9 -f next-server || true
-          sudo pkill -9 -f streamlit || true
-          sudo pkill -9 -f python || true
+          sudo pkill -9 -f node || true
           sleep 2
+
+      - name: Start Next.js Terminal
+        run: |
+          cd v6_terminal
+          # 백그라운드에서 실행 (로그는 terminal.log에 저장)
+          nohup npm run start -- -p 80 > ../terminal.log 2>&1 &
+          sleep 5
 
       - name: Launch Next.js Terminal (Port 80)
         run: |
