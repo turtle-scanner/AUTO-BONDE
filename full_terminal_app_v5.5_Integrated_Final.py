@@ -1992,44 +1992,49 @@ with st.sidebar:
             st.session_state.shuffled_bgm = random.choice(valid_files) if valid_files else None
         target_bgm_v9 = st.session_state.shuffled_bgm
 
-    if target_bgm_v9:
-        audio_src = target_bgm_v9 if target_bgm_v9.startswith("http") else f"./{target_bgm_v9}"
+    try:
+        if target_bgm_v9:
+            audio_src = target_bgm_v9 if target_bgm_v9.startswith("http") else f"./{target_bgm_v9}"
 
-        st.components.v1.html(f"""
-            <div style="text-align: center; background: rgba(0,255,0,0.05); padding: 12px; border-radius: 10px; border: 1px solid #00FF0033;">
-                <p style="color: #00FF00; font-size: 0.8rem; margin: 0 0 10px 0; font-weight: bold; text-shadow: 0 0 5px #00FF00;">📡 BGM 엔진 고속 스트리밍 모드 가동 중</p>
-                <button id="play-btn" style="background: linear-gradient(135deg, #00FF00, #008800); color: #000; border: none; padding: 8px 20px; border-radius: 6px; font-weight: 900; cursor: pointer; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(0,255,0,0.3);">[ 🔊 SOUND ACTIVATE ]</button>
-                <audio id="bgm-audio" loop>
-                    <source src="{audio_src}" type="audio/mp3">
-                </audio>
-            </div>
-            <script>
-                var audio = document.getElementById("bgm-audio");
-                var btn = document.getElementById("play-btn");
-                audio.volume = {vol_v9};
-                
-                btn.addEventListener('click', function() {{
-                    audio.play().then(() => {{
-                        btn.innerText = "🔊 AUDIO ACTIVE";
-                        btn.style.background = "#222";
-                        btn.style.color = "#00FF00";
-                        btn.style.border = "1px solid #00FF00";
-                    }}).catch(e => {{
-                        alert("재생 실패: 서버에서 파일을 찾을 수 없거나 브라우저 문제입니다.");
-                    }});
-                }});
+            # 로컬 파일의 경우 존재 여부 최종 확인
+            if not target_bgm_v9.startswith("http") and not os.path.exists(target_bgm_v9):
+                st.error(f"⚠️ [ BGM ] 파일을 찾을 수 없습니다: {target_bgm_v9}")
+            else:
+                st.components.v1.html(f"""
+                    <div style="text-align: center; background: rgba(0,255,0,0.05); padding: 12px; border-radius: 10px; border: 1px solid #00FF0033;">
+                        <p style="color: #00FF00; font-size: 0.8rem; margin: 0 0 10px 0; font-weight: bold; text-shadow: 0 0 5px #00FF00;">📡 BGM 엔진 고속 스트리밍 모드 가동 중</p>
+                        <button id="play-btn" style="background: linear-gradient(135deg, #00FF00, #008800); color: #000; border: none; padding: 8px 20px; border-radius: 6px; font-weight: 900; cursor: pointer; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(0,255,0,0.3);">[ 🔊 SOUND ACTIVATE ]</button>
+                        <audio id="bgm-audio" loop>
+                            <source src="{audio_src}" type="audio/mp3">
+                        </audio>
+                    </div>
+                    <script>
+                        var audio = document.getElementById("bgm-audio");
+                        var btn = document.getElementById("play-btn");
+                        audio.volume = {vol_v9};
+                        
+                        btn.addEventListener('click', function() {{
+                            audio.play().then(() => {{
+                                btn.innerText = "🔊 AUDIO ACTIVE";
+                                btn.style.background = "#222";
+                                btn.style.color = "#00FF00";
+                                btn.style.border = "1px solid #00FF00";
+                            }}).catch(e => {{
+                                alert("재생 실패: 서버에서 파일을 찾을 수 없거나 브라우저 문제입니다.");
+                            }});
+                        }});
 
-                // 자동 재생 시도
-                setTimeout(() => {{
-                    audio.play().then(() => {{
-                        btn.style.display = "none";
-                    }}).catch(e => {{ console.log("Autoplay blocked"); }});
-                }}, 300);
-            </script>
-        """, height=100)
-        st.caption(f"🎵 Streaming: {sel_bgm_v9}")
-        else:
-            st.error(f"⚠️ [ BGM ] 파일을 로드할 수 없습니다: {target_bgm_v9}")
+                        // 자동 재생 시도
+                        setTimeout(() => {{
+                            audio.play().then(() => {{
+                                btn.style.display = "none";
+                            }}).catch(e => {{ console.log("Autoplay blocked"); }});
+                        }}, 300);
+                    </script>
+                """, height=100)
+                st.caption(f"🎵 Streaming: {sel_bgm_v9}")
+    except Exception as e:
+        st.warning(f"BGM 엔진 일시적 장애 (복구 중...): {e}")
 
     # --- [ GLOBAL ] 실시간 AI 요원 매매 상황 중계 (전역 팝업 알림) ---
     if st.session_state.get("password_correct") and random.random() < 0.05:
