@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import GlassCard from '@/components/GlassCard';
 import TradingChart from '@/components/TradingChart';
 import QuickOrder from '@/components/QuickOrder';
