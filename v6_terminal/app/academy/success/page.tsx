@@ -32,32 +32,16 @@ interface TradeRecord {
   totalAmount: number;
   yield: string; 
   date: string; 
-  buyReason: string;
-  sellReason: string;
+  buyReason: string; 
+  sellReason: string; 
   comment: string;
   comments: Comment[];
 }
 
 const SHARED_STORAGE_KEY = 'dragonfly_unified_trades_v6_social';
 
-const defaults: TradeRecord[] = [
-  { 
-    id: 1, 
-    type: 'SUCCESS',
-    author: "cntfed",
-    ticker: "SMCI", 
-    quantity: 10,
-    entryPrice: 350.50, 
-    exitPrice: 980.20, 
-    totalAmount: 9802,
-    yield: "+179.6%", 
-    date: "2026-05-01", 
-    buyReason: "실적 가속화 및 EP 발생 확인",
-    sellReason: "목표가 도달 및 분할 익절",
-    comment: "승리의 기록입니다.",
-    comments: []
-  },
-];
+// 샘플 데이터를 완전히 삭제하고 빈 배열로 시작
+const defaults: TradeRecord[] = [];
 
 export default function SuccessPage() {
   const [records, setRecords] = useState<TradeRecord[]>([]);
@@ -134,14 +118,13 @@ export default function SuccessPage() {
       <div className="success-header">
         <div className="header-text">
           <h1><Trophy size={32} className="gold-icon" /> [ SUCCESS ] 실전 익절 자랑방</h1>
-          <p>대원들의 회원명이 명시되며, '매수/매도 이유'에 대한 심층 토론이 가능합니다.</p>
+          <p>샘플 데이터를 제거했습니다. 이제 대원들의 실제 익절 기록으로만 채워집니다.</p>
         </div>
         <button className="add-btn" onClick={() => setShowForm(!showForm)}>
           <Plus size={18} /> {showForm ? "닫기" : "익절 기록 등록"}
         </button>
       </div>
 
-      {/* 상단 게시판 (Table View) */}
       <GlassCard className="board-card">
         <div className="board-header"><h3><FileText size={18} className="gold" /> 대원별 전리품 현황</h3></div>
         <div className="table-wrapper">
@@ -161,6 +144,7 @@ export default function SuccessPage() {
                   <td className="success-yield">{r.yield}</td>
                 </tr>
               ))}
+              {currentItems.length === 0 && <tr><td colSpan={7} className="empty-td">실전 기록을 기다리고 있습니다...</td></tr>}
             </tbody>
           </table>
         </div>
@@ -221,6 +205,7 @@ export default function SuccessPage() {
         .success-yield { color: #ef4444 !important; font-weight: 900; }
         .inline-icon { margin-right: 6px; }
         .bold { font-weight: 900; color: #f2f2f2; }
+        .empty-td { text-align: center; padding: 40px !important; color: #555; font-style: italic; }
 
         .form-card { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
         .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }

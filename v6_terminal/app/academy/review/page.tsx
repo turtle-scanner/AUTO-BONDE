@@ -20,12 +20,7 @@ import {
   Send
 } from 'lucide-react';
 
-interface Comment {
-  id: number;
-  author: string;
-  text: string;
-  date: string;
-}
+interface Comment { id: number; author: string; text: string; date: string; }
 
 interface TradeRecord { 
   id: number; 
@@ -38,8 +33,8 @@ interface TradeRecord {
   totalAmount: number;
   yield: string; 
   date: string; 
-  buyReason: string;
-  sellReason: string;
+  buyReason: string; 
+  sellReason: string; 
   comment: string;
   comments: Comment[];
   mistake?: string;
@@ -47,36 +42,15 @@ interface TradeRecord {
 
 const SHARED_STORAGE_KEY = 'dragonfly_unified_trades_v6_social';
 
-const defaults: TradeRecord[] = [
-  { 
-    id: 1, 
-    type: 'SUCCESS',
-    author: "cntfed",
-    ticker: "SMCI", 
-    quantity: 10,
-    entryPrice: 350.50, 
-    exitPrice: 980.20, 
-    totalAmount: 9802,
-    yield: "+179.6%", 
-    date: "2026-05-01", 
-    buyReason: "실적 가속화 및 EP 발생 확인",
-    sellReason: "목표가 도달 및 분할 익절",
-    comment: "승리의 기록입니다.",
-    comments: [
-      { id: 101, author: "hjrubbi", text: "정말 완벽한 타점이네요! 축하드립니다.", date: "2026-05-01" }
-    ]
-  },
-];
+// 샘플 데이터를 완전히 삭제하고 빈 배열로 시작
+const defaults: TradeRecord[] = [];
 
 export default function ReviewPage() {
   const [records, setRecords] = useState<TradeRecord[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [currentUser, setCurrentUser] = useState("Guest");
-  const [form, setForm] = useState({ 
-    ticker: '', quantity: '', entryPrice: '', exitPrice: '', 
-    buyReason: '', sellReason: '', mistake: '', comment: '' 
-  });
+  const [form, setForm] = useState({ ticker: '', quantity: '', entryPrice: '', exitPrice: '', buyReason: '', sellReason: '', mistake: '', comment: '' });
   const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
   const [loaded, setLoaded] = useState(false);
 
@@ -99,7 +73,7 @@ export default function ReviewPage() {
   }, [records, loaded]);
 
   const handleAdd = () => {
-    if (!form.ticker || !form.quantity || !form.entryPrice || !form.exitPrice) return alert("필수 항목을 입력하세요!");
+    if (!form.ticker || !form.quantity || !form.entryPrice || !form.exitPrice) return alert("필수 항목 입력!");
     
     const qty = parseFloat(form.quantity);
     const entry = parseFloat(form.entryPrice);
@@ -132,21 +106,7 @@ export default function ReviewPage() {
   const addComment = (recordId: number) => {
     const text = commentInputs[recordId];
     if (!text) return;
-
-    setRecords(prev => prev.map(r => {
-      if (r.id === recordId) {
-        return {
-          ...r,
-          comments: [...(r.comments || []), {
-            id: Date.now(),
-            author: currentUser,
-            text: text,
-            date: new Date().toLocaleDateString('ko-KR')
-          }]
-        };
-      }
-      return r;
-    }));
+    setRecords(prev => prev.map(r => r.id === recordId ? { ...r, comments: [...(r.comments || []), { id: Date.now(), author: currentUser, text: text, date: new Date().toLocaleDateString('ko-KR') }] } : r));
     setCommentInputs(prev => ({ ...prev, [recordId]: '' }));
   };
 
@@ -160,31 +120,19 @@ export default function ReviewPage() {
       <div className="review-header">
         <div className="header-text">
           <h1><Heart size={32} className="heart-icon" /> [ REVIEW ] 통합 전술 분석실</h1>
-          <p>사령부 대원들의 실전 기록을 심층 분석하고 댓글로 전술을 토론합니다.</p>
+          <p>샘플 데이터를 제거했습니다. 이제 대원들의 실제 복기 기록으로만 통합 집계됩니다.</p>
         </div>
         <button className="add-btn" onClick={() => setShowForm(!showForm)}>
           <Plus size={18} /> {showForm ? "닫기" : "복기 등록"}
         </button>
       </div>
 
-      {/* 통합 게시판 (Table View) */}
       <GlassCard className="board-card">
-        <div className="board-header">
-          <h3><FileText size={18} className="blue" /> 통합 전황 분석 보드</h3>
-        </div>
+        <div className="board-header"><h3><FileText size={18} className="blue" /> 통합 전황 분석 보드</h3></div>
         <div className="table-wrapper">
           <table className="trade-table">
             <thead>
-              <tr>
-                <th>대원명</th>
-                <th>날짜</th>
-                <th>종목명</th>
-                <th>구분</th>
-                <th>수량</th>
-                <th>청산가</th>
-                <th>전체금액</th>
-                <th>수익률</th>
-              </tr>
+              <tr><th>대원명</th><th>날짜</th><th>종목명</th><th>구분</th><th>수량</th><th>청산가</th><th>전체금액</th><th>수익률</th></tr>
             </thead>
             <tbody>
               {currentItems.map(r => (
@@ -199,6 +147,7 @@ export default function ReviewPage() {
                   <td className={`yield ${r.type === 'SUCCESS' ? 'plus' : 'minus'}`}>{r.yield}</td>
                 </tr>
               ))}
+              {currentItems.length === 0 && <tr><td colSpan={8} className="empty-td">대원들의 실전 전술 보고를 기다리고 있습니다...</td></tr>}
             </tbody>
           </table>
         </div>
@@ -216,15 +165,14 @@ export default function ReviewPage() {
             <div className="input-group"><label>수량</label><input type="number" value={form.quantity} onChange={e => setForm({...form, quantity: e.target.value})} /></div>
             <div className="input-group"><label>진입가</label><input type="number" value={form.entryPrice} onChange={e => setForm({...form, entryPrice: e.target.value})} /></div>
             <div className="input-group"><label>손절가</label><input type="number" value={form.exitPrice} onChange={e => setForm({...form, exitPrice: e.target.value})} /></div>
-            <div className="input-group full-width"><label>매수 이유 (Why Buy?)</label><input placeholder="진입 근거를 입력하세요" value={form.buyReason} onChange={e => setForm({...form, buyReason: e.target.value})} /></div>
-            <div className="input-group full-width"><label>매도 이유 (Why Sell?)</label><input placeholder="청산 원칙을 입력하세요" value={form.sellReason} onChange={e => setForm({...form, sellReason: e.target.value})} /></div>
+            <div className="input-group full-width"><label>매수 이유 (Why Buy?)</label><input placeholder="진입 근거" value={form.buyReason} onChange={e => setForm({...form, buyReason: e.target.value})} /></div>
+            <div className="input-group full-width"><label>매도 이유 (Why Sell?)</label><input placeholder="청산 원칙" value={form.sellReason} onChange={e => setForm({...form, sellReason: e.target.value})} /></div>
             <div className="input-group full-width"><label>실수 및 교훈</label><textarea value={form.comment} onChange={e => setForm({...form, comment: e.target.value})} /></div>
           </div>
           <button className="submit-btn" onClick={handleAdd}>📝 분석 결과 저장</button>
         </GlassCard>
       )}
 
-      {/* 상세 분석 및 댓글 영역 */}
       <div className="deep-review-grid">
         {currentItems.map(r => (
           <GlassCard key={r.id} className="deep-card">
@@ -232,28 +180,14 @@ export default function ReviewPage() {
               <div className="user-info"><User size={18} className="gold" /> <strong>{r.author}</strong> 대원의 분석</div>
               <span className={`yield-badge ${r.type === 'SUCCESS' ? 'plus' : 'minus'}`}>{r.yield}</span>
             </div>
-            
             <div className="reason-box">
               <div className="reason-item"><strong>[ BUY ]</strong> {r.buyReason}</div>
               <div className="reason-item"><strong>[ SELL ]</strong> {r.sellReason}</div>
             </div>
-
             <div className="comment-section">
-              <div className="comment-list">
-                {r.comments?.map(c => (
-                  <div key={c.id} className="comment-bubble">
-                    <span className="c-author">{c.author}:</span>
-                    <span className="c-text">{c.text}</span>
-                  </div>
-                ))}
-              </div>
+              <div className="comment-list">{r.comments?.map(c => (<div key={c.id} className="comment-bubble"><span className="c-author">{c.author}:</span><span>{c.text}</span></div>))}</div>
               <div className="comment-input-area">
-                <input 
-                  placeholder="전술적 조언이나 격려를 남기세요..." 
-                  value={commentInputs[r.id] || ''} 
-                  onChange={e => setCommentInputs({...commentInputs, [r.id]: e.target.value})}
-                  onKeyDown={e => e.key === 'Enter' && addComment(r.id)}
-                />
+                <input placeholder="댓글 남기기..." value={commentInputs[r.id] || ''} onChange={e => setCommentInputs({...commentInputs, [r.id]: e.target.value})} onKeyDown={e => e.key === 'Enter' && addComment(r.id)} />
                 <button onClick={() => addComment(r.id)}><Send size={16} /></button>
               </div>
             </div>
@@ -265,7 +199,7 @@ export default function ReviewPage() {
         .review-container { padding: 40px; display: flex; flex-direction: column; gap: 32px; color: white; }
         .review-header { display: flex; justify-content: space-between; align-items: center; }
         .heart-icon { color: #f43f5e; }
-        .add-btn { background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); padding: 12px 24px; border-radius: 12px; font-weight: 900; cursor: pointer; }
+        .add-btn { background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); padding: 12px 24px; border-radius: 12px; font-weight: 900; }
         
         .board-card { padding: 0; overflow: hidden; }
         .board-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -274,8 +208,8 @@ export default function ReviewPage() {
         .trade-table td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.02); color: #cbd5e1; }
         .yield.plus { color: #ef4444 !important; font-weight: 900; }
         .yield.minus { color: #3b82f6 !important; font-weight: 900; }
-        .inline-icon { margin-right: 6px; vertical-align: middle; }
         .bold { font-weight: 900; color: #f2f2f2; }
+        .empty-td { text-align: center; padding: 40px !important; color: #555; font-style: italic; }
 
         .form-card { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
         .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
@@ -288,25 +222,25 @@ export default function ReviewPage() {
         .deep-card { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
         .deep-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; }
         .user-info { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; }
-        .yield-badge { padding: 4px 12px; border-radius: 20px; font-weight: 900; font-size: 0.9rem; }
+        .yield-badge { padding: 4px 12px; border-radius: 20px; font-weight: 900; }
         .yield-badge.plus { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
         .yield-badge.minus { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
 
         .reason-box { background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; }
-        .reason-item { font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; }
-        .reason-item strong { color: var(--primary); margin-right: 8px; }
+        .reason-item { font-size: 0.85rem; color: #cbd5e1; }
+        .reason-item strong { color: #3b82f6; margin-right: 8px; }
 
         .comment-section { display: flex; flex-direction: column; gap: 16px; }
         .comment-list { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .comment-bubble { font-size: 0.8rem; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; }
-        .c-author { font-weight: 900; color: var(--primary); margin-right: 8px; }
+        .c-author { font-weight: 900; color: #3b82f6; margin-right: 8px; }
         .comment-input-area { display: flex; gap: 10px; }
-        .comment-input-area input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; color: white; font-size: 0.8rem; }
-        .comment-input-area button { background: var(--primary); color: black; border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
+        .comment-input-area input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; color: white; }
+        .comment-input-area button { background: #3b82f6; color: white; border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .blue { color: #3b82f6; }
         .gold { color: #d4af37; }
         .pagination { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 15px; background: rgba(255,255,255,0.02); }
-        .pagination button { background: none; border: 1px solid #333; color: #94a3b8; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; }
+        .pagination button { background: none; border: 1px solid #333; color: #94a3b8; width: 32px; height: 32px; border-radius: 8px; }
       `}</style>
     </div>
   );
