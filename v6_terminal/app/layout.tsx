@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 };
 
 import Sidebar from "@/components/Sidebar";
+import TacticalPopup from "@/components/TacticalPopup";
 
 export default function RootLayout({
   children,
@@ -27,6 +28,7 @@ export default function RootLayout({
       <body>
         <div className="terminal-overlay"></div>
         <div className="scanlines"></div>
+        <TacticalPopup />
         
         <div className="layout-container">
           <Sidebar />
