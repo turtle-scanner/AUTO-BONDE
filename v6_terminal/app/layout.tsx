@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
+import React from "react";
 import Link from "next/link";
 import BGMPlayer from "@/components/BGMPlayer";
 import DigitalClock from "@/components/DigitalClock";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import Sidebar from "@/components/Sidebar";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "StockDragonfly v6.0 | PLATINUM COMMAND",
   description: "Next-generation algorithmic trading and market analysis dashboard.",
 };
-
-import Sidebar from "@/components/Sidebar";
-import dynamic from 'next/dynamic';
-
-const TacticalPopup = dynamic(() => import('@/components/TacticalPopup'), { ssr: false });
 
 export default function RootLayout({
   children,
@@ -30,7 +27,6 @@ export default function RootLayout({
       <body>
         <div className="terminal-overlay"></div>
         <div className="scanlines"></div>
-        <TacticalPopup />
         
         <div className="layout-container">
           <Sidebar />
