@@ -4,14 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { Cloud, Sun, CloudRain, Wind, ArrowUp, ArrowDown, Minus, Clock, Globe } from 'lucide-react';
 
 export default function MarketHeader() {
-  const [marketIndices, setMarketIndices] = useState({
-    kospi: { val: "2,712.35", change: "+0.45%", trend: "up" },
-    kosdaq: { val: "862.15", change: "-0.12%", trend: "down" },
-    nasdaq: { val: "16,156.33", change: "+1.24%", trend: "up" },
-    sp500: { val: "5,123.41", change: "+0.88%", trend: "up" },
-    dow: { val: "38,675.68", change: "+0.72%", trend: "up" },
-    exchange: { val: "1,372.50", change: "+2.50", trend: "up" }
+  const [marketIndices, setMarketIndices] = useState<any>({
+    kospi: { val: 2712.35, change: "+0.45%", trend: "up" },
+    kosdaq: { val: 862.15, change: "-0.12%", trend: "down" },
+    nasdaq: { val: 16156.33, change: "+1.24%", trend: "up" },
+    sp500: { val: 5123.41, change: "+0.88%", trend: "up" },
+    dow: { val: 38675.68, change: "+0.72%", trend: "up" },
+    exchange: { val: 1372.50, change: "+2.50", trend: "up" }
   });
+
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const [weather, setWeather] = useState({
     label: "맑음 (Bullish)",
@@ -19,7 +21,50 @@ export default function MarketHeader() {
     color: "#fbbf24"
   });
 
-  // 시장 분위기 자동 시뮬레이션 (실제로는 API 연동 가능)
+  useEffect(() => {
+    // 1. Clock Update
+    const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000);
+
+    // 2. REAL API Fetching
+    const fetchMarketData = async () => {
+      try {
+        const res = await fetch('/api/market');
+        const data = await res.json();
+        if (data && !data.error) {
+          setMarketIndices((prev: any) => ({
+            ...prev,
+            ...data
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch live market data:", err);
+      }
+    };
+
+    fetchMarketData();
+    const apiTimer = setInterval(fetchMarketData, 60000); // Refresh every minute
+
+    // 3. Market Jitter Simulation (Make it feel alive between API calls)
+    const jitterTimer = setInterval(() => {
+      setMarketIndices((prev: any) => {
+        const next = { ...prev };
+        Object.keys(next).forEach(key => {
+          if (next[key]) {
+            const jitter = (Math.random() - 0.5) * 0.05; 
+            next[key].val = parseFloat((next[key].val + jitter).toFixed(2));
+          }
+        });
+        return next;
+      });
+    }, 3000);
+
+    return () => {
+      clearInterval(clockTimer);
+      clearInterval(apiTimer);
+      clearInterval(jitterTimer);
+    };
+  }, []);
+
   useEffect(() => {
     const upCount = [marketIndices.kospi, marketIndices.nasdaq, marketIndices.sp500].filter(i => i.trend === 'up').length;
     if (upCount >= 2) {
@@ -27,13 +72,13 @@ export default function MarketHeader() {
     } else {
       setWeather({ label: "흐림 (Neutral)", icon: <Cloud size={20} className="weather-cloud" />, color: "#94a3b8" });
     }
-  }, []);
+  }, [marketIndices]);
 
   const MarketItem = ({ label, data }: { label: string, data: any }) => (
     <div className="market-item">
       <span className="m-label">{label}</span>
-      <span className="m-val">{data.val}</span>
-      <span className={`m-change ${data.trend}`} style={{ color: data.trend === 'up' ? '#ff0000' : '#0066ff' }}>
+      <span className="m-val">{data.val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+      <span className={`m-change ${data.trend}`} style={{ color: data.trend === 'up' ? '#ff4d4d' : '#4d94ff' }}>
         {data.trend === 'up' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
         {data.change}
       </span>
@@ -65,22 +110,22 @@ export default function MarketHeader() {
         </div>
       </div>
 
-      {/* 3. Market Sessions */}
+      {/* 3. Market Sessions & Clock */}
       <div className="sessions-section">
         <div className="session-box">
           <div className="s-header">
-            <Globe size={12} className="icon-blue" />
-            <span>KOREA</span>
+            <Clock size={12} className="icon-gold" />
+            <span>COMMAND TIME</span>
           </div>
-          <div className="s-times">09:00 - 15:30</div>
+          <div className="s-times">{currentTime.toLocaleTimeString()}</div>
         </div>
         <div className="session-divider"></div>
         <div className="session-box">
           <div className="s-header">
-            <Globe size={12} className="icon-gold" />
-            <span>USA (NY)</span>
+            <Globe size={12} className="icon-blue" />
+            <span>STATUS</span>
           </div>
-          <div className="s-times">22:30 - 05:00</div>
+          <div className="s-times" style={{ color: '#ffb300' }}>WEEKEND CLOSED</div>
         </div>
       </div>
 
@@ -129,11 +174,6 @@ export default function MarketHeader() {
         
         .icon-blue { color: #3b82f6; }
         .icon-gold { color: #fbbf24; }
-        
-        @keyframes ticker {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
       `}</style>
     </div>
   );
