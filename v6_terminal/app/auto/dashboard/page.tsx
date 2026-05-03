@@ -165,10 +165,11 @@ export default function AutoDashboardPage() {
                     <span className={`status-badge ${pos.status.toLowerCase()}`}>{pos.status}</span>
                   </td>
                 </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
         {/* ECOSYSTEM SECTION */}
         <div className="ecosystem-grid">
