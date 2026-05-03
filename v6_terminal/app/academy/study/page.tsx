@@ -10,8 +10,14 @@ import {
   Monitor, 
   Layout, 
   Type,
-  Maximize2
+  Maximize2,
+  LineChart,
+  Smartphone,
+  BellRing,
+  ShieldAlert,
+  Zap as ZapIcon
 } from 'lucide-react';
+import { useEffect } from 'react';
 
 interface Lesson {
   id: number;
@@ -41,6 +47,30 @@ const studyData: Lesson[] = [
 export default function EyeComfortStudyPage() {
   const [selectedId, setSelectedId] = useState<number>(1);
   const selectedLesson = studyData.find(l => l.id === selectedId) || studyData[0];
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://s3.tradingview.com/tv.js";
+    script.async = true;
+    script.onload = () => {
+      if (typeof window !== 'undefined' && (window as any).TradingView) {
+        new (window as any).TradingView.widget({
+          "autosize": true,
+          "symbol": "NASDAQ:NVDA",
+          "interval": "D",
+          "timezone": "Asia/Seoul",
+          "theme": "dark",
+          "style": "1",
+          "locale": "ko",
+          "toolbar_bg": "#f1f3f6",
+          "enable_publishing": false,
+          "allow_symbol_change": true,
+          "container_id": "study_tv_widget"
+        });
+      }
+    };
+    document.head.appendChild(script);
+  }, []);
 
   return (
     <div className="study-room-container animate-fade-in">
@@ -93,6 +123,17 @@ export default function EyeComfortStudyPage() {
                 <p className="lesson-text">{selectedLesson.content}</p>
               </div>
 
+              {/* TradingView Practice Area */}
+              <div className="practice-section">
+                <div className="section-label">
+                  <div className="label-left"><LineChart size={14} /> 실전 작도 연습 (TradingView Live)</div>
+                  <span className="premium-label">PREMIUM UX</span>
+                </div>
+                <div className="tv-widget-box glass">
+                  <div id="study_tv_widget" style={{ height: '450px' }}></div>
+                </div>
+              </div>
+
               {/* Image Section */}
               <div className="image-section">
                 <div className="section-label">
@@ -113,6 +154,26 @@ export default function EyeComfortStudyPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* PREMIUM UX BOTTOM BAR (Mobile Optimized) */}
+      <div className="premium-bottom-grid">
+        <GlassCard className="bottom-module mobile-ops">
+          <h4 className="gold"><Smartphone size={16} /> MOBILE COMMAND CENTER</h4>
+          <div className="mobile-btn-group">
+            <button className="m-btn danger"><ShieldAlert size={16} /> EMERGENCY SELL</button>
+            <button className="m-btn warning"><ZapIcon size={16} /> PAUSE BOT</button>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="bottom-module alert-hub">
+          <h4 className="gold"><BellRing size={16} /> SMART ALERT CONFIG</h4>
+          <div className="alert-toggle-box">
+            <span>실시간 패턴 돌파 알림 (Telegram)</span>
+            <div className="toggle active"></div>
+          </div>
+          <p className="alert-desc">공부 중인 패턴이 시장에서 포착되면 즉시 차트와 함께 전송됩니다.</p>
+        </GlassCard>
       </div>
 
       <style jsx>{`
@@ -167,6 +228,36 @@ export default function EyeComfortStudyPage() {
         .zoom-btn { background: #333; border: none; color: #a3a3a3; font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
         
         .image-placeholder { height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #404040; }
+
+        .image-placeholder { height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #404040; }
+
+        /* Premium UX Features */
+        .practice-section { margin-top: 20px; }
+        .tv-widget-box { border-radius: 12px; overflow: hidden; border: 1px solid #333; }
+        .premium-label { font-size: 0.65rem; font-weight: 900; color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); padding: 2px 8px; border-radius: 4px; }
+
+        .premium-bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 20px; margin-bottom: 50px; }
+        .bottom-module { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+        .bottom-module h4 { font-size: 0.8rem; font-weight: 900; display: flex; align-items: center; gap: 10px; }
+        
+        .mobile-btn-group { display: flex; gap: 12px; }
+        .m-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 800; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: transform 0.2s; }
+        .m-btn:hover { transform: translateY(-2px); }
+        .m-btn.danger { background: #ff0055; color: white; }
+        .m-btn.warning { background: #fbbf24; color: black; }
+
+        .alert-toggle-box { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 12px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; }
+        .toggle { width: 40px; height: 20px; background: #333; border-radius: 10px; position: relative; }
+        .toggle.active { background: #10b981; }
+        .toggle.active::after { content: ''; position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; }
+        .alert-desc { font-size: 0.7rem; color: #737373; font-style: italic; }
+
+        .gold { color: #f59e0b; }
+
+        @media (max-width: 1000px) {
+          .study-layout { grid-template-columns: 1fr; height: auto; }
+          .premium-bottom-grid { grid-template-columns: 1fr; }
+        }
 
         /* Custom Scrollbar */
         .content-viewer::-webkit-scrollbar { width: 8px; }
