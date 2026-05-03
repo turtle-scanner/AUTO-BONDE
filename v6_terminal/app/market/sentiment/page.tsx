@@ -12,7 +12,12 @@ import {
   Zap, 
   BrainCircuit,
   MessageSquare,
-  Newspaper
+  Newspaper,
+  History,
+  Send,
+  Terminal as TerminalIcon,
+  Search,
+  Thermometer
 } from 'lucide-react';
 
 export default function MarketSentimentUpgrade() {
@@ -129,6 +134,63 @@ export default function MarketSentimentUpgrade() {
         </div>
       </GlassCard>
 
+      {/* AI COMMANDER SECTION */}
+      <div className="commander-section-title">
+        <BrainCircuit size={24} className="gold" /> [ AI COMMANDER V6.0 ] - NEXT GEN INTELLIGENCE
+      </div>
+
+      <div className="commander-grid">
+        {/* 1. Global News Sentiment Gauge */}
+        <GlassCard className="commander-card">
+          <div className="card-header-v2">
+            <Thermometer size={18} className="gold" /> GLOBAL NEWS TEMP (0-100)
+          </div>
+          <div className="temp-visual">
+            <div className="temp-bar-bg">
+              <div className="temp-bar-fill" style={{ width: '82%' }}></div>
+              <div className="temp-marker" style={{ left: '82%' }}></div>
+            </div>
+            <div className="temp-labels">
+              <span>0 (ICE COLD)</span>
+              <span className="current-temp">82 (HOT)</span>
+              <span>100 (BOILING)</span>
+            </div>
+          </div>
+          <p className="card-desc">로이터, 블룸버그 및 SNS 실시간 트렌드를 Gemini가 분석한 시장의 열기입니다.</p>
+        </GlassCard>
+
+        {/* 2. AI Strategy Feedback */}
+        <GlassCard className="commander-card">
+          <div className="card-header-v2">
+            <History size={18} className="gold" /> AI STRATEGY FEEDBACK
+          </div>
+          <div className="feedback-content">
+            <div className="feedback-item">
+              <div className="feedback-tag">[ MISSION #142 RECAP ]</div>
+              <p className="feedback-msg">"이번 NVDA 매매는 VCP 패턴 수축이 덜 된 상태에서 조기 진입했습니다. 다음에는 변동성이 2% 이하로 줄어드는 것을 확인하십시오."</p>
+            </div>
+          </div>
+        </GlassCard>
+
+        {/* 3. Interactive Command Center */}
+        <GlassCard className="commander-card full-width">
+          <div className="card-header-v2">
+            <TerminalIcon size={18} className="gold" /> YUHANI COMMAND CONSOLE
+          </div>
+          <div className="chat-interface">
+            <div className="chat-messages">
+              <div className="msg bot">사령관님, 명령을 대기 중입니다. (예: "나스닥 RS 90 이상 보여줘")</div>
+              <div className="msg user">유하니, 현재 나스닥 주도주 중 RS 90 이상만 골라줘.</div>
+              <div className="msg bot success">명령 수신. 나스닥 정예 종목 12개를 필터링하여 [ 3-e. RS ] 섹션에 전송했습니다.</div>
+            </div>
+            <div className="chat-input-box">
+              <input type="text" placeholder="명령을 입력하세요 (Command Here...)" className="chat-input" />
+              <button className="chat-send"><Send size={16} /></button>
+            </div>
+          </div>
+        </GlassCard>
+      </div>
+
       <style jsx>{`
         .sentiment-upgrade-container {
           padding: 30px;
@@ -209,6 +271,40 @@ export default function MarketSentimentUpgrade() {
         .advice-action { display: flex; flex-direction: column; align-items: center; padding: 15px; background: rgba(212, 175, 55, 0.1); border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.2); }
         .action-label { font-size: 0.65rem; font-weight: 900; color: var(--gold-400); margin-bottom: 4px; }
         .action-val { font-size: 1.1rem; font-weight: 900; }
+
+        /* AI COMMANDER */
+        .commander-section-title { font-size: 1.4rem; font-weight: 900; color: white; display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+        .commander-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 50px; }
+        .commander-card { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+        .commander-card.full-width { grid-column: 1 / -1; }
+        .card-header-v2 { font-size: 0.8rem; font-weight: 900; display: flex; align-items: center; gap: 10px; color: var(--gold-400); }
+        .card-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+
+        .temp-visual { margin: 10px 0; }
+        .temp-bar-bg { width: 100%; height: 12px; background: rgba(0,0,0,0.4); border-radius: 6px; position: relative; overflow: visible; border: 1px solid rgba(255,255,255,0.05); }
+        .temp-bar-fill { height: 100%; background: linear-gradient(to right, #3b82f6, #fbbf24, #ff0055); border-radius: 6px; }
+        .temp-marker { position: absolute; top: -5px; width: 4px; height: 22px; background: white; box-shadow: 0 0 10px white; border-radius: 2px; }
+        .temp-labels { display: flex; justify-content: space-between; margin-top: 15px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); }
+        .current-temp { color: #ff0055; font-weight: 900; }
+
+        .feedback-item { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 8px; border-left: 4px solid var(--gold-400); }
+        .feedback-tag { font-size: 0.7rem; font-weight: 900; color: var(--gold-400); margin-bottom: 8px; }
+        .feedback-msg { font-size: 0.85rem; line-height: 1.6; color: #e2e8f0; }
+
+        .chat-interface { display: flex; flex-direction: column; gap: 20px; }
+        .chat-messages { display: flex; flex-direction: column; gap: 12px; height: 160px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+        .msg { padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; max-width: 80%; line-height: 1.5; }
+        .msg.bot { background: rgba(255,255,255,0.05); color: #e2e8f0; align-self: flex-start; }
+        .msg.user { background: rgba(212, 175, 55, 0.1); color: var(--gold-400); align-self: flex-end; border: 1px solid rgba(212, 175, 55, 0.2); }
+        .msg.bot.success { border-left: 4px solid #10b981; }
+
+        .chat-input-box { display: flex; gap: 10px; }
+        .chat-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 8px; color: white; outline: none; font-size: 0.9rem; }
+        .chat-input:focus { border-color: var(--gold-400); }
+        .chat-send { width: 48px; display: flex; align-items: center; justify-content: center; background: var(--gold-400); border: none; border-radius: 8px; color: black; cursor: pointer; transition: transform 0.2s; }
+        .chat-send:hover { transform: scale(1.05); }
+
+        .gold { color: var(--gold-400); }
       `}</style>
     </div>
   );
