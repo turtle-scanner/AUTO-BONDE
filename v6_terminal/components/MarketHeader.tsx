@@ -33,7 +33,7 @@ export default function MarketHeader() {
     <div className="market-item">
       <span className="m-label">{label}</span>
       <span className="m-val">{data.val}</span>
-      <span className={`m-change ${data.trend}`}>
+      <span className={`m-change ${data.trend}`} style={{ color: data.trend === 'up' ? '#ff0000' : '#0066ff' }}>
         {data.trend === 'up' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
         {data.change}
       </span>
