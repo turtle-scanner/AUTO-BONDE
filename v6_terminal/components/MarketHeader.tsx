@@ -107,13 +107,18 @@ export default function MarketHeader() {
 
         /* Ticker */
         .indices-ticker { flex: 1; overflow: hidden; position: relative; }
-        .ticker-track { display: flex; gap: 30px; }
-        .market-item { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-        .m-label { font-size: 0.7rem; font-weight: 900; color: #94a3b8; }
-        .m-val { font-size: 0.85rem; font-weight: 800; color: #f2f2f2; font-family: 'Fira Code', monospace; }
-        .m-change { display: flex; align-items: center; gap: 2px; font-size: 0.75rem; font-weight: 700; }
-        .m-change.up { color: #f87171; }
-        .m-change.down { color: #60a5fa; }
+        .ticker-track { display: flex; gap: 40px; padding: 0 20px; animation: ticker-scroll 30s linear infinite; }
+        .market-item { display: flex; align-items: center; gap: 10px; white-space: nowrap; background: rgba(255,255,255,0.03); padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .m-label { font-size: 0.75rem; font-weight: 900; color: #94a3b8; }
+        .m-val { font-size: 0.9rem; font-weight: 800; color: #f2f2f2; font-family: 'Fira Code', monospace; }
+        .m-change { display: flex; align-items: center; gap: 2px; font-size: 0.8rem; font-weight: 800; }
+        .m-change.up { color: #ff4d4d; }
+        .m-change.down { color: #4d94ff; }
+
+        @keyframes ticker-scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
 
         /* Sessions */
         .sessions-section { display: flex; align-items: center; gap: 16px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 8px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); }
