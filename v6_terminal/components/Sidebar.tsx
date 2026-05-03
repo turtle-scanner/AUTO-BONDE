@@ -133,7 +133,13 @@ export default function Sidebar() {
           <div className="sub-menu">
             <Link href="/auto/exec" className="sub-item-link"><div className={`sub-item ${pathname === "/auto/exec" ? "active" : ""}`}>7-a. [ EXEC ] 모의투자 매수 테스트</div></Link>
             <Link href="/auto/dashboard" className="sub-item-link"><div className={`sub-item ${pathname === "/auto/dashboard" ? "active" : ""}`}>7-b. [ DASHBOARD ] 모의투자 현황/결과</div></Link>
-            <Link href="/auto/engine" className="sub-item-link"><div className={`sub-item ${pathname === "/auto/engine" ? "active" : ""}`}>7-c. [ ENGINE ] 자동매매 전략엔진</div></Link>
+            {isAdmin && (
+              <Link href="/auto/engine" className="sub-item-link">
+                <div className={`sub-item ${pathname === "/auto/engine" ? "active" : ""}`}>
+                  7-c. [ ENGINE ] 자동매매 전략엔진
+                </div>
+              </Link>
+            )}
             <Link href="/auto/report" className="sub-item-link"><div className={`sub-item ${pathname === "/auto/report" ? "active" : ""}`}>7-d. [ REPORT ] 자동투자 성적표</div></Link>
             <Link href="/auto/rank" className="sub-item-link"><div className={`sub-item ${pathname === "/auto/rank" ? "active" : ""}`}>7-e. [ RANK ] 사령부 명예의 전당</div></Link>
           </div>
