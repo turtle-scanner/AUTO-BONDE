@@ -11,7 +11,8 @@ import {
   Crown, 
   ArrowUpRight, 
   Target,
-  Sparkles
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 
 interface Ranker {
@@ -23,7 +24,7 @@ interface Ranker {
   winRate: number;
 }
 
-// 모든 수익률을 0.00%로 초기화하여 실전 가동 준비
+// 초기화 상태: 모든 랭커는 초기 자본금 1,000만원으로 시작
 const rankers: Ranker[] = [
   { id: 1, name: "프라딥 본데", type: "AI", yield: 0.0, bestStock: "Ready...", winRate: 0 },
   { id: 2, name: "cntfed", type: "MEMBER", yield: 0.0, bestStock: "Ready...", winRate: 0 },
@@ -36,7 +37,6 @@ const rankers: Ranker[] = [
 ];
 
 export default function StrategyPerformance() {
-  // 초기화 상태이므로 순위는 이름순 혹은 ID순으로 정렬된 상태로 표시
   const top3 = rankers.slice(0, 3);
   const rest = rankers.slice(3);
 
@@ -47,7 +47,13 @@ export default function StrategyPerformance() {
         <h1 className="main-title">
           <Trophy size={48} className="gold-icon" /> [ 이달의 전리품 수상 ]
         </h1>
-        <p className="sub-title">2026년 5월 - AI 요원 및 정예 대원 수익률 명예의 전당 (실전 가동 준비 중)</p>
+        <p className="sub-title">2026년 5월 - AI 요원 및 정예 대원 수익률 명예의 전당</p>
+        
+        {/* 1000만원 원칙 명시 */}
+        <div className="simulation-rule-badge glass">
+          <ShieldCheck size={16} className="gold" />
+          <span>모든 랭커는 초기 자본금 <strong>1,000만원</strong>으로 동일하게 시작되었습니다.</span>
+        </div>
       </div>
 
       {/* Podium Section */}
@@ -153,6 +159,13 @@ export default function StrategyPerformance() {
         .gold-icon { color: #d4af37; animation: bounce 2s infinite; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .sub-title { font-size: 1.1rem; color: #737373; font-weight: 600; letter-spacing: 1px; }
+
+        .simulation-rule-badge { 
+          margin-top: 10px; padding: 10px 24px; border-radius: 30px; 
+          background: rgba(212, 175, 55, 0.05); border: 1px solid rgba(212, 175, 55, 0.2);
+          display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #cbd5e1;
+        }
+        .simulation-rule-badge strong { color: var(--primary); }
 
         /* Podium */
         .podium-section { display: flex; align-items: flex-end; justify-content: center; gap: 30px; padding: 40px 0; }

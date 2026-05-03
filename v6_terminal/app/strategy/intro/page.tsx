@@ -2,7 +2,8 @@
 
 import React from 'react';
 import GlassCard from '@/components/GlassCard';
-import { Cpu, Terminal, Users, ShieldAlert } from 'lucide-react';
+import { Cpu, Terminal, Users, ShieldAlert, Rocket, Trophy, Wallet } from 'lucide-react';
+import Link from 'next/link';
 
 export default function StrategyIntro() {
   const masters = [
@@ -38,11 +39,39 @@ export default function StrategyIntro() {
         ))}
       </div>
 
+      {/* 1,000만원 모의투자 안내 섹션 추가 */}
+      <div className="simulation-mission-section">
+        <GlassCard className="mission-card gold-border-glow">
+          <div className="mission-content">
+            <div className="mission-icon">
+              <Rocket size={40} className="gold" />
+            </div>
+            <div className="mission-text">
+              <h2>전 부대원 1,000만원 모의투자 임무 부여</h2>
+              <p>
+                안티그래비티 사령부는 모든 대원에게 공평하게 <strong>초기 자본금 1,000만원</strong>의 모의투자 실탄을 지급합니다. 
+                AI 거장들의 전술을 활용하여 수익률을 극대화하십시오. 여러분의 모든 성적은 실시간으로 기록됩니다.
+              </p>
+              <div className="mission-features">
+                <div className="feat-item"><Wallet size={16} /> 1,000만원 기본 지급</div>
+                <div className="feat-item"><Trophy size={16} /> 명예의 전당(8-g) 연동</div>
+                <div className="feat-item"><Users size={16} /> 전 부대원 실전 경쟁</div>
+              </div>
+              <Link href="/auto/exec">
+                <button className="mission-btn">임무 시작하기 <Terminal size={16} /></button>
+              </Link>
+            </div>
+          </div>
+        </GlassCard>
+      </div>
+
       <style jsx>{`
-        .strategy-container { padding: 40px; display: flex; flex-direction: column; gap: 32px; }
+        .strategy-container { padding: 40px; display: flex; flex-direction: column; gap: 48px; }
         .tag { color: var(--primary); font-weight: 900; }
         .subtitle { color: var(--text-muted); margin-top: 8px; }
+        
         .masters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .master-card { padding: 24px; }
         .master-header { display: flex; gap: 16px; align-items: center; margin-bottom: 20px; }
         .avatar { 
           width: 50px; height: 50px; border-radius: 12px; display: flex; 
@@ -52,12 +81,36 @@ export default function StrategyIntro() {
         .master-info h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; }
         .role { font-size: 0.75rem; color: var(--primary); font-weight: 700; text-transform: uppercase; }
         .desc { font-size: 0.9rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 24px; min-height: 50px; }
+        
         .status-bar { 
           display: flex; justify-content: space-between; align-items: center; 
           padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05);
           font-size: 0.7rem; font-weight: 800;
         }
         .status-val { color: #00ff88; }
+
+        /* Simulation Mission Styles */
+        .simulation-mission-section { margin-top: 20px; }
+        .mission-card { padding: 40px; background: linear-gradient(135deg, rgba(212, 175, 55, 0.05), rgba(0, 0, 0, 0.4)); }
+        .gold-border-glow { border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 0 30px rgba(212, 175, 55, 0.1); }
+        
+        .mission-content { display: flex; gap: 32px; align-items: center; }
+        .mission-icon { background: rgba(212, 175, 55, 0.1); padding: 24px; border-radius: 20px; }
+        .mission-text h2 { font-size: 1.6rem; font-weight: 900; color: #f2f2f2; margin-bottom: 12px; }
+        .mission-text p { font-size: 1rem; color: #94a3b8; line-height: 1.7; margin-bottom: 24px; }
+        .mission-text strong { color: var(--primary); }
+
+        .mission-features { display: flex; gap: 20px; margin-bottom: 30px; }
+        .feat-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 800; color: #cbd5e1; background: rgba(255, 255, 255, 0.03); padding: 8px 16px; border-radius: 10px; }
+
+        .mission-btn { 
+          background: var(--primary); color: black; border: none; padding: 14px 28px; 
+          border-radius: 12px; font-weight: 900; font-size: 1rem; cursor: pointer;
+          display: flex; align-items: center; gap: 10px; transition: all 0.3s;
+        }
+        .mission-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0, 255, 136, 0.2); }
+
+        .gold { color: #d4af37; }
       `}</style>
     </div>
   );
