@@ -2,7 +2,20 @@
 
 import React from 'react';
 import GlassCard from '@/components/GlassCard';
-import { LayoutDashboard, TrendingUp, TrendingDown, Wallet, Activity, History } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  TrendingUp, 
+  TrendingDown, 
+  Wallet, 
+  Activity, 
+  History, 
+  Play, 
+  ShieldAlert, 
+  BarChart3, 
+  Search,
+  Zap,
+  Percent
+} from 'lucide-react';
 
 export default function AutoDashboardPage() {
   const stats = [
@@ -42,6 +55,79 @@ export default function AutoDashboardPage() {
             </div>
           </GlassCard>
         ))}
+      </div>
+
+      {/* STRATEGIC MODULES GRID */}
+      <div className="strategic-grid">
+        {/* 1. Backtest Engine */}
+        <GlassCard className="strat-module backtest-module">
+          <div className="module-header">
+            <BarChart3 size={20} className="gold" /> [ BACKTEST ENGINE ] - 10Y DATA
+          </div>
+          <div className="module-content">
+            <div className="backtest-controls">
+              <div className="input-group">
+                <label>Strategy</label>
+                <select className="glass-select">
+                  <option>VCP Breakout (Default)</option>
+                  <option>Cup & Handle</option>
+                  <option>Pocket Pivot</option>
+                </select>
+              </div>
+              <button className="run-btn"><Play size={14} /> SIMULATE</button>
+            </div>
+            <div className="results-display">
+              <div className="res-item">
+                <span className="res-label">WIN RATE</span>
+                <span className="res-val status-up">72.4%</span>
+              </div>
+              <div className="res-item">
+                <span className="res-label">MAX DRAWDOWN</span>
+                <span className="res-val status-down">-8.2%</span>
+              </div>
+            </div>
+          </div>
+        </GlassCard>
+
+        {/* 2. Dynamic Position Sizing */}
+        <GlassCard className="strat-module risk-module">
+          <div className="module-header">
+            <ShieldAlert size={20} className="gold" /> [ DYNAMIC RISK MANAGER ]
+          </div>
+          <div className="module-content">
+            <div className="vix-monitor">
+              <div className="vix-val">VIX: 14.2 <span className="vix-status">STABLE</span></div>
+              <div className="sizing-advice">
+                <span className="advice-label">RECOMMENDED POSITION SIZE</span>
+                <div className="sizing-bar">
+                  <div className="sizing-fill" style={{ width: '85%' }}></div>
+                </div>
+                <span className="sizing-pct">85% (AGGRESSIVE)</span>
+              </div>
+            </div>
+            <p className="risk-text">현재 시장 변동성이 낮으므로 주도주에 강력하게 집중 투자할 것을 권고합니다.</p>
+          </div>
+        </GlassCard>
+
+        {/* 3. Master Pattern Radar */}
+        <GlassCard className="strat-module radar-module">
+          <div className="module-header">
+            <Search size={20} className="gold" /> [ MASTER PATTERN RADAR ]
+          </div>
+          <div className="radar-list">
+            {[
+              { name: "Cup & Handle", count: 12, status: "DETECTED" },
+              { name: "Double Bottom", count: 5, status: "FORMING" },
+              { name: "Pocket Pivot", count: 8, status: "READY" }
+            ].map((p, i) => (
+              <div key={i} className="radar-item">
+                <span className="p-name">{p.name}</span>
+                <span className="p-count">{p.count} Stocks</span>
+                <span className={`p-status ${p.status.toLowerCase()}`}>{p.status}</span>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
       </div>
 
       <section className="dashboard-section">
@@ -123,6 +209,44 @@ export default function AutoDashboardPage() {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.6; }
         }
+
+        /* STRATEGIC MODULES */
+        .strategic-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+        .strat-module { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+        .module-header { font-size: 0.85rem; font-weight: 900; display: flex; align-items: center; gap: 12px; color: var(--gold-400); }
+        .gold { color: #d4af37; }
+
+        .backtest-controls { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+        .input-group { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .input-group label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+        .glass-select { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 8px; font-size: 0.8rem; outline: none; }
+        .run-btn { background: var(--primary); color: black; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.75rem; font-weight: 900; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+        .results-display { display: flex; gap: 24px; margin-top: 10px; }
+        .res-item { display: flex; flex-direction: column; gap: 4px; }
+        .res-label { font-size: 0.6rem; font-weight: 800; color: var(--text-muted); }
+        .res-val { font-size: 1.2rem; font-weight: 900; }
+        .status-up { color: #10b981; }
+        .status-down { color: #ff0055; }
+
+        .vix-monitor { display: flex; flex-direction: column; gap: 16px; }
+        .vix-val { font-size: 1.1rem; font-weight: 900; display: flex; align-items: center; gap: 12px; }
+        .vix-status { font-size: 0.65rem; background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 8px; border-radius: 4px; }
+        .sizing-advice { display: flex; flex-direction: column; gap: 8px; }
+        .advice-label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); }
+        .sizing-bar { width: 100%; height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; }
+        .sizing-fill { height: 100%; background: linear-gradient(to right, var(--primary), var(--secondary)); }
+        .sizing-pct { font-size: 0.85rem; font-weight: 900; color: var(--primary); }
+        .risk-text { font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; font-style: italic; }
+
+        .radar-list { display: flex; flex-direction: column; gap: 12px; }
+        .radar-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .p-name { font-size: 0.85rem; font-weight: 800; }
+        .p-count { font-size: 0.75rem; color: var(--text-muted); }
+        .p-status { font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; }
+        .p-status.detected { background: rgba(255, 0, 85, 0.1); color: #ff0055; }
+        .p-status.forming { background: rgba(14, 165, 233, 0.1); color: #0ea5e9; }
+        .p-status.ready { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 
         .dashboard-footer { margin-top: 40px; text-align: center; border-top: 1px solid var(--card-border); padding-top: 30px; }
         .insight-label { color: var(--primary); font-size: 0.8rem; font-weight: 900; margin-bottom: 10px; }
