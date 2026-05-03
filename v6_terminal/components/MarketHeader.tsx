@@ -10,7 +10,7 @@ export default function MarketHeader() {
     nasdaq: { val: 21456.33, change: "+1.24%", trend: "up" },
     sp500: { val: 6123.41, change: "+0.88%", trend: "up" },
     dow: { val: 45675.68, change: "+0.72%", trend: "up" },
-    exchange: { val: 1412.50, change: "+2.50", trend: "up" }
+    exchange: { val: 1452.50, change: "+2.50", trend: "up" }
   });
 
   const [currentTime, setCurrentTime] = useState(new Date());
