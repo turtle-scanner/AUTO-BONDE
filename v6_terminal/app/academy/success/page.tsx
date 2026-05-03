@@ -11,11 +11,15 @@ import {
   ArrowRight, 
   Coins,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  FileText,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
-interface WinRecord { 
+interface TradeRecord { 
   id: number; 
+  type: 'SUCCESS' | 'REVIEW';
   ticker: string; 
   quantity: number;
   entryPrice: number; 
@@ -26,11 +30,13 @@ interface WinRecord {
   comment: string; 
 }
 
-const STORAGE_KEY = 'dragonfly_wins_v6_refined';
+// 5-e와 5-f가 공유하는 통합 데이터 키
+const SHARED_STORAGE_KEY = 'dragonfly_unified_trades_v6';
 
-const defaults: WinRecord[] = [
+const defaults: TradeRecord[] = [
   { 
     id: 1, 
+    type: 'SUCCESS',
     ticker: "SMCI", 
     quantity: 10,
     entryPrice: 350.50, 
@@ -38,32 +44,18 @@ const defaults: WinRecord[] = [
     totalAmount: 9802,
     yield: "+179.6%", 
     date: "2026-05-01", 
-    comment: "AI 서버 수요 폭증에 따른 EP 발생 확인 후 진입. 10일선 지지하며 강력 홀딩!" 
-  },
-  { 
-    id: 2, 
-    ticker: "NVDA", 
-    quantity: 5,
-    entryPrice: 420.00, 
-    exitPrice: 850.50, 
-    totalAmount: 4252.5,
-    yield: "+102.5%", 
-    date: "2026-04-20", 
-    comment: "반도체 주도주의 위엄. VCP 패턴 수축 끝단에서 거래량 실린 돌파 확인." 
+    comment: "AI 서버 수요 폭증에 따른 EP 발생 확인 후 진입. 강력 홀딩!" 
   },
 ];
 
 export default function SuccessPage() {
-  const [records, setRecords] = useState<WinRecord[]>([]);
+  const [records, setRecords] = useState<TradeRecord[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ 
-    ticker: '', 
-    quantity: '', 
-    entryPrice: '', 
-    exitPrice: '', 
-    comment: '' 
-  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [form, setForm] = useState({ ticker: '', quantity: '', entryPrice: '', exitPrice: '', comment: '' });
   const [loaded, setLoaded] = useState(false);
+
+  const itemsPerPage = 5;
 
   // 실시간 계산 값
   const qty = parseFloat(form.quantity) || 0;
@@ -74,7 +66,7 @@ export default function SuccessPage() {
 
   useEffect(() => {
     try { 
-      const s = localStorage.getItem(STORAGE_KEY); 
+      const s = localStorage.getItem(SHARED_STORAGE_KEY); 
       setRecords(s ? JSON.parse(s) : defaults); 
     } catch { 
       setRecords(defaults); 
@@ -83,7 +75,7 @@ export default function SuccessPage() {
   }, []);
 
   useEffect(() => { 
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); 
+    if (loaded) localStorage.setItem(SHARED_STORAGE_KEY, JSON.stringify(records)); 
   }, [records, loaded]);
 
   const handleAdd = () => {
@@ -91,8 +83,9 @@ export default function SuccessPage() {
       return alert("모든 항목을 입력해 주세요!");
     }
     
-    const newRecord: WinRecord = {
+    const newRecord: TradeRecord = {
       id: Date.now(),
+      type: 'SUCCESS',
       ticker: form.ticker.toUpperCase(),
       quantity: qty,
       entryPrice: entry,
@@ -108,17 +101,65 @@ export default function SuccessPage() {
     setShowForm(false);
   };
 
+  // Pagination
+  const successOnly = records.filter(r => r.type === 'SUCCESS');
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = successOnly.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(successOnly.length / itemsPerPage);
+
   return (
     <div className="success-container animate-fade-in">
       <div className="success-header">
         <div className="header-text">
           <h1><Trophy size={32} className="gold-icon" /> [ SUCCESS ] 실전 익절 자랑방</h1>
-          <p>사령부 대원들의 빛나는 전리품을 공유하고 승리의 기운을 나눕니다.</p>
+          <p>사령관님의 요청대로 익절 기록이 통합 전술 보드에 실시간 반영됩니다.</p>
         </div>
         <button className="add-btn" onClick={() => setShowForm(!showForm)}>
           <Plus size={18} /> {showForm ? "닫기" : "익절 기록 등록"}
         </button>
       </div>
+
+      {/* 상단 게시판 (Table View) - 5-f와 동일 규격 */}
+      <GlassCard className="board-card">
+        <div className="board-header">
+          <h3><FileText size={18} className="gold" /> 익절 전리품 보드 (Page {currentPage})</h3>
+        </div>
+        <div className="table-wrapper">
+          <table className="trade-table">
+            <thead>
+              <tr>
+                <th>날짜</th>
+                <th>종목명</th>
+                <th>수량</th>
+                <th>진입가</th>
+                <th>익절가</th>
+                <th>전체금액</th>
+                <th>수익률</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentItems.map(r => (
+                <tr key={r.id}>
+                  <td>{r.date}</td>
+                  <td className="bold">{r.ticker}</td>
+                  <td>{r.quantity}주</td>
+                  <td>${r.entryPrice.toLocaleString()}</td>
+                  <td>${r.exitPrice.toLocaleString()}</td>
+                  <td className="bold">{r.totalAmount.toLocaleString()}원</td>
+                  <td className="success-yield">{r.yield}</td>
+                </tr>
+              ))}
+              {currentItems.length === 0 && <tr><td colSpan={7} className="empty">기록이 없습니다.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+        <div className="pagination">
+          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft size={16} /></button>
+          <span>{currentPage} / {totalPages || 1}</span>
+          <button disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight size={16} /></button>
+        </div>
+      </GlassCard>
 
       {showForm && (
         <GlassCard className="form-card gold-border-glow">
@@ -129,131 +170,77 @@ export default function SuccessPage() {
             </div>
             <div className="input-group">
               <label><Hash size={14} className="gold" /> 주식 수</label>
-              <input type="number" placeholder="보유 수량" value={form.quantity} onChange={e => setForm({...form, quantity: e.target.value})} />
+              <input type="number" placeholder="수량" value={form.quantity} onChange={e => setForm({...form, quantity: e.target.value})} />
             </div>
             <div className="input-group">
               <label><DollarSign size={14} className="gold" /> 진입가</label>
-              <input type="number" placeholder="매수 평단가" value={form.entryPrice} onChange={e => setForm({...form, entryPrice: e.target.value})} />
+              <input type="number" placeholder="진입가" value={form.entryPrice} onChange={e => setForm({...form, entryPrice: e.target.value})} />
             </div>
             <div className="input-group">
               <label><TrendingUp size={14} className="gold" /> 익절가</label>
-              <input type="number" placeholder="매도 확정가" value={form.exitPrice} onChange={e => setForm({...form, exitPrice: e.target.value})} />
+              <input type="number" placeholder="익절가" value={form.exitPrice} onChange={e => setForm({...form, exitPrice: e.target.value})} />
             </div>
           </div>
-          
           <div className="auto-calc-preview">
-            <div className="calc-item">
-              <span>예상 전체 금액:</span>
-              <strong>{calcTotal}원</strong>
-            </div>
-            <div className="calc-item">
-              <span>확정 수익률:</span>
-              <strong className="yield-text">+{calcYield}%</strong>
-            </div>
+            <div className="calc-item"><span>전체 금액:</span><strong>{calcTotal}원</strong></div>
+            <div className="calc-item"><span>수익률:</span><strong className="success-yield">+{calcYield}%</strong></div>
           </div>
-
           <div className="input-group full-width">
-            <label><MessageSquare size={14} className="gold" /> 전술 복기 및 코멘트</label>
-            <textarea placeholder="진입 근거와 전술적 판단을 기록하세요." value={form.comment} onChange={e => setForm({...form, comment: e.target.value})} />
+            <label><MessageSquare size={14} className="gold" /> 승리 코멘트</label>
+            <textarea placeholder="전술적 성공 요인을 기록하세요." value={form.comment} onChange={e => setForm({...form, comment: e.target.value})} />
           </div>
-
-          <button className="submit-btn" onClick={handleAdd}>🏆 승전보 등록하기</button>
+          <button className="submit-btn" onClick={handleAdd}>🏆 승전보 등록</button>
         </GlassCard>
       )}
 
       <div className="records-grid">
-        {records.map(r => (
+        {currentItems.map(r => (
           <GlassCard key={r.id} className="record-card">
-            <div className="record-header">
-              <div className="ticker-badge">{r.ticker}</div>
-              <div className="yield-badge">{r.yield}</div>
-            </div>
-            
+            <div className="record-header"><div className="ticker-badge">{r.ticker}</div><div className="yield-badge">{r.yield}</div></div>
             <div className="price-info">
-              <div className="price-item">
-                <span className="label">ENTRY</span>
-                <span className="price">${r.entryPrice.toLocaleString()}</span>
-              </div>
-              <ArrowRight size={16} className="arrow" />
-              <div className="price-item">
-                <span className="label">EXIT</span>
-                <span className="price">${r.exitPrice.toLocaleString()}</span>
-              </div>
+              <div className="price-item"><span className="label">ENTRY</span><span className="price">${r.entryPrice.toLocaleString()}</span></div>
+              <ArrowRight size={16} className="arrow" /><div className="price-item"><span className="label">EXIT</span><span className="price">${r.exitPrice.toLocaleString()}</span></div>
             </div>
-
-            <div className="total-box">
-              <Coins size={16} className="gold" />
-              <span>전체 금액: <strong>{r.totalAmount.toLocaleString()}원</strong></span>
-              <span className="qty-tag">({r.quantity}주)</span>
-            </div>
-
+            <div className="total-box"><Coins size={16} className="gold" /><span>전체 금액: <strong>{r.totalAmount.toLocaleString()}원</strong></span></div>
             <p className="comment-text">{r.comment}</p>
-            
-            <div className="record-footer">
-              <span className="date">{r.date}</span>
-              <span className="status">VERIFIED</span>
-            </div>
           </GlassCard>
         ))}
       </div>
 
       <style jsx>{`
         .success-container { padding: 40px; display: flex; flex-direction: column; gap: 32px; color: white; }
-        
         .success-header { display: flex; justify-content: space-between; align-items: center; }
-        .header-text h1 { font-size: 1.8rem; font-weight: 950; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-        .header-text p { color: #94a3b8; font-weight: 600; font-size: 0.95rem; }
+        .header-text h1 { font-size: 1.8rem; font-weight: 950; display: flex; align-items: center; gap: 12px; }
         .gold-icon { color: #d4af37; }
-
-        .add-btn { background: #d4af37; color: black; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s; }
-        .add-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3); }
-
-        /* Form Style */
+        .add-btn { background: #d4af37; color: black; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        
+        .board-card { padding: 0; overflow: hidden; }
+        .board-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .board-header h3 { font-size: 1rem; font-weight: 900; display: flex; align-items: center; gap: 10px; margin: 0; }
+        .trade-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .trade-table th { text-align: left; padding: 16px; color: #555; border-bottom: 2px solid #222; }
+        .trade-table td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.02); color: #cbd5e1; }
+        .trade-table .bold { color: #f2f2f2; font-weight: 900; }
+        .success-yield { color: #ef4444 !important; font-weight: 900; }
+        .pagination { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 15px; background: rgba(255,255,255,0.02); }
+        .pagination button { background: none; border: 1px solid #333; color: #94a3b8; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; }
+        
         .form-card { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
-        .gold-border-glow { border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 0 30px rgba(212, 175, 55, 0.1); }
+        .gold-border-glow { border: 1px solid rgba(212, 175, 55, 0.3); }
         .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-        
         .input-group { display: flex; flex-direction: column; gap: 8px; }
-        .input-group label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; display: flex; align-items: center; gap: 6px; }
-        .input-group input, .input-group textarea { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 12px; color: white; outline: none; transition: border-color 0.3s; }
-        .input-group input:focus, .input-group textarea:focus { border-color: #d4af37; }
-        .input-group textarea { height: 100px; resize: none; }
+        .input-group input, .input-group textarea { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; color: white; }
         .full-width { grid-column: span 4; }
+        .auto-calc-preview { display: flex; gap: 40px; background: rgba(0, 255, 136, 0.03); padding: 16px; border-radius: 12px; }
+        .submit-btn { background: #d4af37; color: black; border: none; padding: 14px; border-radius: 12px; font-weight: 950; }
 
-        .auto-calc-preview { display: flex; gap: 40px; background: rgba(0, 255, 136, 0.03); padding: 16px 24px; border-radius: 12px; border: 1px dashed rgba(0, 255, 136, 0.2); }
-        .calc-item { display: flex; flex-direction: column; gap: 4px; }
-        .calc-item span { font-size: 0.7rem; font-weight: 800; color: #94a3b8; }
-        .calc-item strong { font-size: 1.1rem; font-weight: 900; color: #f2f2f2; }
-        .yield-text { color: #4ade80 !important; }
-
-        .submit-btn { background: #d4af37; color: black; border: none; padding: 14px; border-radius: 12px; font-weight: 950; font-size: 1rem; cursor: pointer; transition: all 0.3s; }
-        .submit-btn:hover { background: #e5c05b; }
-
-        /* Records Style */
         .records-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 24px; }
-        .record-card { padding: 24px; display: flex; flex-direction: column; gap: 20px; border: 1px solid rgba(255,255,255,0.05); }
-        .record-card:hover { border-color: rgba(212, 175, 55, 0.2); transform: translateY(-5px); }
-        
-        .record-header { display: flex; justify-content: space-between; align-items: center; }
-        .ticker-badge { font-size: 1.4rem; font-weight: 950; color: #f2f2f2; }
-        .yield-badge { padding: 4px 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 8px; font-weight: 900; font-size: 1rem; }
-
+        .record-card { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+        .ticker-badge { font-size: 1.4rem; font-weight: 950; }
+        .yield-badge { padding: 4px 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 8px; font-weight: 900; }
         .price-info { display: flex; align-items: center; gap: 16px; background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: 12px; }
-        .price-item { display: flex; flex-direction: column; gap: 2px; }
-        .price-item .label { font-size: 0.6rem; font-weight: 800; color: #64748b; }
-        .price-item .price { font-size: 0.95rem; font-weight: 800; color: #cbd5e1; }
-        .arrow { color: #475569; }
-
-        .total-box { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 700; color: #cbd5e1; }
-        .total-box strong { color: #f2f2f2; font-size: 1.1rem; }
-        .qty-tag { font-size: 0.75rem; color: #64748b; }
-
-        .comment-text { font-size: 0.88rem; color: #94a3b8; line-height: 1.6; font-weight: 500; margin: 0; min-height: 48px; border-left: 2px solid rgba(255,255,255,0.05); padding-left: 12px; }
-
-        .record-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); }
-        .date { font-size: 0.7rem; font-weight: 800; color: #475569; }
-        .status { font-size: 0.65rem; font-weight: 900; color: #4ade80; background: rgba(74, 222, 128, 0.1); padding: 2px 8px; border-radius: 4px; }
-
+        .total-box { font-size: 0.9rem; color: #cbd5e1; display: flex; align-items: center; gap: 8px; }
+        .comment-text { font-size: 0.88rem; color: #94a3b8; line-height: 1.6; }
         .gold { color: #d4af37; }
       `}</style>
     </div>

@@ -13,11 +13,14 @@ import {
   MessageSquare,
   FileText,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  TrendingUp,
+  Sparkles
 } from 'lucide-react';
 
-interface LossRecord { 
+interface TradeRecord { 
   id: number; 
+  type: 'SUCCESS' | 'REVIEW';
   ticker: string; 
   quantity: number;
   entryPrice: number; 
@@ -25,15 +28,29 @@ interface LossRecord {
   totalAmount: number;
   yield: string; 
   date: string; 
-  mistake: string;
-  lesson: string; 
+  comment: string;
+  mistake?: string; // REVIEW 전용
 }
 
-const STORAGE_KEY = 'dragonfly_losses_v6_refined';
+// 5-e와 5-f가 공유하는 통합 데이터 키
+const SHARED_STORAGE_KEY = 'dragonfly_unified_trades_v6';
 
-const defaults: LossRecord[] = [
+const defaults: TradeRecord[] = [
   { 
     id: 1, 
+    type: 'SUCCESS',
+    ticker: "SMCI", 
+    quantity: 10,
+    entryPrice: 350.50, 
+    exitPrice: 980.20, 
+    totalAmount: 9802,
+    yield: "+179.6%", 
+    date: "2026-05-01", 
+    comment: "승리의 기록입니다." 
+  },
+  { 
+    id: 2, 
+    type: 'REVIEW',
     ticker: "TSLA", 
     quantity: 20,
     entryPrice: 210.50, 
@@ -41,35 +58,16 @@ const defaults: LossRecord[] = [
     totalAmount: 3904,
     yield: "-7.3%", 
     date: "2026-04-28", 
-    mistake: "손절 원칙 미준수 및 희망 회로",
-    lesson: "10일선 이탈 시 기계적으로 손절했어야 함. 감정을 배제한 매매 필요." 
-  },
-  { 
-    id: 2, 
-    ticker: "META", 
-    quantity: 15,
-    entryPrice: 480.00, 
-    exitPrice: 445.00, 
-    totalAmount: 6675,
-    yield: "-7.3%", 
-    date: "2026-04-15", 
-    mistake: "뇌동 매수 및 지수 하락 무시",
-    lesson: "지수(IBD 상태)가 하락장일 때는 아무리 좋은 종목도 쉬어가는 것이 정답." 
+    comment: "감정을 배제한 매매 필요.",
+    mistake: "손절 원칙 미준수"
   },
 ];
 
 export default function ReviewPage() {
-  const [records, setRecords] = useState<LossRecord[]>([]);
+  const [records, setRecords] = useState<TradeRecord[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [form, setForm] = useState({ 
-    ticker: '', 
-    quantity: '', 
-    entryPrice: '', 
-    exitPrice: '', 
-    mistake: '',
-    lesson: '' 
-  });
+  const [form, setForm] = useState({ ticker: '', quantity: '', entryPrice: '', exitPrice: '', mistake: '', comment: '' });
   const [loaded, setLoaded] = useState(false);
 
   const itemsPerPage = 5;
@@ -83,7 +81,7 @@ export default function ReviewPage() {
 
   useEffect(() => {
     try { 
-      const s = localStorage.getItem(STORAGE_KEY); 
+      const s = localStorage.getItem(SHARED_STORAGE_KEY); 
       setRecords(s ? JSON.parse(s) : defaults); 
     } catch { 
       setRecords(defaults); 
@@ -92,7 +90,7 @@ export default function ReviewPage() {
   }, []);
 
   useEffect(() => { 
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); 
+    if (loaded) localStorage.setItem(SHARED_STORAGE_KEY, JSON.stringify(records)); 
   }, [records, loaded]);
 
   const handleAdd = () => {
@@ -100,8 +98,9 @@ export default function ReviewPage() {
       return alert("모든 필수 항목을 입력해 주세요!");
     }
     
-    const newRecord: LossRecord = {
+    const newRecord: TradeRecord = {
       id: Date.now(),
+      type: 'REVIEW',
       ticker: form.ticker.toUpperCase(),
       quantity: qty,
       entryPrice: entry,
@@ -109,16 +108,16 @@ export default function ReviewPage() {
       totalAmount: qty * exit,
       yield: `${calcYield}%`,
       date: new Date().toLocaleDateString('ko-KR'),
-      mistake: form.mistake || "원칙 미준수",
-      lesson: form.lesson || "학습 및 복기 예정"
+      comment: form.comment || "복기 기록입니다.",
+      mistake: form.mistake || "원칙 미준수"
     };
 
     setRecords(prev => [newRecord, ...prev]);
-    setForm({ ticker: '', quantity: '', entryPrice: '', exitPrice: '', mistake: '', lesson: '' });
+    setForm({ ticker: '', quantity: '', entryPrice: '', exitPrice: '', mistake: '', comment: '' });
     setShowForm(false);
   };
 
-  // Pagination logic
+  // Pagination - 5-e(SUCCESS)와 5-f(REVIEW) 모두 포함하여 상단 보드에 표시
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = records.slice(indexOfFirstItem, indexOfLastItem);
@@ -128,44 +127,47 @@ export default function ReviewPage() {
     <div className="review-container animate-fade-in">
       <div className="review-header">
         <div className="header-text">
-          <h1><Heart size={32} className="heart-icon" /> [ REVIEW ] 손실 위로 및 복기방</h1>
-          <p>뼈아픈 손실은 위대한 성장의 거름입니다. 냉정하게 기록하고 더 강해져서 돌아오십시오.</p>
+          <h1><Heart size={32} className="heart-icon" /> [ REVIEW ] 통합 전술 분석실</h1>
+          <p>사령관님의 지시대로 5-e(익절)와 5-f(손실) 기록이 통합 게시판에 실시간 집계됩니다.</p>
         </div>
         <button className="add-btn" onClick={() => setShowForm(!showForm)}>
           <Plus size={18} /> {showForm ? "닫기" : "손실 복기 등록"}
         </button>
       </div>
 
-      {/* 상단 게시판 (Table View) */}
+      {/* 상단 통합 게시판 (Success + Review) */}
       <GlassCard className="board-card">
         <div className="board-header">
-          <h3><FileText size={18} className="blue" /> 복기 전술 보드 (Page {currentPage})</h3>
+          <h3><FileText size={18} className="blue" /> 통합 전황 분석 보드 (Page {currentPage})</h3>
         </div>
         <div className="table-wrapper">
-          <table className="review-table">
+          <table className="trade-table">
             <thead>
               <tr>
+                <th>구분</th>
                 <th>날짜</th>
                 <th>종목명</th>
                 <th>수량</th>
                 <th>진입가</th>
-                <th>손절가</th>
+                <th>청산가</th>
                 <th>전체금액</th>
-                <th>손실률</th>
+                <th>수익률</th>
               </tr>
             </thead>
             <tbody>
               {currentItems.map(r => (
-                <tr key={r.id}>
+                <tr key={r.id} className={r.type === 'SUCCESS' ? 'row-success' : 'row-review'}>
+                  <td className="type-tag">{r.type === 'SUCCESS' ? <Sparkles size={14} className="gold" /> : <AlertCircle size={14} />}</td>
                   <td>{r.date}</td>
                   <td className="bold">{r.ticker}</td>
                   <td>{r.quantity}주</td>
                   <td>${r.entryPrice.toLocaleString()}</td>
                   <td>${r.exitPrice.toLocaleString()}</td>
                   <td className="bold">{r.totalAmount.toLocaleString()}원</td>
-                  <td className="loss-yield">{r.yield}</td>
+                  <td className={`yield ${r.type === 'SUCCESS' ? 'plus' : 'minus'}`}>{r.yield}</td>
                 </tr>
               ))}
+              {currentItems.length === 0 && <tr><td colSpan={8} className="empty">분석할 데이터가 없습니다.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -185,119 +187,75 @@ export default function ReviewPage() {
             </div>
             <div className="input-group">
               <label><Hash size={14} className="blue" /> 주식 수</label>
-              <input type="number" placeholder="보유 수량" value={form.quantity} onChange={e => setForm({...form, quantity: e.target.value})} />
+              <input type="number" placeholder="수량" value={form.quantity} onChange={e => setForm({...form, quantity: e.target.value})} />
             </div>
             <div className="input-group">
               <label><DollarSign size={14} className="blue" /> 진입가</label>
-              <input type="number" placeholder="매수 평단가" value={form.entryPrice} onChange={e => setForm({...form, entryPrice: e.target.value})} />
+              <input type="number" placeholder="진입가" value={form.entryPrice} onChange={e => setForm({...form, entryPrice: e.target.value})} />
             </div>
             <div className="input-group">
               <label><TrendingDown size={14} className="blue" /> 손절가</label>
-              <input type="number" placeholder="매도 확정가" value={form.exitPrice} onChange={e => setForm({...form, exitPrice: e.target.value})} />
+              <input type="number" placeholder="손절가" value={form.exitPrice} onChange={e => setForm({...form, exitPrice: e.target.value})} />
             </div>
           </div>
-          
           <div className="auto-calc-preview">
-            <div className="calc-item">
-              <span>예상 전체 금액:</span>
-              <strong>{calcTotal}원</strong>
-            </div>
-            <div className="calc-item">
-              <span>손실률:</span>
-              <strong className="loss-text">{calcYield}%</strong>
-            </div>
+            <div className="calc-item"><span>예상 회수 금액:</span><strong>{calcTotal}원</strong></div>
+            <div className="calc-item"><span>손실률:</span><strong className="loss-text">{calcYield}%</strong></div>
           </div>
-
           <div className="input-group full-width">
-            <label><AlertCircle size={14} className="blue" /> 패배 원인 및 실수 분석</label>
-            <input placeholder="무엇이 잘못되었나요? (예: 원칙 미준수, 뇌동매매 등)" value={form.mistake} onChange={e => setForm({...form, mistake: e.target.value})} />
+            <label><AlertCircle size={14} className="blue" /> 실수 분석</label>
+            <input placeholder="실수 원인을 간단히 기록하세요." value={form.mistake} onChange={e => setForm({...form, mistake: e.target.value})} />
           </div>
-
           <div className="input-group full-width">
-            <label><MessageSquare size={14} className="blue" /> 차후 개선 전략 및 교훈</label>
-            <textarea placeholder="다음엔 어떻게 대응하시겠습니까?" value={form.lesson} onChange={e => setForm({...form, lesson: e.target.value})} />
+            <label><MessageSquare size={14} className="blue" /> 복기 및 교훈</label>
+            <textarea placeholder="다음 전술을 기록하세요." value={form.comment} onChange={e => setForm({...form, comment: e.target.value})} />
           </div>
-
           <button className="submit-btn" onClick={handleAdd}>📝 복기 기록 저장</button>
         </GlassCard>
       )}
 
-      {/* 하단 상세 분석 카드 (Optional: detailed cards for deep review) */}
       <div className="deep-review-grid">
-        {currentItems.map(r => (
+        {currentItems.filter(r => r.type === 'REVIEW').map(r => (
           <GlassCard key={r.id} className="deep-card">
-            <div className="deep-header">
-              <span className="ticker">{r.ticker}</span>
-              <span className="loss-badge">{r.yield}</span>
-            </div>
-            <div className="deep-mistake">
-              <strong>Mistake:</strong> {r.mistake}
-            </div>
-            <div className="deep-lesson">
-              <strong>Lesson:</strong> {r.lesson}
-            </div>
+            <div className="deep-header"><span className="ticker">{r.ticker}</span><span className="loss-badge">{r.yield}</span></div>
+            <div className="deep-mistake"><strong>Mistake:</strong> {r.mistake}</div>
+            <div className="deep-lesson"><strong>Lesson:</strong> {r.comment}</div>
           </GlassCard>
         ))}
       </div>
 
       <style jsx>{`
         .review-container { padding: 40px; display: flex; flex-direction: column; gap: 32px; color: white; }
-        
         .review-header { display: flex; justify-content: space-between; align-items: center; }
-        .header-text h1 { font-size: 1.8rem; font-weight: 950; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-        .header-text p { color: #94a3b8; font-weight: 600; font-size: 0.95rem; }
+        .header-text h1 { font-size: 1.8rem; font-weight: 950; display: flex; align-items: center; gap: 12px; }
         .heart-icon { color: #f43f5e; }
-
-        .add-btn { background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); padding: 12px 24px; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s; }
-        .add-btn:hover { background: rgba(244, 63, 94, 0.25); }
-
-        /* Board Card Style */
+        .add-btn { background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); padding: 12px 24px; border-radius: 12px; font-weight: 900; }
+        
         .board-card { padding: 0; overflow: hidden; }
         .board-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .board-header h3 { font-size: 1rem; font-weight: 900; display: flex; align-items: center; gap: 10px; margin: 0; }
-        .table-wrapper { width: 100%; overflow-x: auto; }
-        .review-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        .review-table th { text-align: left; padding: 16px; color: #555; font-weight: 900; border-bottom: 2px solid #222; text-transform: uppercase; }
-        .review-table td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.02); color: #cbd5e1; font-weight: 600; }
-        .review-table .bold { color: #f2f2f2; font-weight: 900; }
-        .loss-yield { color: #3b82f6 !important; font-weight: 900; }
-
+        .trade-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .trade-table th { text-align: left; padding: 16px; color: #555; border-bottom: 2px solid #222; }
+        .trade-table td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.02); color: #cbd5e1; }
+        .row-success { background: rgba(212, 175, 55, 0.02); }
+        .yield.plus { color: #ef4444 !important; font-weight: 900; }
+        .yield.minus { color: #3b82f6 !important; font-weight: 900; }
         .pagination { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 15px; background: rgba(255,255,255,0.02); }
-        .pagination button { background: none; border: 1px solid #333; color: #94a3b8; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .pagination button:disabled { opacity: 0.3; cursor: not-allowed; }
-        .pagination span { font-size: 0.8rem; font-weight: 800; color: #64748b; }
-
-        /* Form Style */
-        .form-card { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
-        .blue-border-glow { border: 1px solid rgba(59, 130, 246, 0.3); box-shadow: 0 0 30px rgba(59, 130, 246, 0.1); }
-        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .pagination button { background: none; border: 1px solid #333; color: #94a3b8; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; }
         
-        .input-group { display: flex; flex-direction: column; gap: 8px; }
-        .input-group label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; display: flex; align-items: center; gap: 6px; }
-        .input-group input, .input-group textarea { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 12px; color: white; outline: none; transition: border-color 0.3s; }
-        .input-group input:focus, .input-group textarea:focus { border-color: #3b82f6; }
-        .input-group textarea { height: 100px; resize: none; }
+        .form-card { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+        .blue-border-glow { border: 1px solid rgba(59, 130, 246, 0.3); }
+        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .input-group input, .input-group textarea { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; color: white; }
         .full-width { grid-column: span 4; }
+        .auto-calc-preview { display: flex; gap: 40px; background: rgba(59, 130, 246, 0.03); padding: 16px; border-radius: 12px; }
+        .submit-btn { background: #3b82f6; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 950; }
 
-        .auto-calc-preview { display: flex; gap: 40px; background: rgba(59, 130, 246, 0.03); padding: 16px 24px; border-radius: 12px; border: 1px dashed rgba(59, 130, 246, 0.2); }
-        .calc-item { display: flex; flex-direction: column; gap: 4px; }
-        .calc-item span { font-size: 0.7rem; font-weight: 800; color: #94a3b8; }
-        .calc-item strong { font-size: 1.1rem; font-weight: 900; color: #f2f2f2; }
-        .loss-text { color: #3b82f6 !important; }
-
-        .submit-btn { background: #3b82f6; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 950; font-size: 1rem; cursor: pointer; transition: all 0.3s; }
-        .submit-btn:hover { background: #2563eb; }
-
-        /* Deep Review Grid */
         .deep-review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
-        .deep-card { padding: 20px; display: flex; flex-direction: column; gap: 12px; border: 1px solid rgba(255,255,255,0.03); }
-        .deep-header { display: flex; justify-content: space-between; align-items: center; }
-        .deep-header .ticker { font-size: 1.1rem; font-weight: 900; }
-        .deep-header .loss-badge { color: #3b82f6; font-weight: 900; }
-        .deep-mistake, .deep-lesson { font-size: 0.85rem; color: #94a3b8; line-height: 1.6; }
-        .deep-mistake strong, .deep-lesson strong { color: #cbd5e1; }
-
+        .deep-card { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .loss-badge { color: #3b82f6; font-weight: 900; }
         .blue { color: #3b82f6; }
+        .gold { color: #d4af37; }
       `}</style>
     </div>
   );
