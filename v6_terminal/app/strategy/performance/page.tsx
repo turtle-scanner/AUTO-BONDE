@@ -23,18 +23,20 @@ interface Ranker {
   winRate: number;
 }
 
+// 모든 수익률을 0.00%로 초기화하여 실전 가동 준비
 const rankers: Ranker[] = [
-  { id: 1, name: "프라딥 본데", type: "AI", yield: 45.2, bestStock: "SMCI", winRate: 72 },
-  { id: 2, name: "cntfed", type: "MEMBER", yield: 42.5, bestStock: "NVDA", winRate: 68 },
-  { id: 3, name: "마크 미너비니", type: "AI", yield: 38.8, bestStock: "AMD", winRate: 65 },
-  { id: 4, name: "hjrubbi", type: "MEMBER", yield: 35.2, bestStock: "SK하이닉스", winRate: 62 },
-  { id: 5, name: "윌리엄 오닐", type: "AI", yield: 32.5, bestStock: "AAPL", winRate: 60 },
-  { id: 6, name: "fire33", type: "MEMBER", yield: 24.8, bestStock: "현대차", winRate: 58 },
-  { id: 7, name: "스탠 와인스태인", type: "AI", yield: 22.1, bestStock: "MSFT", winRate: 55 },
-  { id: 8, name: "sebinhi", type: "MEMBER", yield: 18.5, bestStock: "삼성전자", winRate: 52 },
+  { id: 1, name: "프라딥 본데", type: "AI", yield: 0.0, bestStock: "Ready...", winRate: 0 },
+  { id: 2, name: "cntfed", type: "MEMBER", yield: 0.0, bestStock: "Ready...", winRate: 0 },
+  { id: 3, name: "마크 미너비니", type: "AI", yield: 0.0, bestStock: "Ready...", winRate: 0 },
+  { id: 4, name: "hjrubbi", type: "MEMBER", yield: 0.0, bestStock: "Ready...", winRate: 0 },
+  { id: 5, name: "윌리엄 오닐", type: "AI", yield: 0.0, bestStock: "Ready...", winRate: 0 },
+  { id: 6, name: "fire33", type: "MEMBER", yield: 0.0, bestStock: "Ready...", winRate: 0 },
+  { id: 7, name: "스탠 와인스태인", type: "AI", yield: 0.0, bestStock: "Ready...", winRate: 0 },
+  { id: 8, name: "sebinhi", type: "MEMBER", yield: 0.0, bestStock: "Ready...", winRate: 0 },
 ];
 
 export default function StrategyPerformance() {
+  // 초기화 상태이므로 순위는 이름순 혹은 ID순으로 정렬된 상태로 표시
   const top3 = rankers.slice(0, 3);
   const rest = rankers.slice(3);
 
@@ -45,7 +47,7 @@ export default function StrategyPerformance() {
         <h1 className="main-title">
           <Trophy size={48} className="gold-icon" /> [ 이달의 전리품 수상 ]
         </h1>
-        <p className="sub-title">2026년 5월 - AI 요원 및 정예 대원 수익률 명예의 전당</p>
+        <p className="sub-title">2026년 5월 - AI 요원 및 정예 대원 수익률 명예의 전당 (실전 가동 준비 중)</p>
       </div>
 
       {/* Podium Section */}
@@ -56,8 +58,8 @@ export default function StrategyPerformance() {
           <div className="podium-card glass">
             <div className="avatar-box silver-border">{top3[1].name[0]}</div>
             <h3 className="rank-name">{top3[1].name}</h3>
-            <div className="rank-yield">+{top3[1].yield}%</div>
-            <div className="rank-label">은상 (SILVER)</div>
+            <div className="rank-yield">{top3[1].yield.toFixed(2)}%</div>
+            <div className="rank-label">전투 대기 중</div>
           </div>
           <div className="base silver-base">2</div>
         </div>
@@ -68,8 +70,8 @@ export default function StrategyPerformance() {
           <div className="podium-card glass-gold">
             <div className="avatar-box gold-border">{top3[0].name[0]}</div>
             <h3 className="rank-name gold-text">{top3[0].name}</h3>
-            <div className="rank-yield gold-text">+{top3[0].yield}%</div>
-            <div className="rank-label gold-text">금상 (GOLD)</div>
+            <div className="rank-yield gold-text">{top3[0].yield.toFixed(2)}%</div>
+            <div className="rank-label gold-text">전투 대기 중</div>
             <div className="sparkle-effects">
               <Sparkles className="s1" size={16} />
               <Sparkles className="s2" size={12} />
@@ -84,8 +86,8 @@ export default function StrategyPerformance() {
           <div className="podium-card glass">
             <div className="avatar-box bronze-border">{top3[2].name[0]}</div>
             <h3 className="rank-name">{top3[2].name}</h3>
-            <div className="rank-yield">+{top3[2].yield}%</div>
-            <div className="rank-label">동상 (BRONZE)</div>
+            <div className="rank-yield">{top3[2].yield.toFixed(2)}%</div>
+            <div className="rank-label">전투 대기 중</div>
           </div>
           <div className="base bronze-base">3</div>
         </div>
@@ -111,7 +113,7 @@ export default function StrategyPerformance() {
                 <span className={`row-type ${r.type.toLowerCase()}`}>{r.type}</span>
                 <span className="row-stock">{r.bestStock}</span>
                 <span className="row-win">{r.winRate}%</span>
-                <span className="row-yield">+{r.yield}%</span>
+                <span className="row-yield">{r.yield >= 0 ? '+' : ''}{r.yield.toFixed(2)}%</span>
               </div>
             ))}
           </div>
@@ -123,21 +125,21 @@ export default function StrategyPerformance() {
             <div className="m-icon"><Star size={20} className="gold" /></div>
             <div className="m-info">
               <span className="m-label">최고의 전술가</span>
-              <span className="m-val">프라딥 본데</span>
+              <span className="m-val">TBD</span>
             </div>
           </GlassCard>
           <GlassCard className="mini-stat">
             <div className="m-icon"><Target size={20} className="gold" /></div>
             <div className="m-info">
               <span className="m-label">최다 익절 대원</span>
-              <span className="m-val">hjrubbi</span>
+              <span className="m-val">TBD</span>
             </div>
           </GlassCard>
           <GlassCard className="mini-stat bg-gold-tint">
             <div className="m-icon"><ArrowUpRight size={20} className="gold" /></div>
             <div className="m-info">
               <span className="m-label">평균 수익률</span>
-              <span className="m-val">+31.2%</span>
+              <span className="m-val">0.00%</span>
             </div>
           </GlassCard>
         </div>
@@ -170,7 +172,7 @@ export default function StrategyPerformance() {
         .bronze { color: #CD7F32; }
 
         .rank-name { font-size: 1.2rem; font-weight: 900; margin: 0; }
-        .rank-yield { font-size: 1.8rem; font-weight: 950; margin: 4px 0; }
+        .rank-yield { font-size: 1.8rem; font-weight: 950; margin: 4px 0; color: #444; }
         .rank-label { font-size: 0.7rem; font-weight: 900; opacity: 0.8; }
         .gold-text { color: #d4af37; }
 
@@ -201,7 +203,7 @@ export default function StrategyPerformance() {
         .row-type.member { background: rgba(16, 185, 129, 0.1); color: #10b981; }
         .row-stock { font-size: 0.85rem; color: #999; font-weight: 700; }
         .row-win { font-weight: 700; color: #737373; }
-        .row-yield { font-weight: 900; color: #10b981; text-align: right; }
+        .row-yield { font-weight: 900; color: #737373; text-align: right; }
 
         .stats-column { display: flex; flex-direction: column; gap: 20px; }
         .mini-stat { padding: 20px; display: flex; align-items: center; gap: 16px; }
