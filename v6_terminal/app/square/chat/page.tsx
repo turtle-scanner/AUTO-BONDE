@@ -25,12 +25,25 @@ const defaultMsgs: ChatMsg[] = [
 export default function TossChatPage() {
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState('');
+  const [userCount, setUserCount] = useState(3);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // Load messages and simulate live user count
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) setMsgs(JSON.parse(saved));
     else setMsgs(defaultMsgs);
+
+    // 인원수 실시간 변동 시뮬레이션 (3~7명)
+    const interval = setInterval(() => {
+      setUserCount(prev => {
+        const delta = Math.random() > 0.5 ? 1 : -1;
+        const next = prev + delta;
+        return next >= 3 && next <= 12 ? next : prev;
+      });
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -62,11 +75,11 @@ export default function TossChatPage() {
           <h1 className="nav-title">안티그래비티 광장</h1>
           <div className="active-users">
             <div className="user-dots">
-              <div className="dot"></div>
-              <div className="dot"></div>
-              <div className="dot"></div>
+              <div className="dot pulse-1"></div>
+              <div className="dot pulse-2"></div>
+              <div className="dot pulse-3"></div>
             </div>
-            <span>{msgs.length + 3}명 대화 중</span>
+            <span>{userCount}명 대화 중</span>
           </div>
         </div>
       </div>
@@ -138,16 +151,36 @@ export default function TossChatPage() {
         /* Header */
         .chat-nav {
           padding: 24px;
-          background: rgba(255, 255, 255, 0.8);
+          background: rgba(255, 255, 255, 0.85);
           backdrop-filter: blur(20px);
           border-bottom: 1px solid #f2f4f6;
           z-index: 10;
         }
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
         .nav-title { font-size: 1.2rem; font-weight: 800; color: #191f28; }
-        .active-users { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #6b7684; font-weight: 600; }
-        .user-dots { display: flex; gap: -4px; }
-        .dot { width: 8px; height: 8px; background: #3182f6; border-radius: 50%; border: 2px solid white; }
+        
+        .active-users { 
+          display: flex; 
+          align-items: center; 
+          gap: 10px; 
+          font-size: 0.85rem; 
+          color: #6b7684; 
+          font-weight: 600;
+          background: #f2f4f6;
+          padding: 6px 14px;
+          border-radius: 20px;
+        }
+        .user-dots { display: flex; gap: 4px; }
+        .dot { width: 6px; height: 6px; background: #3182f6; border-radius: 50%; opacity: 0.3; }
+        
+        .pulse-1 { animation: pulse 1.5s infinite 0s; }
+        .pulse-2 { animation: pulse 1.5s infinite 0.3s; }
+        .pulse-3 { animation: pulse 1.5s infinite 0.6s; }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.2); }
+        }
 
         /* Body */
         .chat-body {
