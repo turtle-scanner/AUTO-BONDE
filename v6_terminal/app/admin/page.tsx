@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import GlassCard from '@/components/GlassCard';
 import { Shield, UserCheck, Users, Link as LinkIcon, Clock } from 'lucide-react';
 
@@ -15,8 +16,18 @@ interface Member {
 }
 
 export default function AdminCenter() {
+  const router = useRouter();
   const [members, setMembers] = useState<Member[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Security Check
+  useEffect(() => {
+    const user = sessionStorage.getItem('dragonfly_user');
+    if (user !== 'cntfed' && user !== 'hjrubbi') {
+      alert('접근 권한이 없습니다. 사령부 승인이 필요합니다.');
+      router.push('/');
+    }
+  }, [router]);
 
   const SHEET_ID = '1xjbe9SF0HsxwY_Uy3NC2tT92BqK0nhArUaYU16Q0p9M';
 
