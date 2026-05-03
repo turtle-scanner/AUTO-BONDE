@@ -58,7 +58,10 @@ export default function Sidebar() {
   return (
     <aside className="sidebar glass">
       <div className="logo-container">
-        <span className="gradient-text logo-text">DRAGONFLY v6.0</span>
+        <div className="logo-wrapper">
+          <img src="/logo.png" alt="Dragonfly Logo" className="logo-img" />
+          <span className="gradient-text logo-text">DRAGONFLY v6.0</span>
+        </div>
       </div>
       <div className="mission-control-header">
         <span className="label">[ MISSION CONTROL ]</span>
@@ -170,7 +173,9 @@ export default function Sidebar() {
       <style jsx>{`
         .sidebar { width: 300px; height: 100vh; background: rgba(10, 10, 15, 0.95); border-right: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; z-index: 1000; flex-shrink: 0; }
         .logo-container { padding: 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-        .logo-text { font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; }
+        .logo-wrapper { display: flex; align-items: center; gap: 12px; }
+        .logo-img { width: 32px; height: 32px; border-radius: 8px; filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.3)); }
+        .logo-text { font-size: 1.4rem; font-weight: 900; letter-spacing: -1px; }
         .mission-control-header { padding: 20px 30px 10px 30px; }
         .label { font-size: 0.7rem; font-weight: 900; color: var(--primary); letter-spacing: 2px; }
         .mission-scroll { flex: 1; overflow-y: auto; padding: 10px 20px; }

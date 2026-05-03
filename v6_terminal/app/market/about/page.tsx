@@ -128,7 +128,7 @@ export default function MarketAbout() {
                 </thead>
                 <tbody>
                   <tr><td>Stage 1</td><td>기저 형성</td><td>이전 상승폭의 25~50% 정도의 눌림목 형성</td></tr>
-                  <tr><td>Stage 2</td><td>변동성 수축</td><td>고점 대비 하락폭이 점차 줄어듦 (V1 -> V2 -> V3)</td></tr>
+                  <tr><td>Stage 2</td><td>변동성 수축</td><td>고점 대비 하락폭이 점차 줄어듦 (V1 → V2 → V3)</td></tr>
                   <tr><td>Stage 3</td><td>거래량 급감</td><td>베이스의 오른쪽 끝에서 거래량이 마르며 대기 매물 소화</td></tr>
                   <tr><td>Stage 4</td><td>피벗 돌파</td><td>강력한 거래량과 함께 저항선을 뚫고 상승 가속화</td></tr>
                   <tr><td colSpan={2}>핵심 철학</td><td>손실은 최소화(-4~-7%), 수익은 추세 추종</td></tr>

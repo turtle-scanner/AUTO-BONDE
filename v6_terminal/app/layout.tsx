@@ -7,6 +7,7 @@ import BGMPlayer from "@/components/BGMPlayer";
 import DigitalClock from "@/components/DigitalClock";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Sidebar from "@/components/Sidebar";
+import MarketHeader from "@/components/MarketHeader";
 import "./globals.css";
 
 // TacticalPopup을 클라이언트 사이드에서만 로드하도록 동적 임포트
@@ -39,16 +40,7 @@ export default function RootLayout({
         <div className="layout-container">
           <Sidebar />
           <main className="main-content">
-            <header className="top-nav glass">
-              <div className="search-bar">
-                <input type="text" placeholder="Search tickers, strategies, or commands..." className="glass" />
-              </div>
-              <div className="header-actions">
-                <DigitalClock />
-                <div className="icon-btn glass">🔔</div>
-                <div className="icon-btn glass">⚡</div>
-              </div>
-            </header>
+            <MarketHeader />
             <div className="content-area">
               <ErrorBoundary fallbackName="Main Sector">
                 {children}

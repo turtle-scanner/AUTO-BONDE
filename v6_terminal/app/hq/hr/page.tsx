@@ -3,6 +3,7 @@
 import React from 'react';
 import GlassCard from '@/components/GlassCard';
 import { Users, UserPlus, Award, Briefcase, TrendingUp } from 'lucide-react';
+import { PERMANENT_MEMBERS, Member } from '@/constants/members';
 
 export default function HRDepartment() {
   const staffStats = [
@@ -40,23 +41,17 @@ export default function HRDepartment() {
             <span>활동 게시물 (+10pt) | 일일 접속 (+5pt) | 실전 수익 공유 (+50pt)</span>
           </div>
           <div className="promotion-list">
-            {[
-              { id: "fire33", current: "회원", target: "엘리트", points: 15 },
-              { id: "sebinhi", current: "회원", target: "엘리트", points: 12 },
-              { id: "popsong98", current: "방문자", target: "회원", points: 28 },
-              { id: "MoneySnipper", current: "회원", target: "엘리트", points: 8 },
-              { id: "wlgh8654", current: "방문자", target: "회원", points: 5 }
-            ].map((p, i) => (
+            {PERMANENT_MEMBERS.filter(m => m.rank !== '방장').map((p, i) => (
               <div key={i} className="promotion-item">
                 <div className="p-info">
                   <span className="p-id">{p.id}</span>
-                  <span className="p-route">{p.current} → {p.target}</span>
+                  <span className="p-route">{p.rank} → 정예요원</span>
                 </div>
                 <div className="p-bar-bg">
-                  <div className="p-bar-fill" style={{ width: `${(p.points / 1000) * 100}%` }}></div>
+                  <div className="p-bar-fill" style={{ width: `${((p.points || 0) / 1000) * 100}%` }}></div>
                 </div>
                 <div className="p-score">
-                  <span className="p-current-val">{p.points}</span>
+                  <span className="p-current-val">{p.points || 0}</span>
                   <span className="p-max-val">/ 1000</span>
                 </div>
               </div>
