@@ -1,17 +1,40 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import GlassCard from '@/components/GlassCard';
+import { 
+  Radar, 
+  Target, 
+  Library, 
+  ChevronRight, 
+  Zap, 
+  Volume2, 
+  AlertTriangle,
+  MessageSquare,
+  TrendingUp,
+  History
+} from 'lucide-react';
 
 export default function TargetScanPage() {
   const [isScanning, setIsScanning] = useState(true);
+  const [showAlert, setShowAlert] = useState(false);
   const [targets, setTargets] = useState([
-    { ticker: "NVDA", setup: "VCP Breakout", strength: 95, status: "READY", price: "912.40", volume: "120%" },
-    { ticker: "TSLA", setup: "Double Bottom", strength: 78, status: "WATCH", price: "175.20", volume: "85%" },
-    { ticker: "AMD", setup: "Cup & Handle", strength: 88, status: "READY", price: "185.10", volume: "110%" },
+    { ticker: "NVDA", setup: "VCP Breakout", strength: 95, status: "READY", price: "912.40", volume: "120%", tightness: 98, volDry: true },
+    { ticker: "TSLA", setup: "Double Bottom", strength: 78, status: "WATCH", price: "175.20", volume: "85%", tightness: 45, volDry: false },
+    { ticker: "AMD", setup: "Cup & Handle", strength: 88, status: "READY", price: "185.10", volume: "110%", tightness: 82, volDry: true },
   ]);
 
+  const victoryArchive = [
+    { ticker: "MSFT", rise: "+42%", period: "2024.03", comment: "전형적인 VCP 3단계 수축 후 돌파. 거래량 마름이 완벽했음." },
+    { ticker: "AAPL", rise: "+28%", period: "2024.01", comment: "이중 바닥 패턴 완성 후 900만 주 거래량 동반하며 발산." },
+    { ticker: "SMCI", rise: "+120%", period: "2023.11", comment: "압도적 주도주. RS 강도가 시장을 압도했던 전설적인 사례." },
+  ];
+
   useEffect(() => {
-    const timer = setTimeout(() => setIsScanning(false), 2000);
+    const timer = setTimeout(() => {
+      setIsScanning(false);
+      setShowAlert(true); // 시뮬레이션: 완벽한 타점 포착 시 사이렌 알림
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -36,10 +59,19 @@ export default function TargetScanPage() {
         </div>
       </div>
 
+      {/* SIREN ALERT */}
+      {showAlert && (
+        <div className="siren-alert animate-pulse">
+          <AlertTriangle size={24} />
+          <span>[ EMERGENCY ] 사령관님, 총공격 준비! 거래량이 마르고 에너지가 응축되었습니다!</span>
+          <button onClick={() => setShowAlert(false)} className="close-btn">X</button>
+        </div>
+      )}
+
       <div className="scanner-container glass">
         <div className="radar-header">
           <div className="status-indicator">
-            <span className={`dot ${isScanning ? 'ping' : 'active'}`}></span>
+            <Radar size={20} className={isScanning ? 'animate-spin' : ''} />
             <span className="text">{isScanning ? 'SCANNING SECTORS...' : 'TACTICAL TARGETS DETECTED'}</span>
           </div>
           <div className="scanner-stats">
@@ -54,38 +86,67 @@ export default function TargetScanPage() {
           </div>
         </div>
 
+        {/* TIGHTNESS RADAR GRID */}
         <div className="target-list">
-          <div className="list-header">
+          <div className="list-header-v2">
             <span>TICKER</span>
-            <span>SETUP PATTERN</span>
+            <span>PATTERN</span>
             <span>RS STRENGTH</span>
-            <span>VOLUME</span>
+            <span>TIGHTNESS</span>
+            <span>VOL DRY-UP</span>
             <span>STATUS</span>
           </div>
           {targets.map((target, idx) => (
-            <div key={idx} className={`target-row ${target.status === 'READY' ? 'highlight' : ''}`}>
+            <div key={idx} className={`target-row-v2 ${target.status === 'READY' ? 'highlight' : ''}`}>
               <span className="ticker-box">{target.ticker}</span>
               <span className="setup-text">{target.setup}</span>
               <span className="strength-bar">
-                <div className="bar-bg">
-                  <div className="bar-fill" style={{ width: `${target.strength}%` }}></div>
-                </div>
+                <div className="bar-bg"><div className="bar-fill" style={{ width: `${target.strength}%` }}></div></div>
                 <span className="pct">{target.strength}%</span>
               </span>
-              <span className="vol-text">{target.volume}</span>
+              <span className="tightness-bar">
+                <div className="bar-bg"><div className="bar-fill gold" style={{ width: `${target.tightness}%` }}></div></div>
+                <span className="pct gold">{target.tightness}%</span>
+              </span>
+              <span className="vol-dry">
+                {target.volDry ? <Zap size={16} className="gold" /> : <Volume2 size={16} className="muted" />}
+              </span>
               <span className={`status-tag ${target.status.toLowerCase()}`}>{target.status}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="tactical-notes glass">
-        <h3>[ BONDE'S TACTICAL NOTES ]</h3>
-        <ul>
-          <li>● 거래량 없는 돌파는 기만 전술이다. 반드시 평균 대비 150% 이상의 거래량을 확인하라.</li>
-          <li>● VCP의 마지막 수축 구간에서의 변동성은 죽어 있어야 한다. 고요함 속의 폭풍을 기다려라.</li>
-          <li>● RS 강도가 시장 대비 우위에 있는 종목만이 진정한 주도주다.</li>
-        </ul>
+      <div className="bottom-grid">
+        {/* TACTICAL NOTES */}
+        <GlassCard className="tactical-notes-v2">
+          <h3><Target size={18} className="gold" /> [ BONDE'S TACTICAL NOTES ]</h3>
+          <ul>
+            <li>● 거래량 없는 돌파는 기만 전술이다. 반드시 150% 이상 확인하라.</li>
+            <li>● VCP의 마지막 수축 구간에서의 변동성은 죽어 있어야 한다. 고요함 속의 폭풍을 기다려라.</li>
+            <li>● RS 강도가 시장 대비 우위에 있는 종목만이 진정한 주도주다.</li>
+          </ul>
+        </GlassCard>
+
+        {/* VICTORY ARCHIVE */}
+        <GlassCard className="victory-archive">
+          <h3><Library size={18} className="gold" /> [ VICTORY ARCHIVE ] - 주도주 학습 센터</h3>
+          <div className="archive-list">
+            {victoryArchive.map((a, i) => (
+              <div key={i} className="archive-item">
+                <div className="a-header">
+                  <span className="a-ticker">{a.ticker}</span>
+                  <span className="a-rise">{a.rise}</span>
+                  <span className="a-period">{a.period}</span>
+                </div>
+                <div className="a-comment">
+                  <MessageSquare size={12} /> {a.comment}
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="view-more-btn">1,000+ 전술 기록 더보기 <ChevronRight size={14} /></button>
+        </GlassCard>
       </div>
 
       <style jsx>{`
@@ -137,38 +198,22 @@ export default function TargetScanPage() {
         .list-header {
           display: grid;
           grid-template-columns: 1fr 2fr 2fr 1fr 1fr;
+        .list-header-v2 {
+          display: grid;
+          grid-template-columns: 1fr 2fr 2fr 2fr 1fr 1fr;
           padding: 10px;
           color: var(--text-muted);
           font-size: 0.8rem;
           border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .target-row {
+        .target-row-v2 {
           display: grid;
-          grid-template-columns: 1fr 2fr 2fr 1fr 1fr;
+          grid-template-columns: 1fr 2fr 2fr 2fr 1fr 1fr;
           padding: 15px 10px;
           align-items: center;
           border-bottom: 1px solid rgba(255,255,255,0.05);
           transition: all 0.3s;
         }
-        .target-row.highlight {
-          background: rgba(212, 175, 55, 0.05);
-        }
-        .target-row:hover {
-          background: rgba(255,255,255,0.05);
-          transform: translateX(10px);
-        }
-        .ticker-box {
-          font-weight: 800;
-          color: #d4af37;
-          font-size: 1.2rem;
-        }
-        .strength-bar {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .bar-bg {
-          flex: 1;
           height: 6px;
           background: rgba(255,255,255,0.1);
           border-radius: 3px;
