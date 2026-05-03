@@ -86,6 +86,7 @@ export default function Sidebar() {
             <Link href="/exam" className="sub-item-link"><div className="sub-item">5-d. [ EXAM ] 정기 승급 시험 안내</div></Link>
             <Link href="/academy/success" className="sub-item-link"><div className="sub-item">5-e. [ SUCCESS ] 실전 익절 자랑방</div></Link>
             <Link href="/academy/review" className="sub-item-link"><div className="sub-item">5-f. [ REVIEW ] 손실 위로 및 복기방</div></Link>
+            <Link href="/academy/tvlive" className="sub-item-link"><div className="sub-item">5-g. [ TVLIVE ] 트레이딩뷰 라이브</div></Link>
           </div>
         </div>
 
