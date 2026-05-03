@@ -73,6 +73,19 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setLoginError('');
     if (!formData.id || !formData.pw) { setLoginError('아이디와 비밀번호를 입력해주세요.'); return; }
+
+    // Master Admin Bypass
+    const masters = [
+      { id: 'cntfed', pw: 'cntfed' },
+      { id: 'hjrubbi', pw: '1234' }
+    ];
+    const isMaster = masters.find(m => m.id === formData.id && m.pw === formData.pw);
+    if (isMaster) {
+      sessionStorage.setItem('dragonfly_user', formData.id);
+      router.push('/');
+      return;
+    }
+
     try {
       const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=1499398020`;
       const res = await fetch(url);
