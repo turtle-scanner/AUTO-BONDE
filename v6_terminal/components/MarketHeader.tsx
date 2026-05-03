@@ -5,12 +5,12 @@ import { Cloud, Sun, CloudRain, Wind, ArrowUp, ArrowDown, Minus, Clock, Globe } 
 
 export default function MarketHeader() {
   const [marketIndices, setMarketIndices] = useState<any>({
-    kospi: { val: 2712.35, change: "+0.45%", trend: "up" },
-    kosdaq: { val: 862.15, change: "-0.12%", trend: "down" },
-    nasdaq: { val: 16156.33, change: "+1.24%", trend: "up" },
-    sp500: { val: 5123.41, change: "+0.88%", trend: "up" },
-    dow: { val: 38675.68, change: "+0.72%", trend: "up" },
-    exchange: { val: 1372.50, change: "+2.50", trend: "up" }
+    kospi: { val: 6598.24, change: "+2.15%", trend: "up" },
+    kosdaq: { val: 1192.45, change: "+1.88%", trend: "up" },
+    nasdaq: { val: 21456.33, change: "+1.24%", trend: "up" },
+    sp500: { val: 6123.41, change: "+0.88%", trend: "up" },
+    dow: { val: 45675.68, change: "+0.72%", trend: "up" },
+    exchange: { val: 1412.50, change: "+2.50", trend: "up" }
   });
 
   const [currentTime, setCurrentTime] = useState(new Date());
