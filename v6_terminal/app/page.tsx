@@ -21,6 +21,47 @@ import {
   Globe
 } from 'lucide-react';
 
+const TacticalTargets = () => {
+  const targets = [
+    { category: 'BONDE PICK', name: 'NVDA', price: '924.50', status: 'TARGET REACHED', trend: 'up' },
+    { category: 'EP SIGNAL', name: 'TSMC', price: '142.10', status: 'VCP PATTERN', trend: 'up' },
+    { category: 'DRY-UP ENTRY', name: 'MSFT', price: '425.20', status: 'VOLUME DRY-UP', trend: 'neutral' },
+  ];
+
+  return (
+    <div className="tactical-targets-bar glass">
+      <div className="scanning-indicator">
+        <div className="scan-dot animate-pulse"></div>
+        <span>TACTICAL SCAN ACTIVE</span>
+      </div>
+      <div className="targets-scroll">
+        {targets.map((t, i) => (
+          <div key={i} className="target-card">
+            <span className={`target-cat ${t.category.toLowerCase().replace(' ', '-')}`}>{t.category}</span>
+            <span className="target-name">{t.name}</span>
+            <span className="target-price">₩{t.price}</span>
+            <span className="target-status">{t.status}</span>
+          </div>
+        ))}
+      </div>
+      <style jsx>{`
+        .tactical-targets-bar { padding: 12px 24px; display: flex; align-items: center; gap: 30px; border: 1px solid rgba(212,175,55,0.1); border-radius: 12px; margin-bottom: 20px; }
+        .scanning-indicator { display: flex; align-items: center; gap: 10px; font-size: 0.65rem; font-weight: 900; color: #d4af37; white-space: nowrap; }
+        .scan-dot { width: 6px; height: 6px; background: #d4af37; border-radius: 50%; box-shadow: 0 0 10px #d4af37; }
+        .targets-scroll { display: flex; gap: 40px; overflow-x: auto; scrollbar-width: none; }
+        .target-card { display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+        .target-cat { font-size: 0.6rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); }
+        .target-cat.bonde-pick { color: #fbbf24; border: 1px solid #fbbf24; }
+        .target-cat.ep-signal { color: #f87171; border: 1px solid #f87171; }
+        .target-cat.dry-up-entry { color: #60a5fa; border: 1px solid #60a5fa; }
+        .target-name { font-size: 0.9rem; font-weight: 900; color: #f2f2f2; }
+        .target-price { font-size: 0.85rem; font-weight: 700; color: #94a3b8; }
+        .target-status { font-size: 0.75rem; font-weight: 800; color: #d4af37; opacity: 0.8; }
+      `}</style>
+    </div>
+  );
+};
+
 export default function PlatinumDashboard() {
   const router = useRouter();
   const { data: liveMarket, isConnected } = useMarketData();
@@ -47,7 +88,7 @@ export default function PlatinumDashboard() {
 
   return (
     <div className="platinum-dashboard animate-fade-in">
-      {/* Redundant ticker removed as requested */}
+      <TacticalTargets />
       
       {/* Top Section: Strategic Hero */}
       <div className="strategic-hero">
