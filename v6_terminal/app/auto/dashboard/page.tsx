@@ -14,7 +14,11 @@ import {
   BarChart3, 
   Search,
   Zap,
-  Percent
+  Percent,
+  ClipboardList,
+  Trophy,
+  User as UserIcon,
+  Medal
 } from 'lucide-react';
 
 export default function AutoDashboardPage() {
@@ -161,11 +165,63 @@ export default function AutoDashboardPage() {
                     <span className={`status-badge ${pos.status.toLowerCase()}`}>{pos.status}</span>
                   </td>
                 </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* ECOSYSTEM SECTION */}
+        <div className="ecosystem-grid">
+          {/* 4. Auto Trading Logs */}
+          <GlassCard className="ecosystem-module logs-module">
+            <div className="module-header">
+              <ClipboardList size={20} className="gold" /> [ AUTO TRADING LOGS ]
+            </div>
+            <div className="logs-list">
+              {[
+                { time: "10:45", ticker: "NVDA", type: "ENTRY", price: "$875.20", reason: "VCP Breakout confirmed" },
+                { time: "09:30", ticker: "AAPL", type: "EXIT", price: "$174.50", reason: "Target reached (20%)" },
+                { time: "어제", ticker: "TSLA", type: "ENTRY", price: "$172.10", reason: "Double Bottom support" }
+              ].map((log, i) => (
+                <div key={i} className="log-item">
+                  <div className="log-meta">
+                    <span className="log-time">{log.time}</span>
+                    <span className="log-ticker">{log.ticker}</span>
+                    <span className={`log-type ${log.type.toLowerCase()}`}>{log.type}</span>
+                  </div>
+                  <div className="log-desc">{log.reason} @ {log.price}</div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+            <button className="full-log-btn">전체 매매 일지 보기 <History size={12} /></button>
+          </GlassCard>
+
+          {/* 5. Elite Leaderboard */}
+          <GlassCard className="ecosystem-module rank-module">
+            <div className="module-header">
+              <Trophy size={20} className="gold" /> [ ELITE LEADERBOARD ]
+            </div>
+            <div className="rank-list">
+              {[
+                { name: "cntfed", rank: 1, profit: "+42.5%", rule: "98%", medal: <Medal size={14} className="gold" /> },
+                { name: "hjrubbi", rank: 2, profit: "+38.2%", rule: "95%", medal: <Medal size={14} style={{ color: '#C0C0C0' }} /> },
+                { name: "fire33", rank: 3, profit: "+24.8%", rule: "92%", medal: <Medal size={14} style={{ color: '#CD7F32' }} /> }
+              ].map((r, i) => (
+                <div key={i} className="rank-item">
+                  <div className="rank-left">
+                    <span className="rank-num">{r.rank}</span>
+                    {r.medal}
+                    <span className="rank-name">{r.name}</span>
+                  </div>
+                  <div className="rank-right">
+                    <span className="rank-profit">{r.profit}</span>
+                    <span className="rank-rule">준수 {r.rule}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
         </div>
-      </section>
 
       <footer className="dashboard-footer">
         <div className="insight-label">[ HQ-SHIELD ] 본데의 일간 전술 통찰</div>
@@ -247,6 +303,30 @@ export default function AutoDashboardPage() {
         .p-status.detected { background: rgba(255, 0, 85, 0.1); color: #ff0055; }
         .p-status.forming { background: rgba(14, 165, 233, 0.1); color: #0ea5e9; }
         .p-status.ready { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+        /* ECOSYSTEM */
+        .ecosystem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
+        .ecosystem-module { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+        
+        .logs-list { display: flex; flex-direction: column; gap: 12px; }
+        .log-item { padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .log-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+        .log-time { font-size: 0.7rem; color: var(--text-muted); font-weight: 800; }
+        .log-ticker { font-size: 0.85rem; font-weight: 900; color: var(--gold-400); }
+        .log-type { font-size: 0.65rem; font-weight: 900; padding: 2px 6px; border-radius: 4px; }
+        .log-type.entry { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .log-type.exit { background: rgba(255, 0, 85, 0.1); color: #ff0055; }
+        .log-desc { font-size: 0.8rem; color: #bbb; line-height: 1.4; }
+        .full-log-btn { width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+
+        .rank-list { display: flex; flex-direction: column; gap: 10px; }
+        .rank-item { display: flex; justify-content: space-between; align-items: center; padding: 14px; background: rgba(212, 175, 55, 0.03); border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.1); }
+        .rank-left { display: flex; align-items: center; gap: 12px; }
+        .rank-num { font-size: 1rem; font-weight: 900; width: 20px; }
+        .rank-name { font-size: 0.9rem; font-weight: 800; color: white; }
+        .rank-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+        .rank-profit { font-size: 1rem; font-weight: 900; color: #10b981; }
+        .rank-rule { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; }
 
         .dashboard-footer { margin-top: 40px; text-align: center; border-top: 1px solid var(--card-border); padding-top: 30px; }
         .insight-label { color: var(--primary); font-size: 0.8rem; font-weight: 900; margin-bottom: 10px; }
