@@ -21,36 +21,6 @@ import {
   Globe
 } from 'lucide-react';
 
-const LiveTickerTape = ({ data, isConnected }: { data: any[], isConnected: boolean }) => {
-  const safeData = Array.isArray(data) && data.length > 0 ? data : [
-    { ticker: 'KOSPI', price: '---', change_pct: '0.00', is_up: true },
-    { ticker: 'KOSDAQ', price: '---', change_pct: '0.00', is_up: true },
-    { ticker: 'NASDAQ', price: '---', change_pct: '0.00', is_up: true },
-    { ticker: 'S&P 500', price: '---', change_pct: '0.00', is_up: true },
-  ];
-
-  return (
-    <div className="ticker-tape glass">
-      <div className="connection-status">
-        {isConnected ? <Wifi size={12} className="status-up" /> : <WifiOff size={12} className="status-down" />}
-        <span>{isConnected ? "LIVE STREAM" : "OFFLINE"}</span>
-      </div>
-      <div className="ticker-scroll">
-        {safeData.map((item, i) => (
-          <div key={i} className="ticker-item">
-            <span className="ticker-name">{item.ticker}</span>
-            <span className="ticker-price">{item.price}</span>
-            <span className={`ticker-change ${item.is_up ? 'status-up' : 'status-down'}`}>
-              {item.is_up ? '▲' : '▼'} {item.change_pct}%
-            </span>
-          </div>
-        ))}
-        {!isConnected && safeData.length === 0 && <span style={{color:'#888', padding:'0 20px'}}>실시간 데이터 동기화 중...</span>}
-      </div>
-    </div>
-  );
-};
-
 export default function PlatinumDashboard() {
   const router = useRouter();
   const { data: liveMarket, isConnected } = useMarketData();
@@ -66,7 +36,7 @@ export default function PlatinumDashboard() {
     }
   }, [router]);
 
-  if (!isAuth) return null; // 로그인 안됐으면 아무것도 안보여줌 (리다이렉트 대기)
+  if (!isAuth) return null;
 
   const commandLogs = [
     { time: '23:14:22', msg: 'HEARTBEAT: ALL SYSTEMS OPERATIONAL', type: 'system' },
@@ -77,7 +47,7 @@ export default function PlatinumDashboard() {
 
   return (
     <div className="platinum-dashboard animate-fade-in">
-      <LiveTickerTape data={liveMarket} isConnected={isConnected} />
+      {/* Redundant ticker removed as requested */}
       
       {/* Top Section: Strategic Hero */}
       <div className="strategic-hero">
