@@ -37,65 +37,48 @@ const agentsData: AgentTrade[] = [
     style: "CANSLIM 주도주 돌파",
     capital: 10000000,
     yield: 0.0,
-    stockCount: 2,
-    trades: [
-      { date: "2026-05-04", ticker: "NVDA", market: "US", price: "$895.20", reason: "52주 신고가 돌파", comment: "CANSLIM 조건 완벽 충족. 강력한 이익 성장과 함께 대량 거래 수반한 컵 앤 핸들 돌파 포착." },
-      { date: "2026-05-04", ticker: "삼성전자", market: "KR", price: "₩78,500", reason: "기관/외국인 동반 매수", comment: "한국 반도체 대장주로서 업황 턴어라운드 및 전고점 돌파 시도 중. 안정적 주도주 편입." }
-    ]
+    stockCount: 0,
+    trades: []
   },
   {
     agentName: "마크 미너비니",
     style: "VCP 변동성 수축",
     capital: 10000000,
     yield: 0.0,
-    stockCount: 1,
-    trades: [
-      { date: "2026-05-04", ticker: "AMD", market: "US", price: "$182.40", reason: "VCP 3단계 수축 완료", comment: "변동성이 25%->15%->6%로 줄어든 완벽한 수축 포착. 피벗 가격 돌파 시 즉각 진입." }
-    ]
+    stockCount: 0,
+    trades: []
   },
   {
     agentName: "프라딥 본데",
     style: "모멘텀 & 에피소딕 피벗",
     capital: 10000000,
     yield: 0.0,
-    stockCount: 1,
-    trades: [
-      { date: "2026-05-04", ticker: "SMCI", market: "US", price: "$920.15", reason: "실적 발표 후 갭상승", comment: "어닝 서프라이즈와 함께 발생한 에피소딕 피벗(EP). 강력한 추세 지속형 패턴으로 판단." }
-    ]
+    stockCount: 0,
+    trades: []
   },
   {
     agentName: "스탠 와인스태인",
     style: "Stage 2 돌파 매매",
     capital: 10000000,
     yield: 0.0,
-    stockCount: 2,
-    trades: [
-      { date: "2026-05-04", ticker: "SK하이닉스", market: "KR", price: "₩185,000", reason: "30주 이평선 상향 돌파", comment: "장기 횡보를 끝내고 Stage 2 상승 국면으로 진입. 상대강도(RS) 라인 우상향 전환 확인." },
-      { date: "2026-05-04", ticker: "MSFT", market: "US", price: "$415.30", reason: "장기 추세 유지", comment: "우량한 주도주가 30주 이평선 위에서 지지를 받으며 재차 상승 시도. 안전한 진입 시점." }
-    ]
+    stockCount: 0,
+    trades: []
   },
   {
     agentName: "워렌 버핏",
     style: "가치 투자 & 해자 분석",
     capital: 10000000,
     yield: 0.0,
-    stockCount: 2,
-    trades: [
-      { date: "2026-05-04", ticker: "AAPL", market: "US", price: "$172.50", reason: "현금흐름 및 자사주 매입", comment: "강력한 브랜드 로열티와 생태계 해자 보유. 적정 가치 대비 저평가 구간으로 판단하여 장기 매집." },
-      { date: "2026-05-04", ticker: "현대차", market: "KR", price: "₩245,000", reason: "저PBR 및 배당 강화", comment: "글로벌 점유율 확대와 적극적인 주주 환원 정책. 견고한 실적 대비 낮은 멀티플 매력적." }
-    ]
+    stockCount: 0,
+    trades: []
   },
   {
     agentName: "농사매매기법",
     style: "바닥권 매집 & 분산 투자",
     capital: 10000000,
     yield: 0.0,
-    stockCount: 3,
-    trades: [
-      { date: "2026-05-04", ticker: "네이버", market: "KR", price: "₩192,000", reason: "바닥권 다지기 확인", comment: "장기 하락 후 바닥권에서 대량 거래와 함께 추세 전환 시도. 씨를 뿌리는 마음으로 매집 시작." },
-      { date: "2026-05-04", ticker: "LG화학", market: "KR", price: "₩450,000", reason: "낙폭 과대 구간", comment: "본질적 가치 훼손 없는 과도한 하락. 분할 매수로 대응하며 시간의 힘을 믿고 기다림." },
-      { date: "2026-05-04", ticker: "카카오", market: "KR", price: "₩48,500", reason: "저점 확인 및 횡보", comment: "바닥을 확인하는 횡보 구간 진입. 리스크 대비 기대 수익이 높은 지점으로 판단." }
-    ]
+    stockCount: 0,
+    trades: []
   }
 ];
 
@@ -174,27 +157,35 @@ export default function AIStrategyLogs() {
             </div>
 
             <div className="trades-timeline">
-              <h3 className="section-title"><Calendar size={18} /> 실전 매매 타임라인 (5월 4일~)</h3>
+              <h3 className="section-title"><Calendar size={18} /> 실전 매매 타임라인</h3>
               <div className="timeline-list">
-                {selectedAgent.trades.map((trade, i) => (
-                  <div key={i} className="timeline-item">
-                    <div className="item-left">
-                      <div className="t-date">{trade.date}</div>
-                      <div className="t-market">{trade.market}</div>
-                    </div>
-                    <div className="item-body">
-                      <div className="t-header">
-                        <span className="t-ticker">{trade.ticker}</span>
-                        <span className="t-price">{trade.price}</span>
-                        <span className="t-reason">{trade.reason}</span>
+                {selectedAgent.trades.length > 0 ? (
+                  selectedAgent.trades.map((trade, i) => (
+                    <div key={i} className="timeline-item">
+                      <div className="item-left">
+                        <div className="t-date">{trade.date}</div>
+                        <div className="t-market">{trade.market}</div>
                       </div>
-                      <div className="t-comment">
-                        <Info size={14} className="gold" />
-                        <p>{trade.comment}</p>
+                      <div className="item-body">
+                        <div className="t-header">
+                          <span className="t-ticker">{trade.ticker}</span>
+                          <span className="t-price">{trade.price}</span>
+                          <span className="t-reason">{trade.reason}</span>
+                        </div>
+                        <div className="t-comment">
+                          <Info size={14} className="gold" />
+                          <p>{trade.comment}</p>
+                        </div>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="empty-logs">
+                    <History size={48} className="empty-icon" />
+                    <p>현재 기록된 실전 매매 내역이 없습니다.</p>
+                    <span>전술 엔진이 가동 중이며, 첫 번째 타점을 포착하기 위해 시장을 감시하고 있습니다.</span>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </GlassCard>
@@ -257,6 +248,11 @@ export default function AIStrategyLogs() {
         
         .t-comment { display: flex; gap: 12px; align-items: flex-start; }
         .t-comment p { font-size: 0.9rem; line-height: 1.6; color: #b0b0b0; font-weight: 500; margin: 0; }
+
+        .empty-logs { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; gap: 16px; background: rgba(255,255,255,0.01); border-radius: 20px; border: 1px dashed rgba(255,255,255,0.05); }
+        .empty-icon { color: #222; }
+        .empty-logs p { font-size: 1.1rem; font-weight: 800; color: #555; margin: 0; }
+        .empty-logs span { font-size: 0.85rem; color: #333; font-weight: 600; }
 
         .gold { color: #d4af37; }
       `}</style>
