@@ -11,7 +11,9 @@ export const metadata: Metadata = {
 };
 
 import Sidebar from "@/components/Sidebar";
-import TacticalPopup from "@/components/TacticalPopup";
+import dynamic from 'next/dynamic';
+
+const TacticalPopup = dynamic(() => import('@/components/TacticalPopup'), { ssr: false });
 
 export default function RootLayout({
   children,

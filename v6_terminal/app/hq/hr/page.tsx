@@ -35,11 +35,17 @@ export default function HRDepartment() {
 
       <div className="hr-main-grid">
         <GlassCard title="진급 예정자 명단 (Promotion Queue)" className="promotion-card">
+          <div className="promotion-info-box">
+            <TrendingUp size={16} className="gold" />
+            <span>활동 게시물 (+10pt) | 일일 접속 (+5pt) | 실전 수익 공유 (+50pt)</span>
+          </div>
           <div className="promotion-list">
             {[
-              { id: "fire33", current: "회원", target: "엘리트", progress: 85 },
-              { id: "sebinhi", current: "회원", target: "엘리트", progress: 62 },
-              { id: "popsong98", current: "방문자", target: "회원", progress: 95 }
+              { id: "fire33", current: "회원", target: "엘리트", points: 15 },
+              { id: "sebinhi", current: "회원", target: "엘리트", points: 12 },
+              { id: "popsong98", current: "방문자", target: "회원", points: 28 },
+              { id: "MoneySnipper", current: "회원", target: "엘리트", points: 8 },
+              { id: "wlgh8654", current: "방문자", target: "회원", points: 5 }
             ].map((p, i) => (
               <div key={i} className="promotion-item">
                 <div className="p-info">
@@ -47,20 +53,23 @@ export default function HRDepartment() {
                   <span className="p-route">{p.current} → {p.target}</span>
                 </div>
                 <div className="p-bar-bg">
-                  <div className="p-bar-fill" style={{ width: `${p.progress}%` }}></div>
+                  <div className="p-bar-fill" style={{ width: `${(p.points / 1000) * 100}%` }}></div>
                 </div>
-                <span className="p-pct">{p.progress}%</span>
+                <div className="p-score">
+                  <span className="p-current-val">{p.points}</span>
+                  <span className="p-max-val">/ 1000</span>
+                </div>
               </div>
             ))}
           </div>
         </GlassCard>
 
-        <GlassCard title="최근 주요 인사 기록" className="record-card">
+        <GlassCard title="본부 인적자원 시스템 갱신" className="record-card">
           <div className="record-list">
             {[
-              { date: "2026-05-01", msg: "MoneySnipper 대원, '주도주 스캐너' 활용 성과로 엘리트 등급 승격" },
-              { date: "2026-04-30", msg: "wlgh8654 대원, 본부 인적자원부 정식 등록 완료" },
-              { date: "2026-04-28", msg: "사령부 정기 보안 교육 실시 (참석율 98%)" }
+              { date: "2026-05-03", msg: "사령관 특별 지시: 전 대원 진급 게이지 1,000pt 체제로 개편 및 초기화 완료" },
+              { date: "2026-05-03", msg: "활동 포인트 실시간 연동 시스템 가동 시작" },
+              { date: "2026-05-03", msg: "신규 명단: fire33, sebinhi, popsong98 외 2명 기여도 측정 시작" }
             ].map((r, i) => (
               <div key={i} className="record-item">
                 <span className="record-date">{r.date}</span>
@@ -92,9 +101,13 @@ export default function HRDepartment() {
         .p-id { font-weight: 800; color: white; font-size: 0.95rem; }
         .p-route { font-size: 0.75rem; color: var(--text-muted); }
         
-        .p-bar-bg { flex: 1; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
-        .p-bar-fill { height: 100%; background: linear-gradient(to right, var(--primary), var(--secondary)); border-radius: 4px; }
-        .p-pct { font-family: 'Fira Code', monospace; font-size: 0.8rem; font-weight: 700; width: 40px; text-align: right; color: var(--primary); }
+        .p-bar-bg { flex: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden; border: 1px solid rgba(255,255,255,0.02); }
+        .p-bar-fill { height: 100%; background: linear-gradient(to right, #d4af37, #f59e0b); border-radius: 5px; box-shadow: 0 0 10px rgba(212, 175, 55, 0.3); }
+        .p-score { display: flex; align-items: baseline; gap: 4px; width: 80px; justify-content: flex-end; }
+        .p-current-val { font-family: 'Fira Code', monospace; font-size: 1rem; font-weight: 900; color: #f59e0b; }
+        .p-max-val { font-size: 0.7rem; color: #555; font-weight: 700; }
+        .promotion-info-box { display: flex; align-items: center; gap: 10px; padding: 12px; background: rgba(212, 175, 55, 0.05); border-radius: 8px; margin-top: 16px; font-size: 0.75rem; color: #a3a3a3; font-weight: 700; }
+        .gold { color: #d4af37; }
 
         .record-list { display: flex; flex-direction: column; gap: 20px; margin-top: 20px; }
         .record-item { padding: 16px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); }
