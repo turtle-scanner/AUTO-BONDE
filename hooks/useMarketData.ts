@@ -21,7 +21,6 @@ export function useMarketData() {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const host = window.location.hostname === 'localhost' ? 'localhost:8000' : 'stockdragonfly.cloud';
       
-      // ?...?????...??????...????...
       if (ws.current) {
         ws.current.close();
       }
@@ -37,7 +36,6 @@ export function useMarketData() {
         try {
           const message = JSON.parse(event.data);
           if (message.type === 'MARKET_UPDATE') {
-            // ?...?...?...?? ??...????...??...?????...?...???...
             setMarketState(prev => ({
               ...prev,
               data: message.data,
@@ -52,7 +50,8 @@ export function useMarketData() {
       ws.current.onclose = () => {
         console.log("WebSocket Disconnected. Retrying...");
         setMarketState(prev => ({ ...prev, isConnected: false }));
-        setTimeout(connect, 5000); // ???...??...?...??5?...?...?...???      };
+        setTimeout(connect, 5000); 
+      };
 
       ws.current.onerror = (err) => {
         console.error("WebSocket Error:", err);

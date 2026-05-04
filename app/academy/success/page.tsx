@@ -1,239 +1,43 @@
-"use client";
+\"use client\";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import GlassCard from '@/components/GlassCard';
 import { 
   Trophy, 
-  Plus, 
-  TrendingUp, 
-  DollarSign, 
-  Hash, 
-  ArrowRight, 
-  Coins,
-  MessageSquare,
-  Sparkles,
-  FileText,
-  ChevronLeft,
+  Star, 
+  Award,
   ChevronRight,
-  User,
-  Send
+  TrendingUp,
+  Zap
 } from 'lucide-react';
 
-interface Comment { id: number; author: string; text: string; date: string; }
-
-interface TradeRecord { 
-  id: number; 
-  type: 'SUCCESS' | 'REVIEW';
-  author: string;
-  ticker: string; 
-  quantity: number;
-  entryPrice: number; 
-  exitPrice: number; 
-  totalAmount: number;
-  yield: string; 
-  date: string; 
-  buyReason: string; 
-  sellReason: string; 
-  comment: string;
-  comments: Comment[];
-}
-
-const SHARED_STORAGE_KEY = 'dragonfly_unified_trades_v6_social';
-
-// ??�눧?�곌�???�뫁���됲�??? ?�넭?�ｋ�?????????寃뗏�????袁⑸�?節?�덩?紐꾨????筌�??�援�?const defaults: TradeRecord[] = [];
-
-export default function SuccessPage() {
-  const [records, setRecords] = useState<TradeRecord[]>([]);
-  const [showForm, setShowForm] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [currentUser, setCurrentUser] = useState("Guest");
-  const [form, setForm] = useState({ ticker: '', quantity: '', entryPrice: '', exitPrice: '', buyReason: '', sellReason: '', comment: '' });
-  const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
-  const [loaded, setLoaded] = useState(false);
-
-  const itemsPerPage = 5;
-
-  useEffect(() => {
-    const user = sessionStorage.getItem("dragonfly_user") || "Guest";
-    setCurrentUser(user);
-    try { 
-      const s = localStorage.getItem(SHARED_STORAGE_KEY); 
-      setRecords(s ? JSON.parse(s) : defaults); 
-    } catch { 
-      setRecords(defaults); 
-    }
-    setLoaded(true);
-  }, []);
-
-  useEffect(() => { 
-    if (loaded) localStorage.setItem(SHARED_STORAGE_KEY, JSON.stringify(records)); 
-  }, [records, loaded]);
-
-  const handleAdd = () => {
-    if (!form.ticker || !form.quantity || !form.entryPrice || !form.exitPrice) return alert("?�넭?�ｋ�?????????�냱議�!");
-    
-    const qty = parseFloat(form.quantity);
-    const entry = parseFloat(form.entryPrice);
-    const exit = parseFloat(form.exitPrice);
-    const yieldVal = (((exit - entry) / entry) * 100).toFixed(1);
-
-    const newRecord: TradeRecord = {
-      id: Date.now(),
-      type: 'SUCCESS',
-      author: currentUser,
-      ticker: form.ticker.toUpperCase(),
-      quantity: qty,
-      entryPrice: entry,
-      exitPrice: exit,
-      totalAmount: qty * exit,
-      yield: `+${yieldVal}%`,
-      date: new Date().toLocaleDateString('ko-KR'),
-      buyReason: form.buyReason || "?�넭?�ｋ�????�뛾�룆침��?,
-      sellReason: form.sellReason || "??????????濚욌꼬裕뼘�??,
-      comment: form.comment || "?�뛾?��??類λ룱??濚밸Ŧ?�욃??,
-      comments: []
-    };
-
-    setRecords(prev => [newRecord, ...prev]);
-    setForm({ ticker: '', quantity: '', entryPrice: '', exitPrice: '', buyReason: '', sellReason: '', comment: '' });
-    setShowForm(false);
-  };
-
-  const addComment = (recordId: number) => {
-    const text = commentInputs[recordId];
-    if (!text) return;
-    setRecords(prev => prev.map(r => r.id === recordId ? { ...r, comments: [...(r.comments || []), { id: Date.now(), author: currentUser, text: text, date: new Date().toLocaleDateString('ko-KR') }] } : r));
-    setCommentInputs(prev => ({ ...prev, [recordId]: '' }));
-  };
-
-  const successOnly = records.filter(r => r.type === 'SUCCESS');
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = successOnly.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(successOnly.length / itemsPerPage);
-
+export default function SuccessStories() {
   return (
-    <div className="success-container animate-fade-in">
-      <div className="success-header">
-        <div className="header-text">
-          <h1><Trophy size={32} className="gold-icon" /> [ SUCCESS ] ???源놁�??????????洹욌??/h1>
-          <p>??�눧?�곌�???�뫁���됲�??? ???�귙?�源�????��????�뜄�렡. ??��?�챷�졆 ?????�뤃?????源놁�???????�꺁��??�뼺??��??��?���큔?��??��????�뿭??�뼔?��???</p>
-        </div>
-        <button className="add-btn" onClick={() => setShowForm(!showForm)}>
-          <Plus size={18} /> {showForm ? "???�뿢?��" : "??????�꺁��??�뼺??��??濚밸Ŧ?�욃??}
-        </button>
+    <div className=\"academy-container animate-fade-in\">
+      <div className=\"section-header\">
+        <h1><span className=\"tag\">[ SUCCESS ]</span> 명예의 전당 (Hall of Fame)</h1>
+        <p className=\"subtitle\">성공적인 오퍼레이터들의 매매 기록</p>
       </div>
 
-      <GlassCard className="board-card">
-        <div className="board-header"><h3><FileText size={18} className="gold" /> ????????�넭?�ｋ굻��???�넭?�κ덱??/h3></div>
-        <div className="table-wrapper">
-          <table className="trade-table">
-            <thead>
-              <tr><th>?????�뤃?/th><th>??�꺂���?</th><th>??�꺁�꼤??�벊?��?/th><th>???��?�읁</th><th>?�ル?��????筌�?</th><th>????�슆琉�?�럾��</th><th>??�몴?�룸???/th></tr>
-            </thead>
-            <tbody>
-              {currentItems.map(r => (
-                <tr key={r.id}>
-                  <td className="bold"><User size={14} className="inline-icon" /> {r.author}</td>
-                  <td>{r.date}</td>
-                  <td className="bold">{r.ticker}</td>
-                  <td>{r.quantity}??/td>
-                  <td>${r.entryPrice.toLocaleString()}</td>
-                  <td>${r.exitPrice.toLocaleString()}</td>
-                  <td className="success-yield">{r.yield}</td>
-                </tr>
-              ))}
-              {currentItems.length === 0 && <tr><td colSpan={7} className="empty-td">???源놁�??�꺁��??�뼺??��???�꺁��????�▲룗�????????��????�뜄�렡...</td></tr>}
-            </tbody>
-          </table>
-        </div>
-        <div className="pagination">
-          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft size={16} /></button>
-          <span>{currentPage} / {totalPages || 1}</span>
-          <button disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight size={16} /></button>
-        </div>
-      </GlassCard>
-
-      {showForm && (
-        <GlassCard className="form-card gold-border-glow">
-          <div className="form-grid">
-            <div className="input-group"><label>??�꺁�꼤??�벊?��?/label><input value={form.ticker} onChange={e => setForm({...form, ticker: e.target.value})} /></div>
-            <div className="input-group"><label>???��?�읁</label><input type="number" value={form.quantity} onChange={e => setForm({...form, quantity: e.target.value})} /></div>
-            <div className="input-group"><label>?�ル?��????筌�?</label><input type="number" value={form.entryPrice} onChange={e => setForm({...form, entryPrice: e.target.value})} /></div>
-            <div className="input-group"><label>????�슆琉�?�럾��</label><input type="number" value={form.exitPrice} onChange={e => setForm({...form, exitPrice: e.target.value})} /></div>
-            <div className="input-group full-width"><label>?�ル??���????�옓??���琉�?(Strategy)</label><input placeholder="VCP, EP ???�ル?��?????�옓??���琉�? value={form.buyReason} onChange={e => setForm({...form, buyReason: e.target.value})} /></div>
-            <div className="input-group full-width"><label>?�ル??���?�뎿��???�옓??���琉�?(Exit Rule)</label><input placeholder="?????????? value={form.sellReason} onChange={e => setForm({...form, sellReason: e.target.value})} /></div>
+      <div className=\"success-list\">
+        <GlassCard className=\"empty-card\">
+          <div className=\"empty-content\">
+            <Trophy size={48} className=\"muted-gold\" />
+            <h3>아직 등록된 성공 사례가 없습니다.</h3>
+            <p>당신이 이 명예의 전당의 첫 번째 주인공이 되어보세요.</p>
           </div>
-          <button className="submit-btn" onClick={handleAdd}>????�뛾?��??類λ룱??濚밸Ŧ?�욃??/button>
         </GlassCard>
-      )}
-
-      <div className="records-grid">
-        {currentItems.map(r => (
-          <GlassCard key={r.id} className="record-card">
-            <div className="deep-header">
-              <div className="user-info"><User size={18} className="gold" /> <strong>{r.author}</strong> ??????��??�넭?�ｋ굻��??/div>
-              <span className="yield-badge plus">{r.yield}</span>
-            </div>
-            <div className="reason-box">
-              <div className="reason-item"><strong>[ BUY ]</strong> {r.buyReason}</div>
-              <div className="reason-item"><strong>[ SELL ]</strong> {r.sellReason}</div>
-            </div>
-            <div className="comment-section">
-              <div className="comment-list">{r.comments?.map(c => (<div key={c.id} className="comment-bubble"><span className="c-author">{c.author}:</span><span>{c.text}</span></div>))}</div>
-              <div className="comment-input-area">
-                <input placeholder="?�솻? ??影��뿢?��??.." value={commentInputs[r.id] || ''} onChange={e => setCommentInputs({...commentInputs, [r.id]: e.target.value})} onKeyDown={e => e.key === 'Enter' && addComment(r.id)} />
-                <button onClick={() => addComment(r.id)}><Send size={16} /></button>
-              </div>
-            </div>
-          </GlassCard>
-        ))}
       </div>
 
       <style jsx>{`
-        .success-container { padding: 40px; display: flex; flex-direction: column; gap: 32px; color: white; }
-        .success-header { display: flex; justify-content: space-between; align-items: center; }
-        .gold-icon { color: #d4af37; }
-        .add-btn { background: #d4af37; color: black; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 900; cursor: pointer; }
-        
-        .board-card { padding: 0; overflow: hidden; }
-        .board-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .trade-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        .trade-table th { text-align: left; padding: 16px; color: #555; border-bottom: 2px solid #222; }
-        .trade-table td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.02); color: #cbd5e1; }
-        .success-yield { color: #ef4444 !important; font-weight: 900; }
-        .inline-icon { margin-right: 6px; }
-        .bold { font-weight: 900; color: #f2f2f2; }
-        .empty-td { text-align: center; padding: 40px !important; color: #555; font-style: italic; }
-
-        .form-card { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
-        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-        .input-group label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; margin-bottom: 8px; display: block; }
-        .input-group input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; color: white; }
-        .full-width { grid-column: span 4; }
-        .submit-btn { background: #d4af37; color: black; border: none; padding: 14px; border-radius: 12px; font-weight: 950; cursor: pointer; }
-
-        .records-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 24px; }
-        .record-card { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
-        .deep-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; }
-        .user-info { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; }
-        .yield-badge { padding: 4px 12px; border-radius: 20px; font-weight: 900; }
-        .yield-badge.plus { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-
-        .reason-box { background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; }
-        .reason-item { font-size: 0.85rem; color: #cbd5e1; }
-        .reason-item strong { color: #d4af37; margin-right: 8px; }
-
-        .comment-section { display: flex; flex-direction: column; gap: 16px; }
-        .comment-list { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .comment-bubble { font-size: 0.8rem; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; }
-        .c-author { font-weight: 900; color: #d4af37; margin-right: 8px; }
-        .comment-input-area { display: flex; gap: 10px; }
-        .comment-input-area input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; color: white; }
-        .comment-input-area button { background: #d4af37; color: black; border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .gold { color: #d4af37; }
-        .pagination { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 15px; background: rgba(255,255,255,0.02); }
-        .pagination button { background: none; border: 1px solid #333; color: #94a3b8; width: 32px; height: 32px; border-radius: 8px; }
+        .academy-container { padding: 40px; display: flex; flex-direction: column; gap: 30px; color: white; }
+        .tag { color: var(--primary); font-weight: 900; }
+        .subtitle { color: var(--text-muted); margin-top: 8px; font-weight: 600; }
+        .empty-card { padding: 80px 20px; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .empty-content { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .muted-gold { color: rgba(212, 175, 55, 0.3); }
+        .empty-content h3 { font-size: 1.4rem; font-weight: 800; color: #f2f2f2; }
+        .empty-content p { color: #64748b; font-weight: 600; }
       `}</style>
     </div>
   );
