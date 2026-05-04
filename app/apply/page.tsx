@@ -1,0 +1,161 @@
+"use client";
+
+import React, { useState } from 'react';
+import GlassCard from '@/components/GlassCard';
+import { Send, UserPlus, ClipboardList } from 'lucide-react';
+
+export default function ApplyPage() {
+  const [formData, setFormData] = useState({
+    thoughts: '',
+    intro: '',
+    goals: ''
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    alert("??�댖?�뺣?�野�????�뛾�룆�뼬�걡???�꺂���???? ?�넭?�ｋ쳳�???筌�????�뜮?? ???��????�뛾?��??????�롫???????嶺뚮Ĳ�걠���???�굝�뒩?�꼱�빝??");
+    console.log("Promotion Request Data:", formData);
+  };
+
+  return (
+    <div className="apply-container animate-fade-in">
+      <div className="apply-header">
+        <h1 className="apply-title">
+          <span className="tag">[ APPLY ]</span> ?袁⑸?�泳�戮?�즵???�뛾�룆�뼬�걡???�꺂���???        </h1>
+        <div className="apply-info-banner glass">
+          <p>?嶺�??節?�땡??�뛾�룆�뼬�걡???�넭?�κ데???�넭?�ｋ�?????????�뼔?????�굝�뒩?�꼱�빝??</p>
+        </div>
+      </div>
+
+      <GlassCard className="apply-form-card">
+        <form onSubmit={handleSubmit} className="apply-form">
+          <div className="form-group">
+            <label>1. ?袁⑸?�泳�戮?�즵 ???�뜮?/label>
+            <textarea 
+              placeholder="???�뜮????影��봾�궢?�굝�뒩?�꼱�빝??"
+              value={formData.thoughts}
+              onChange={(e) => setFormData({...formData, thoughts: e.target.value})}
+              className="glass-input"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>2. ???????筌�?/label>
+            <textarea 
+              placeholder="?????濡ろ?????????濡ろ???????��?�?��??�덉???�땾???"
+              value={formData.intro}
+              onChange={(e) => setFormData({...formData, intro: e.target.value})}
+              className="glass-input"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>3. ???</label>
+            <textarea 
+              placeholder="?�ル??��?�泳��?�彛�?諛멥�???��?�?��??�덉???�땾???"
+              value={formData.goals}
+              onChange={(e) => setFormData({...formData, goals: e.target.value})}
+              className="glass-input"
+            />
+          </div>
+
+          <button type="submit" className="submit-btn glass">
+            <Send size={16} /> SEND: ?�뛾�룆�뼬�걡???�꺂���???�넭?�ｋ쳳�??          </button>
+        </form>
+      </GlassCard>
+
+      <style jsx>{`
+        .apply-container {
+          padding: 40px;
+          max-width: 1000px;
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+
+        .apply-title {
+          font-size: 2.2rem;
+          font-weight: 900;
+          color: white;
+          margin-bottom: 24px;
+        }
+
+        .apply-title .tag {
+          color: var(--primary);
+          font-family: 'Fira Code', monospace;
+          margin-right: 12px;
+        }
+
+        .apply-info-banner {
+          padding: 24px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 189, 46, 0.1);
+          border-radius: 12px;
+          font-size: 1rem;
+          font-weight: 600;
+          color: var(--text-muted);
+        }
+
+        .apply-form {
+          display: flex;
+          flex-direction: column;
+          gap: 32px;
+        }
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .form-group label {
+          font-size: 1rem;
+          font-weight: 800;
+          color: white;
+        }
+
+        .glass-input {
+          width: 100%;
+          min-height: 120px;
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid var(--card-border);
+          border-radius: 12px;
+          padding: 16px;
+          color: white;
+          font-size: 0.95rem;
+          outline: none;
+          resize: vertical;
+          transition: all 0.3s;
+        }
+
+        .glass-input:focus {
+          border-color: var(--primary);
+          background: rgba(255, 255, 255, 0.05);
+        }
+
+        .submit-btn {
+          align-self: flex-start;
+          padding: 12px 24px;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+          font-size: 0.9rem;
+          font-weight: 800;
+          color: var(--text-muted);
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          cursor: pointer;
+          transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+          background: var(--primary);
+          color: black;
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px var(--primary-glow);
+        }
+      `}</style>
+    </div>
+  );
+}

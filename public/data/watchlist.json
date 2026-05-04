@@ -1,0 +1,302 @@
+[
+  {
+    "ticker": "BEX",
+    "recent": 10,
+    "total": 30,
+    "score": 130
+  },
+  {
+    "ticker": "VNCE",
+    "recent": 10,
+    "total": 10,
+    "score": 110
+  },
+  {
+    "ticker": "AMDL",
+    "recent": 9,
+    "total": 12,
+    "score": 102
+  },
+  {
+    "ticker": "FRMM",
+    "recent": 9,
+    "total": 10,
+    "score": 100
+  },
+  {
+    "ticker": "MXL",
+    "recent": 9,
+    "total": 9,
+    "score": 99
+  },
+  {
+    "ticker": "AMUU",
+    "recent": 9,
+    "total": 9,
+    "score": 99
+  },
+  {
+    "ticker": "ROLR",
+    "recent": 8,
+    "total": 16,
+    "score": 96
+  },
+  {
+    "ticker": "SOXL",
+    "recent": 8,
+    "total": 16,
+    "score": 96
+  },
+  {
+    "ticker": "LABX",
+    "recent": 7,
+    "total": 22,
+    "score": 92
+  },
+  {
+    "ticker": "BTM",
+    "recent": 8,
+    "total": 12,
+    "score": 92
+  },
+  {
+    "ticker": "USGG",
+    "recent": 8,
+    "total": 8,
+    "score": 88
+  },
+  {
+    "ticker": "WATT",
+    "recent": 6,
+    "total": 28,
+    "score": 88
+  },
+  {
+    "ticker": "NVTX",
+    "recent": 7,
+    "total": 15,
+    "score": 85
+  },
+  {
+    "ticker": "INTW",
+    "recent": 6,
+    "total": 22,
+    "score": 82
+  },
+  {
+    "ticker": "ONEG",
+    "recent": 7,
+    "total": 11,
+    "score": 81
+  },
+  {
+    "ticker": "MVLL",
+    "recent": 6,
+    "total": 20,
+    "score": 80
+  },
+  {
+    "ticker": "CRDU",
+    "recent": 6,
+    "total": 19,
+    "score": 79
+  },
+  {
+    "ticker": "ENVB",
+    "recent": 7,
+    "total": 7,
+    "score": 77
+  },
+  {
+    "ticker": "INBX",
+    "recent": 7,
+    "total": 7,
+    "score": 77
+  },
+  {
+    "ticker": "AEHR",
+    "recent": 5,
+    "total": 24,
+    "score": 74
+  },
+  {
+    "ticker": "ATOM",
+    "recent": 6,
+    "total": 14,
+    "score": 74
+  },
+  {
+    "ticker": "OGN",
+    "recent": 6,
+    "total": 7,
+    "score": 67
+  },
+  {
+    "ticker": "XNDU",
+    "recent": 6,
+    "total": 6,
+    "score": 66
+  },
+  {
+    "ticker": "ELPW",
+    "recent": 6,
+    "total": 6,
+    "score": 66
+  },
+  {
+    "ticker": "FCEL",
+    "recent": 6,
+    "total": 6,
+    "score": 66
+  },
+  {
+    "ticker": "LINT",
+    "recent": 5,
+    "total": 15,
+    "score": 65
+  },
+  {
+    "ticker": "OKLL",
+    "recent": 5,
+    "total": 8,
+    "score": 58
+  },
+  {
+    "ticker": "HIMZ",
+    "recent": 5,
+    "total": 8,
+    "score": 58
+  },
+  {
+    "ticker": "MRVU",
+    "recent": 5,
+    "total": 6,
+    "score": 56
+  },
+  {
+    "ticker": "NVTS",
+    "recent": 5,
+    "total": 5,
+    "score": 55
+  },
+  {
+    "ticker": "TRT",
+    "recent": 5,
+    "total": 5,
+    "score": 55
+  },
+  {
+    "ticker": "RMAX",
+    "recent": 5,
+    "total": 5,
+    "score": 55
+  },
+  {
+    "ticker": "TORO",
+    "recent": 5,
+    "total": 5,
+    "score": 55
+  },
+  {
+    "ticker": "MYSE",
+    "recent": 5,
+    "total": 5,
+    "score": 55
+  },
+  {
+    "ticker": "MIGI",
+    "recent": 4,
+    "total": 12,
+    "score": 52
+  },
+  {
+    "ticker": "LWLG",
+    "recent": 3,
+    "total": 22,
+    "score": 52
+  },
+  {
+    "ticker": "SNXX",
+    "recent": 4,
+    "total": 11,
+    "score": 51
+  },
+  {
+    "ticker": "ARMG",
+    "recent": 4,
+    "total": 11,
+    "score": 51
+  },
+  {
+    "ticker": "QNTM",
+    "recent": 4,
+    "total": 8,
+    "score": 48
+  },
+  {
+    "ticker": "SNDU",
+    "recent": 4,
+    "total": 8,
+    "score": 48
+  },
+  {
+    "ticker": "IONL",
+    "recent": 4,
+    "total": 7,
+    "score": 47
+  },
+  {
+    "ticker": "IONX",
+    "recent": 4,
+    "total": 7,
+    "score": 47
+  },
+  {
+    "ticker": "CMPS",
+    "recent": 4,
+    "total": 6,
+    "score": 46
+  },
+  {
+    "ticker": "CVV",
+    "recent": 4,
+    "total": 5,
+    "score": 45
+  },
+  {
+    "ticker": "INTC",
+    "recent": 4,
+    "total": 5,
+    "score": 45
+  },
+  {
+    "ticker": "FGI",
+    "recent": 4,
+    "total": 5,
+    "score": 45
+  },
+  {
+    "ticker": "ABSI",
+    "recent": 4,
+    "total": 4,
+    "score": 44
+  },
+  {
+    "ticker": "SKLZ",
+    "recent": 4,
+    "total": 4,
+    "score": 44
+  },
+  {
+    "ticker": "CWVX",
+    "recent": 3,
+    "total": 14,
+    "score": 44
+  },
+  {
+    "ticker": "BIRD",
+    "recent": 4,
+    "total": 4,
+    "score": 44
+  }
+]
