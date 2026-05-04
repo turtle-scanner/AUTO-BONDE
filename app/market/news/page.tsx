@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import GlassCard from '@/components/GlassCard';
 import { 
   TrendingUp, 
@@ -11,41 +11,23 @@ import {
   Clock, 
   RefreshCw, 
   BarChart3,
-  Waves,
-  BrainCircuit,
-  Send
+  Waves
 } from 'lucide-react';
 
 export default function MarketIntelligenceUpgrade() {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [news, setNews] = useState<any[]>([]);
 
-  // ?�ル?��??????�눧?�곌�???�뫁���됲�??  const indices = [
+  // 지수 샘플 데이터
+  const indices = [
     { name: 'NASDAQ', value: '16,274.95', change: '+1.15%', isUp: true },
     { name: 'S&P 500', value: '5,123.41', change: '+0.85%', isUp: true },
     { name: 'KOSPI', value: '2,682.12', change: '-0.32%', isUp: false },
     { name: 'USD/KRW', value: '1,372.50', change: '+4.20', isUp: true },
   ];
 
-  useEffect(() => {
-    fetchNews();
-  }, []);
-
-  const fetchNews = async () => {
-    setIsRefreshing(true);
-    try {
-      const res = await fetch('/v6-api/market-news');
-      const data = await res.json();
-      setNews(data);
-    } catch (err) {
-      console.error("Failed to fetch news", err);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   const handleRefresh = () => {
-    fetchNews();
+    setIsRefreshing(true);
+    setTimeout(() => setIsRefreshing(false), 1200);
   };
 
   return (
@@ -56,7 +38,7 @@ export default function MarketIntelligenceUpgrade() {
           <h1 className="intel-title">
             <Activity className="title-icon" /> MARKET INTELLIGENCE
           </h1>
-          <p className="intel-subtitle">???嶺뚮?�梨�????筌�??�沅�???�꾧?���???????????��?�뗪?�筌�??????�뮄��??????�뺣�?�씈?��?????��???���씙�뤆??�뇡�슣�?��???筌뤾?��???</p>
+          <p className="intel-subtitle">전 세계 시장의 거시적 흐름과 미시적 속보를 실시간으로 교차 분석합니다.</p>
         </div>
         <div className="header-right">
           <button className={`refresh-btn ${isRefreshing ? 'loading' : ''}`} onClick={handleRefresh}>
@@ -89,20 +71,23 @@ export default function MarketIntelligenceUpgrade() {
           </div>
           
           <div className="news-list">
-            {news.map((item) => (
-              <div key={item.id} className="news-item">
-                <div className="news-time">{item.time}</div>
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="news-item">
+                <div className="news-time">14:{30 - i * 5}</div>
                 <div className="news-content-box">
                   <div className="news-meta">
-                    <span className="news-source">{item.source}</span>
-                    <span className={`news-impact ${item.impact.toLowerCase()}`}>{item.impact} IMPACT</span>
-                    <span className="news-cat">[{item.category}]</span>
+                    <span className="news-source">BLOOMBERG</span>
+                    <span className="news-impact high">HIGH IMPACT</span>
                   </div>
-                  <div className="news-text">{item.title}</div>
+                  <div className="news-text">
+                    {i === 1 ? "미국 빅테크 기업들, AI 인프라 지출 사상 최고치 기록하며 급등" : 
+                     i === 2 ? "연준 인사들, '고금리 장기화' 금리 전략 유지 가능성 시사" :
+                     i === 3 ? "한국 수출 데이터, 반도체 섹터의 강력한 성장세 확인" :
+                     "글로벌 석유 시장, 에너지 통로의 지정학적 긴장 고조에 반응"}
+                  </div>
                 </div>
               </div>
             ))}
-            {news.length === 0 && !isRefreshing && <p className="empty-msg">?嶺뚮?�援�????��?�벚�뜤????筌뚯?�堉�?????濚욌꼬�궡��????�뜄�렡...</p>}
           </div>
         </div>
 
@@ -129,7 +114,7 @@ export default function MarketIntelligenceUpgrade() {
               <Waves size={18} /> AI TACTICAL BRIEFING
             </div>
             <div className="briefing-text">
-              "?�넭?�ｋ�????筌�??�沅�?? ??筌뚯?�痢�??濚욌꼬�궡��????�씈?�녻린�?��?�??�ル??���???嶺�? ??�꺂��?�굢???寃뗏�????源끹�?? ?????�꺂����?????��?�?��???��?���큔 ?嶺뚮?�援??��???�뚮�????�돆�렰 ?嶺�?????�꺂��?�린??筌뚯?����??筌�??��?? 2,680???�ル?��???�ル?��?? ????�씈�읈? ??影��뿢?�� ?潁뺛깷泥�???濡ろ??????濡ろ??????��???�뚮??????�뜄�렡."
+              "현재 시장은 나스닥 중심의 강한 매수세가 유입되고 있으나, 국채 금리 상승으로 인한 변동성 확대에 유의하십시오. 2,680선 지지 여부가 단기 향방을 결정할 것으로 보입니다."
             </div>
             <div className="briefing-footer">
               COMMANDER'S DIRECTION: <span className="highlight">HOLD / ACCUMULATE</span>
@@ -138,41 +123,41 @@ export default function MarketIntelligenceUpgrade() {
         </div>
       </div>
 
-      {/* Yuhani AI Command Console */}
-      <GlassCard className="yuhani-console-card">
-        <div className="console-header">
-          <div className="title-group">
-            <BrainCircuit size={20} className="gold" />
-            <div className="title-info">
-              <h3 className="gold">[ YUHANI AI ] TACTICAL COMMAND CONSOLE</h3>
-              <p>?嶺뚮?�梨?�쾮��?�땡??�온�????�꺂�뀖��????�좊�????筌�??�沅�????�뮄��???????�넭?�ｋ�????濡る�?�꺆�뤅?????�딅??�맦???��?�똻�룵??</p>
-            </div>
-          </div>
-          <div className="status-dot"></div>
-        </div>
-        
-        <div className="console-interface">
-          <div className="chat-window">
-            <div className="msg system">CONNECTED TO STOCKDRAGONFLY CORE...</div>
-            <div className="msg bot">??�댖?��?�땻??? ????�뺣�???嶺뚮?�援�????��?�벚�뜤 ?�뇡�슣�?��???�넭?�ｋ�???筌�????�뜮?? ??????嶺뚮?��맊亦?�쉠琉�?�럾�� ?�넭?�ｋ�???筌뚯?����???�늾琉�?</div>
-          </div>
-          <div className="input-group">
-            <input type="text" placeholder="???�뮄��??�뇡�슣�?��?????�먯???????��???筌�??�沅�??�넭?�ｋ�? ?�ル?��??袁ｋ�?.." className="console-input" />
-            <button className="send-btn"><Send size={18} /></button>
-          </div>
-        </div>
-      </GlassCard>
-
       <style jsx>{`
-        .market-intel-container { padding: 30px; display: flex; flex-direction: column; gap: 30px; color: white; }
+        .market-intel-container {
+          padding: 30px;
+          display: flex;
+          flex-direction: column;
+          gap: 30px;
+          color: white;
+        }
+
         .intel-header { display: flex; justify-content: space-between; align-items: center; }
         .intel-title { font-size: 1.8rem; font-weight: 900; display: flex; align-items: center; gap: 12px; letter-spacing: -1px; }
         .title-icon { color: var(--gold-400); }
         .intel-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
 
-        .refresh-btn { background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); color: var(--gold-400); padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .refresh-btn {
+          background: rgba(212, 175, 55, 0.1);
+          border: 1px solid rgba(212, 175, 55, 0.3);
+          color: var(--gold-400);
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-size: 0.8rem;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+        }
 
-        .indices-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        /* Indices */
+        .indices-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 20px;
+        }
+
         .index-card { padding: 16px 20px; }
         .index-name { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; }
         .index-value-group { display: flex; justify-content: space-between; align-items: baseline; }
@@ -181,24 +166,38 @@ export default function MarketIntelligenceUpgrade() {
         .index-change.up { color: #10b981; }
         .index-change.down { color: #ef4444; }
 
-        .main-layout { display: grid; grid-template-columns: 1fr 340px; gap: 30px; }
+        /* Layout */
+        .main-layout {
+          display: grid;
+          grid-template-columns: 1fr 340px;
+          gap: 30px;
+        }
+
         .section-header h3 { font-size: 1rem; font-weight: 900; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
 
         .news-list { display: flex; flex-direction: column; gap: 20px; }
         .news-item { display: flex; gap: 15px; }
         .news-time { font-size: 0.8rem; font-weight: 900; color: var(--gold-400); width: 45px; margin-top: 4px; }
         
-        .news-content-box { flex: 1; padding: 16px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .news-content-box {
+          flex: 1;
+          padding: 16px;
+          background: rgba(255, 255, 255, 0.03);
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
         .news-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
         .news-source { font-size: 0.6rem; font-weight: 900; color: var(--text-muted); }
         .news-impact { font-size: 0.6rem; font-weight: 900; padding: 2px 6px; border-radius: 4px; }
         .news-impact.high { background: rgba(255, 0, 85, 0.1); color: #ff0055; }
-        .news-impact.med { background: rgba(251, 191, 36, 0.1); color: #fbbf24; }
-        .news-cat { font-size: 0.6rem; font-weight: 900; color: var(--gold-400); }
+
         .news-text { font-size: 1rem; font-weight: 700; line-height: 1.4; color: rgba(255, 255, 255, 0.9); }
 
+        /* Side Section */
         .side-section { display: flex; flex-direction: column; gap: 30px; }
         .card-header { font-size: 0.85rem; font-weight: 900; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--gold-400); }
+
         .breath-card, .briefing-card { padding: 24px; }
         
         .meter-track { height: 10px; background: #333; border-radius: 5px; display: flex; overflow: hidden; margin-bottom: 12px; }
@@ -210,29 +209,8 @@ export default function MarketIntelligenceUpgrade() {
         .briefing-footer { font-size: 0.75rem; font-weight: 900; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
         .highlight { color: var(--gold-400); }
 
-        .yuhani-console-card { padding: 24px; }
-        .console-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .title-group { display: flex; gap: 14px; }
-        .title-info h3 { font-size: 0.9rem; font-weight: 900; }
-        .title-info p { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
-        .status-dot { width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulse 2s infinite; }
-
-        .console-interface { display: flex; flex-direction: column; gap: 20px; }
-        .chat-window { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 15px; height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg { font-size: 0.85rem; font-weight: 700; line-height: 1.5; padding: 8px 12px; border-radius: 8px; }
-        .msg.system { color: #64748b; font-size: 0.7rem; text-align: center; }
-        .msg.bot { background: rgba(212, 175, 55, 0.05); color: #e2e8f0; border-left: 3px solid var(--gold-400); align-self: flex-start; max-width: 80%; }
-
-        .input-group { display: flex; gap: 10px; }
-        .console-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 8px; color: white; outline: none; font-size: 0.9rem; font-weight: 700; }
-        .console-input:focus { border-color: var(--gold-400); }
-        .send-btn { background: var(--gold-400); color: black; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; transition: transform 0.2s; }
-        .send-btn:hover { transform: scale(1.05); }
-
-        .gold { color: var(--gold-400); }
         .rotating { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
         .loading { opacity: 0.5; pointer-events: none; }
       `}</style>
     </div>

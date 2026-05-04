@@ -34,7 +34,7 @@ class ErrorBoundary extends Component<Props, State> {
             <AlertTriangle size={24} className="status-down" />
             <div className="error-text">
               <h4>[{this.props.fallbackName || 'Component'}] Malfunction</h4>
-              <p>?�넭?�ｋ�???潁�????繹먮굝六�?????�똻?��. ???筌�???�뚮?�甕걔�????筌먲?���?濚�?..</p>
+              <p>전술 장비 일시적 오류. 자동 복구 시도 중...</p>
             </div>
             <button 
               className="retry-btn glass"

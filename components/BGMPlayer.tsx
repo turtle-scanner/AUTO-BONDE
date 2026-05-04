@@ -1,15 +1,15 @@
-\"use client\";
+"use client";
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Music, Volume2, VolumeX, Play, Pause, SkipForward, ChevronUp } from 'lucide-react';
 
 const playlist = [
-  { name: \"MY_BONDE\", src: \"/my_bonde.mp3\" },
-  { name: \"CUTE\", src: \"/cute.mp3\" },
-  { name: \"HAPPY\", src: \"/happy.mp3\" },
-  { name: \"HOPE\", src: \"/hope.mp3\" },
-  { name: \"PETTY\", src: \"/petty.mp3\" },
-  { name: \"YOU_RAISE\", src: \"/YouRaise.mp3\" },
+  { name: "MY_BONDE", src: "/my_bonde.mp3" },
+  { name: "CUTE", src: "/cute.mp3" },
+  { name: "HAPPY", src: "/happy.mp3" },
+  { name: "HOPE", src: "/hope.mp3" },
+  { name: "PETTY", src: "/petty.mp3" },
+  { name: "YOU_RAISE", src: "/YouRaise.mp3" },
 ];
 
 const BGMPlayer: React.FC = () => {
@@ -25,7 +25,7 @@ const BGMPlayer: React.FC = () => {
         audioRef.current.play().then(() => {
           setIsPlaying(true);
         }).catch(err => {
-          console.log(\"Auto-play blocked:\", err);
+          console.log("Auto-play blocked:", err);
         });
       }
       window.removeEventListener('click', handleFirstInteraction);
@@ -49,7 +49,7 @@ const BGMPlayer: React.FC = () => {
   const nextTrack = () => {
     setCurrentTrack((prev) => (prev + 1) % playlist.length);
     setIsPlaying(true);
-    // 오디오 소스 변경 시 약간의 지연 후 재생
+    // 오디오 소스가 바뀌면 자동으로 재생되도록 함
     setTimeout(() => {
       audioRef.current?.play();
     }, 100);
@@ -71,17 +71,17 @@ const BGMPlayer: React.FC = () => {
   }, [volume]);
 
   return (
-    <div className=\"bgm-player glass\">
+    <div className="bgm-player glass">
       <audio 
         ref={audioRef} 
         src={playlist[currentTrack].src} 
         loop 
-        preload=\"none\"
+        preload="none"
       />
       
-      <div className=\"playlist-container\">
+      <div className="playlist-container">
         {showPlaylist && (
-          <div className=\"playlist-dropdown glass animate-slide-up\">
+          <div className="playlist-dropdown glass animate-slide-up">
             {playlist.map((track, i) => (
               <div 
                 key={i} 
@@ -95,86 +95,161 @@ const BGMPlayer: React.FC = () => {
         )}
       </div>
 
-      <div className=\"player-controls\">
-        <button className=\"icon-btn-small\" onClick={() => setShowPlaylist(!showPlaylist)}>
+      <div className="player-controls">
+        <button className="icon-btn-small" onClick={() => setShowPlaylist(!showPlaylist)}>
           <ChevronUp size={14} className={showPlaylist ? 'rotate-180' : ''} />
         </button>
-        
-        <div className=\"track-info\">
-          <Music size={14} className=\"gold\" />
-          <span className=\"track-name\">{playlist[currentTrack].name}</span>
-        </div>
 
-        <div className=\"control-btns\">
-          <button className=\"icon-btn\" onClick={togglePlay}>
-            {isPlaying ? <Pause size={16} /> : <Play size={16} />}
-          </button>
-          <button className=\"icon-btn\" onClick={nextTrack}>
-            <SkipForward size={16} />
-          </button>
-        </div>
+        <button className="control-btn" onClick={togglePlay}>
+          {isPlaying ? <Pause size={16} fill="white" /> : <Play size={16} fill="white" />}
+        </button>
 
-        <div className=\"volume-control\">
-          {volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
+        <button className="icon-btn-small" onClick={nextTrack}>
+          <SkipForward size={14} />
+        </button>
+
+        <div className="volume-control">
+          {volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
           <input 
-            type=\"range\" 
-            min=\"0\" 
-            max=\"1\" 
-            step=\"0.01\" 
+            type="range" 
+            min="0" 
+            max="1" 
+            step="0.01" 
             value={volume} 
             onChange={(e) => setVolume(parseFloat(e.target.value))}
-            className=\"volume-slider\"
           />
+        </div>
+
+        <div className="track-display">
+          <Music size={12} className={isPlaying ? 'animate-spin-slow' : ''} />
+          <span className="track-info">{playlist[currentTrack].name}</span>
         </div>
       </div>
 
       <style jsx>{`
         .bgm-player {
           position: fixed;
-          bottom: 30px;
-          left: 30px;
-          z-index: 4000;
-          padding: 10px 20px;
-          border-radius: 12px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          min-width: 300px;
+          bottom: 24px;
+          right: 24px;
+          z-index: 1000;
+          border-radius: 20px;
+          padding: 8px 16px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+          border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .player-controls { display: flex; align-items: center; gap: 15px; }
-        .track-info { display: flex; align-items: center; gap: 8px; flex: 1; }
-        .track-name { font-size: 0.75rem; font-weight: 800; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
-        
-        .control-btns { display: flex; gap: 8px; }
-        .icon-btn { background: none; border: none; color: #f2f2f2; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; transition: all 0.2s; }
-        .icon-btn:hover { background: rgba(255, 255, 255, 0.1); color: var(--primary); }
-        .icon-btn-small { background: none; border: none; color: #64748b; cursor: pointer; }
-        
-        .volume-control { display: flex; align-items: center; gap: 8px; }
-        .volume-slider { width: 60px; height: 4px; border-radius: 2px; -webkit-appearance: none; background: rgba(255, 255, 255, 0.1); }
-        .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--primary); cursor: pointer; }
 
-        .playlist-dropdown { position: absolute; bottom: calc(100% + 10px); left: 0; width: 100%; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 5px; }
-        .playlist-item { padding: 8px 12px; font-size: 0.7rem; font-weight: 700; color: #64748b; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
-        .playlist-item:hover { background: rgba(212, 175, 55, 0.1); color: #f2f2f2; }
-        .playlist-item.active { background: rgba(212, 175, 55, 0.2); color: var(--primary); }
+        .player-controls {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .playlist-container {
+          position: relative;
+        }
+
+        .playlist-dropdown {
+          position: absolute;
+          bottom: 50px;
+          right: 0;
+          width: 180px;
+          max-height: 250px;
+          overflow-y: auto;
+          border-radius: 12px;
+          padding: 8px;
+          background: rgba(10, 10, 10, 0.8);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .playlist-item {
+          padding: 8px 12px;
+          font-size: 0.7rem;
+          font-weight: 700;
+          color: rgba(255,255,255,0.6);
+          cursor: pointer;
+          border-radius: 6px;
+          transition: all 0.2s;
+        }
+
+        .playlist-item:hover {
+          background: rgba(255,255,255,0.05);
+          color: white;
+        }
+
+        .playlist-item.active {
+          color: #00ff88;
+          background: rgba(0, 255, 136, 0.1);
+        }
+
+        .control-btn {
+          background: transparent;
+          border: none;
+          color: white;
+          cursor: pointer;
+          transition: transform 0.2s;
+        }
+
+        .icon-btn-small {
+          background: transparent;
+          border: none;
+          color: rgba(255,255,255,0.4);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .icon-btn-small:hover { color: white; }
+
+        .volume-control {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          border-left: 1px solid rgba(255,255,255,0.1);
+          padding-left: 12px;
+        }
+
+        .volume-control input {
+          width: 50px;
+          accent-color: #00ff88;
+        }
+
+        .track-display {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(0,0,0,0.3);
+          padding: 4px 12px;
+          border-radius: 10px;
+          min-width: 100px;
+        }
+
+        .track-info {
+          font-size: 0.65rem;
+          font-weight: 900;
+          color: #00ff88;
+          letter-spacing: 0.05em;
+        }
 
         .rotate-180 { transform: rotate(180deg); }
 
-        @media (max-width: 768px) {
-          .bgm-player {
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            min-width: 0;
-            padding: 8px 15px;
-          }
-          .track-name { max-width: 80px; }
-          .volume-control { display: none; }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 4s linear infinite;
+        }
+
+        .animate-slide-up {
+          animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+          from { transform: translateY(10px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
         }
       `}</style>
     </div>
   );
-}
+};
 
 export default BGMPlayer;

@@ -1,258 +1,54 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import GlassCard from '@/components/GlassCard';
-import { 
-  Calendar, 
-  Flame, 
-  MessageSquare, 
-  RefreshCw, 
-  CheckCircle2, 
-  User, 
-  Clock,
-  ChevronRight
-} from 'lucide-react';
-
-interface CheckInRecord {
-  id: number;
-  username: string;
-  comment: string;
-  date: string;
-}
+import { Calendar, CheckCircle, Flame } from 'lucide-react';
 
 export default function CheckIn() {
-  const [checkins, setCheckins] = useState<CheckInRecord[]>([]);
-  const [comment, setComment] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [todayStr, setTodayStr] = useState("");
-  const [user, setUser] = useState("??�댖?��?�땻?");
-
-  useEffect(() => {
-    const now = new Date();
-    setTodayStr(now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }));
-    
-    const savedUser = sessionStorage.getItem("dragonfly_user") || "??�댖?��?�땻?";
-    setUser(savedUser);
-
-    fetchCheckins();
-  }, []);
-
-  const fetchCheckins = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch('/v6-api/checkin');
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setCheckins(data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch checkins:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCheckIn = async () => {
-    if (!comment.trim()) return;
-
-    setIsSubmitting(true);
-    try {
-      const res = await fetch('/v6-api/checkin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: user,
-          comment: comment
-        })
-      });
-
-      if (res.ok) {
-        setComment("");
-        fetchCheckins();
-      }
-    } catch (err) {
-      console.error("Check-in failed:", err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
-    <div className="checkin-container animate-fade-in">
-      {/* Header Section */}
-      <div className="checkin-header">
-        <div className="header-content">
-          <h1>???�끂痢�????濚�???/h1>
-          <p>?�ル??���????�넭?�ｋ쳳筌�? ?�뛾?��????濡ろ????��곸�?? ??�댖?�뺣?�野�????�뛾�룆침��?????濾�???�뜄�렡.</p>
-        </div>
-        <button className="refresh-btn glass" onClick={fetchCheckins} disabled={isLoading}>
-          <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
-        </button>
+    <div className="square-container animate-fade-in">
+      <div className="section-header">
+        <h1><span className="tag">[ SQUARE ]</span> 6-a. 출석체크 (오늘 한 줄)</h1>
+        <p className="subtitle">사령부에 합류한 대원들의 오늘 각오를 공유합니다.</p>
       </div>
 
-      {/* Input Section */}
-      <GlassCard className="input-card">
-        <div className="date-badge">
-          <Calendar size={14} />
-          {todayStr}
-        </div>
-        <div className="user-greet">
-          <div className="avatar-main">{user[0]}</div>
-          <div className="greet-text">
-            <h2>{user} ?????筌�? ???�끂痢�???�씈?��??????�ル??���?袁┑�?</h2>
-            <p>?�씈?��?�몺�쇊???寃뗏�??�씈?�녻�???????�뮇?��???��?���큔 ??筌�??�援�??筌뚯뼚��??</p>
+      <div className="checkin-grid">
+        <GlassCard className="calendar-box">
+          <Calendar size={40} color="var(--primary)" />
+          <h3>2026년 5월 2일</h3>
+          <button className="checkin-btn">출석체크 완료</button>
+          <div className="streak-info">
+            <Flame size={16} color="#f59e0b" />
+            <span>현재 7일 연속 출석 중!</span>
           </div>
-        </div>
-        <div className="main-input-box">
-          <textarea 
-            placeholder="?? ???�끂痢�?? ???????�ル?��?????�끂痢� ?�ル??���???�귥쥙肉�??�뛾�룆침��???�슧�?��???�뜮??"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleCheckIn())}
-          />
-          <button 
-            className={`submit-btn ${comment.trim() ? 'active' : ''}`}
-            onClick={handleCheckIn}
-            disabled={!comment.trim() || isSubmitting}
-          >
-            {isSubmitting ? <RefreshCw className="animate-spin" /> : <ChevronRight />}
-          </button>
-        </div>
-        <div className="input-footer">
-          <div className="streak-tag">
-            <Flame size={14} />
-            <span>?�넭?�ｋ�??7????�뫁���꺁�떗 ?��?��?�툔??濚�?</span>
-          </div>
-          <span className="char-count">{comment.length}/100</span>
-        </div>
-      </GlassCard>
+        </GlassCard>
 
-      {/* Feed Section */}
-      <div className="feed-section">
-        <div className="feed-title">
-          <CheckCircle2 size={20} color="var(--primary)" />
-          <h3>?�ル?��걠獒�???��?��?�툔???�넭?�κ덱??/h3>
-        </div>
-
-        {isLoading ? (
-          <div className="loading-feed">??�뫁���됲�??? ???�쉵?��??濚욌꼬�궡��????�뜄�렡...</div>
-        ) : (
-          <div className="feed-list">
-            {checkins.map((item, idx) => (
-              <div key={item.id} className="feed-item" style={{ animationDelay: `${idx * 0.05}s` }}>
-                <div className="feed-item-left">
-                  <div className="avatar-small">{item.username[0]}</div>
-                </div>
-                <div className="feed-item-content">
-                  <div className="item-header">
-                    <span className="username">{item.username}</span>
-                    <span className="time">
-                      <Clock size={12} />
-                      {new Date(item.date).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                  <p className="comment">{item.comment}</p>
-                </div>
-                <div className="status-dot" />
-              </div>
-            ))}
+        <GlassCard title="Today's Mission Quote">
+          <div className="quote-list">
+            <div className="quote-item">
+              <strong>Captain Bonde:</strong> "중력을 거스르는 자만이 하늘을 날 수 있습니다. 오늘도 원칙 매매!"
+            </div>
+            <div className="quote-item">
+              <strong>fire33:</strong> "열심히 공부해서 경제적 자유 얻겠습니다!"
+            </div>
           </div>
-        )}
+        </GlassCard>
       </div>
 
       <style jsx>{`
-        .checkin-container {
-          max-width: 700px;
-          margin: 0 auto;
-          padding: 60px 24px;
-          display: flex;
-          flex-direction: column;
-          gap: 32px;
-          color: white;
+        .square-container { padding: 40px; display: flex; flex-direction: column; gap: 32px; }
+        .tag { color: var(--primary); font-weight: 900; }
+        .subtitle { color: var(--text-muted); margin-top: 8px; }
+        .checkin-grid { display: grid; grid-template-columns: 300px 1fr; gap: 24px; }
+        .calendar-box { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+        .checkin-btn { 
+          width: 100%; padding: 12px; background: var(--primary); color: black; 
+          border: none; border-radius: 8px; font-weight: 900; cursor: pointer;
         }
-
-        .checkin-header { display: flex; justify-content: space-between; align-items: flex-end; }
-        .checkin-header h1 { font-size: 2.2rem; font-weight: 950; letter-spacing: -1px; margin-bottom: 4px; }
-        .checkin-header p { color: #94a3b8; font-weight: 600; font-size: 1.1rem; }
-        .refresh-btn { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #94a3b8; cursor: pointer; transition: all 0.3s; }
-        .refresh-btn:hover { color: white; background: rgba(255,255,255,0.1); }
-
-        .input-card { padding: 32px; position: relative; overflow: hidden; border: 1px solid rgba(212, 175, 55, 0.2); }
-        .date-badge { 
-          display: inline-flex; align-items: center; gap: 6px; 
-          background: rgba(212, 175, 55, 0.1); color: var(--primary);
-          padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;
-          margin-bottom: 24px;
-        }
-        .user-greet { display: flex; gap: 16px; align-items: center; margin-bottom: 24px; }
-        .avatar-main { 
-          width: 56px; height: 56px; background: linear-gradient(135deg, #d4af37, #f9d976); 
-          border-radius: 18px; display: flex; align-items: center; justify-content: center;
-          color: black; font-size: 1.5rem; font-weight: 950;
-        }
-        .greet-text h2 { font-size: 1.25rem; font-weight: 900; margin-bottom: 2px; }
-        .greet-text p { color: #64748b; font-size: 0.9rem; font-weight: 600; }
-
-        .main-input-box { 
-          position: relative; background: rgba(0,0,0,0.2); 
-          border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.05);
-          transition: all 0.3s;
-        }
-        .main-input-box:focus-within { border-color: rgba(212, 175, 55, 0.5); background: rgba(0,0,0,0.3); }
-        textarea {
-          width: 100%; background: none; border: none; outline: none;
-          color: white; font-size: 1.1rem; font-weight: 600; line-height: 1.5;
-          resize: none; min-height: 80px; padding-right: 60px;
-        }
-        textarea::placeholder { color: #334155; }
-
-        .submit-btn {
-          position: absolute; right: 16px; bottom: 16px;
-          width: 48px; height: 48px; border-radius: 16px;
-          background: #1e293b; color: #475569; border: none;
-          display: flex; align-items: center; justify-content: center;
-          cursor: not-allowed; transition: all 0.3s;
-        }
-        .submit-btn.active { background: var(--primary); color: black; cursor: pointer; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3); }
-        .submit-btn.active:hover { transform: scale(1.05); }
-
-        .input-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
-        .streak-tag { display: flex; align-items: center; gap: 6px; color: #f59e0b; font-size: 0.85rem; font-weight: 800; }
-        .char-count { color: #475569; font-size: 0.8rem; font-weight: 700; }
-
-        .feed-section { display: flex; flex-direction: column; gap: 20px; }
-        .feed-title { display: flex; align-items: center; gap: 10px; padding-left: 8px; }
-        .feed-title h3 { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.5px; }
-
-        .loading-feed { text-align: center; padding: 60px; color: #475569; font-weight: 800; }
-
-        .feed-list { display: flex; flex-direction: column; gap: 12px; }
-        .feed-item {
-          display: flex; align-items: center; gap: 16px; padding: 20px;
-          background: rgba(255,255,255,0.02); border-radius: 20px;
-          border: 1px solid rgba(255,255,255,0.03); transition: all 0.3s;
-          animation: slideUp 0.5s ease backwards;
-        }
-        .feed-item:hover { transform: translateX(8px); background: rgba(255,255,255,0.04); border-color: rgba(212, 175, 55, 0.1); }
-        
-        .avatar-small {
-          width: 40px; height: 40px; background: rgba(255,255,255,0.05);
-          border-radius: 12px; display: flex; align-items: center; justify-content: center;
-          font-weight: 900; color: #94a3b8; font-size: 0.9rem;
-        }
-        .feed-item-content { flex: 1; }
-        .item-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
-        .username { font-weight: 800; font-size: 1rem; color: #f2f2f2; }
-        .time { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: #64748b; font-weight: 700; }
-        .comment { color: #94a3b8; font-size: 0.95rem; font-weight: 500; line-height: 1.4; }
-
-        .status-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5); }
-
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+        .streak-info { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #f59e0b; }
+        .quote-list { display: flex; flex-direction: column; gap: 16px; }
+        .quote-item { padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 0.9rem; }
+        .quote-item strong { color: var(--primary); margin-right: 8px; }
       `}</style>
     </div>
   );

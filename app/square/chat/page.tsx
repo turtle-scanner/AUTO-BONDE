@@ -12,8 +12,7 @@ import {
   Edit3, 
   Share2,
   Smile,
-  Image as ImageIcon,
-  RefreshCw
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface Comment {
@@ -34,63 +33,70 @@ interface Post {
   isMine: boolean;
 }
 
+const STORAGE_KEY = 'dragonfly_square_feed_v6_toss';
+
+const defaultPosts: Post[] = [
+  { 
+    id: 1, 
+    author: "본데", 
+    text: "오늘 에피소딕 피벗(EP) 발생한 종목들 흐름이 심상치 않네요. 사령관님 가이드대로 21일선 지지 확인하며 대응 중입니다. 다들 성투하세요! ☕", 
+    date: "오늘 오전 09:10", 
+    likes: 12, 
+    liked: false,
+    comments: [
+      { id: 101, author: "사령관", text: "본데님, 원칙 준수 아주 좋습니다. 거래량 실린 돌파 확인하세요!", date: "09:12" }
+    ],
+    isMine: false 
+  },
+  { 
+    id: 2, 
+    author: "사령관", 
+    text: "안티그래비티 사령부의 모든 시스템이 5월 4일 라이브 작전을 위해 최종 점검 중입니다. 대원 여러분, 준비되셨습니까? 🚀", 
+    date: "오늘 오전 10:30", 
+    likes: 45, 
+    liked: true,
+    comments: [],
+    isMine: true 
+  }
+];
+
 export default function SquareFeedPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [input, setInput] = useState('');
-  const [currentUser, setCurrentUser] = useState("??�댖?��?�땻?");
-  const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState("사령관");
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const user = sessionStorage.getItem("dragonfly_user") || "??�댖?��?�땻?";
+    const user = sessionStorage.getItem("dragonfly_user") || "사령관";
     setCurrentUser(user);
-    fetchPosts();
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) setPosts(JSON.parse(saved));
+    else setPosts(defaultPosts);
+    setLoaded(true);
   }, []);
 
-  const fetchPosts = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch('/v6-api/square-chat');
-      const data = await res.json();
-      setPosts(data);
-    } catch (err) {
-      console.error("Failed to fetch chat", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+  }, [posts, loaded]);
 
-  const saveToSvr = async (updated: Post[]) => {
-    try {
-      await fetch('/v6-api/square-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated)
-      });
-    } catch (err) {
-      console.error("Failed to save chat", err);
-    }
-  };
-
-  const handlePost = async () => {
+  const handlePost = () => {
     if (!input.trim()) return;
     const newPost: Post = {
       id: Date.now(),
       author: currentUser,
       text: input.trim(),
-      date: "?袁⑸?�泳�????,
+      date: "방금 전",
       likes: 0,
       liked: false,
       comments: [],
       isMine: true
     };
-    const newPosts = [newPost, ...posts];
-    setPosts(newPosts);
-    await saveToSvr(newPosts);
+    setPosts([newPost, ...posts]);
     setInput('');
   };
 
-  const handleLike = async (id: number) => {
-    const newPosts = posts.map(p => {
+  const handleLike = (id: number) => {
+    setPosts(posts.map(p => {
       if (p.id === id) {
         return { 
           ...p, 
@@ -99,16 +105,12 @@ export default function SquareFeedPage() {
         };
       }
       return p;
-    });
-    setPosts(newPosts);
-    await saveToSvr(newPosts);
+    }));
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm("?濡ろ????�궠�떛?繹먮?�援�??????筌뚯?�六�?濡ろ?�鴉�????�늾琉�?")) {
-      const newPosts = posts.filter(p => p.id !== id);
-      setPosts(newPosts);
-      await saveToSvr(newPosts);
+  const handleDelete = (id: number) => {
+    if (confirm("게시물을 삭제하시겠습니까?")) {
+      setPosts(posts.filter(p => p.id !== id));
     }
   };
 
@@ -116,12 +118,8 @@ export default function SquareFeedPage() {
     <div className="toss-feed-container animate-fade-in">
       {/* Header */}
       <div className="feed-header">
-        <div className="header-left">
-          <h1>??�댖?�뺣?�野�? ??�뫗�꺍??/h1>
-          <p>?????�뤃???????????�넭?�ｋ�?????�끇?��?????寃뗏�???��?�벚�돹??筌뚯뼚��??</p>
-        </div>
-        <button className="sync-btn glass" onClick={fetchPosts} disabled={isLoading}>
-          <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} /> ???�쉵?��??        </button>
+        <h1>사령부 광장</h1>
+        <p>대원들과 자유롭게 전술을 공유하고 소통하세요.</p>
       </div>
 
       {/* Input Section */}
@@ -129,79 +127,76 @@ export default function SquareFeedPage() {
         <div className="input-top">
           <div className="avatar">{currentUser[0]}</div>
           <textarea 
-            placeholder={`${currentUser} ?????筌�? ??�뮆�깓????�뙴�?��??????寃뗏�???節??��??�슦?��???`}
+            placeholder={`${currentUser} 대원님, 무슨 생각을 하고 계신가요?`}
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
         </div>
         <div className="input-bottom">
           <div className="tools">
-            <button className="tool-btn"><ImageIcon size={20} /> ??�?��?/button>
-            <button className="tool-btn"><Smile size={20} /> ?????�슣??</button>
+            <button className="tool-btn"><ImageIcon size={20} /> 사진</button>
+            <button className="tool-btn"><Smile size={20} /> 이모지</button>
           </div>
           <button 
             className={`post-btn ${input.trim() ? 'active' : ''}`}
             onClick={handlePost}
             disabled={!input.trim()}
           >
-            ???��??���?          </button>
+            올리기
+          </button>
         </div>
       </GlassCard>
 
       {/* Feed List */}
       <div className="feed-list">
-        {isLoading ? (
-          <div className="loading-state">??�뫗�꺍?????筌�??棺�룱獒뺣끋��?濚�?..</div>
-        ) : (
-          posts.map((post) => (
-            <GlassCard key={post.id} className="post-card">
-              <div className="post-top">
-                <div className="post-author">
-                  <div className="avatar-small">{post.author[0]}</div>
-                  <div className="author-info">
-                    <span className="name">{post.author}</span>
-                    <span className="date">{post.date}</span>
-                  </div>
+        {posts.map((post) => (
+          <GlassCard key={post.id} className="post-card">
+            <div className="post-top">
+              <div className="post-author">
+                <div className="avatar-small">{post.author[0]}</div>
+                <div className="author-info">
+                  <span className="name">{post.author}</span>
+                  <span className="date">{post.date}</span>
                 </div>
-                {(post.isMine || currentUser === "??�댖?��?�땻?") && (
-                  <button className="more-btn" onClick={() => handleDelete(post.id)}>
-                    <Trash2 size={18} className="icon-muted" />
-                  </button>
-                )}
               </div>
-
-              <div className="post-text">{post.text}</div>
-
-              <div className="post-actions">
-                <button 
-                  className={`action-btn ${post.liked ? 'liked' : ''}`}
-                  onClick={() => handleLike(post.id)}
-                >
-                  <Heart size={18} fill={post.liked ? "#3182f6" : "none"} />
-                  {post.likes}
+              {post.isMine && (
+                <button className="more-btn" onClick={() => handleDelete(post.id)}>
+                  <Trash2 size={18} className="icon-muted" />
                 </button>
-                <button className="action-btn">
-                  <MessageCircle size={18} />
-                  {post.comments.length}
-                </button>
-                <button className="action-btn">
-                  <Share2 size={18} />
-                </button>
-              </div>
-
-              {post.comments.length > 0 && (
-                <div className="comments-area">
-                  {post.comments.map(c => (
-                    <div key={c.id} className="comment-item">
-                      <span className="c-author">{c.author}</span>
-                      <span className="c-text">{c.text}</span>
-                    </div>
-                  ))}
-                </div>
               )}
-            </GlassCard>
-          ))
-        )}
+            </div>
+
+            <div className="post-text">{post.text}</div>
+
+            <div className="post-actions">
+              <button 
+                className={`action-btn ${post.liked ? 'liked' : ''}`}
+                onClick={() => handleLike(post.id)}
+              >
+                <Heart size={18} fill={post.liked ? "#3182f6" : "none"} />
+                {post.likes}
+              </button>
+              <button className="action-btn">
+                <MessageCircle size={18} />
+                {post.comments.length}
+              </button>
+              <button className="action-btn">
+                <Share2 size={18} />
+              </button>
+            </div>
+
+            {post.comments.length > 0 && (
+              <div className="comments-area">
+                {post.comments.map(c => (
+                  <div key={c.id} className="comment-item">
+                    <span className="c-author">{c.author}</span>
+                    <span className="c-text">{c.text}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </GlassCard>
+        ))}
       </div>
 
       <style jsx>{`
@@ -215,10 +210,8 @@ export default function SquareFeedPage() {
           color: white;
         }
 
-        .feed-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .feed-header h1 { font-size: 1.8rem; font-weight: 950; }
+        .feed-header h1 { font-size: 1.8rem; font-weight: 950; margin-bottom: 8px; }
         .feed-header p { color: #94a3b8; font-weight: 600; }
-        .sync-btn { background: none; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 800; }
 
         .feed-input-card { padding: 24px; border: 1px solid rgba(255,255,255,0.05); }
         .input-top { display: flex; gap: 16px; margin-bottom: 20px; }
@@ -285,7 +278,6 @@ export default function SquareFeedPage() {
         .c-author { font-weight: 800; color: #3182f6; }
         .c-text { color: #94a3b8; }
 
-        .loading-state { padding: 60px; text-align: center; color: #4e5968; font-weight: 800; }
         .icon-muted { color: #4e5968; }
       `}</style>
     </div>

@@ -24,14 +24,15 @@ interface Ranker {
   winRate: number;
 }
 
-// ?縕�??�녿?????��?媛앲?? ?�ル??��?�泳����????????縕�??�녿?????�?��?�堉�?1,000?�ル??���????��?���큔 ??筌�??�援�?const rankers: Ranker[] = [
-  { id: 1, name: "?�넭?�ｋ쳛���????�뚮?�筌�??, type: "AI", yield: 0.0, bestStock: "Ready...", winRate: 0 },
+// 초기화 상태: 모든 랭커는 초기 자본금 1,000만원으로 시작
+const rankers: Ranker[] = [
+  { id: 1, name: "프라딥 본데", type: "AI", yield: 0.0, bestStock: "Ready...", winRate: 0 },
   { id: 2, name: "cntfed", type: "MEMBER", yield: 0.0, bestStock: "Ready...", winRate: 0 },
-  { id: 3, name: "?�ル??���?�뎽移�??��?�뗪?�筌��?�紐�?�뫖�몡�넭?�ｋ���뜮?, type: "AI", yield: 0.0, bestStock: "Ready...", winRate: 0 },
+  { id: 3, name: "마크 미너비니", type: "AI", yield: 0.0, bestStock: "Ready...", winRate: 0 },
   { id: 4, name: "hjrubbi", type: "MEMBER", yield: 0.0, bestStock: "Ready...", winRate: 0 },
-  { id: 5, name: "???�걡?????�끂�뒊", type: "AI", yield: 0.0, bestStock: "Ready...", winRate: 0 },
+  { id: 5, name: "윌리엄 오닐", type: "AI", yield: 0.0, bestStock: "Ready...", winRate: 0 },
   { id: 6, name: "fire33", type: "MEMBER", yield: 0.0, bestStock: "Ready...", winRate: 0 },
-  { id: 7, name: "???袁ⓓ�????嶺뚮?��뫊獒�??筌�??��??, type: "AI", yield: 0.0, bestStock: "Ready...", winRate: 0 },
+  { id: 7, name: "스탠 와인스태인", type: "AI", yield: 0.0, bestStock: "Ready...", winRate: 0 },
   { id: 8, name: "sebinhi", type: "MEMBER", yield: 0.0, bestStock: "Ready...", winRate: 0 },
 ];
 
@@ -44,14 +45,14 @@ export default function StrategyPerformance() {
       {/* Header */}
       <div className="award-header">
         <h1 className="main-title">
-          <Trophy size={48} className="gold-icon" /> [ ???????�넭?�ｋ굻��????筌뚯뼔彛�?]
+          <Trophy size={48} className="gold-icon" /> [ 이달의 전리품 수상 ]
         </h1>
-        <p className="sub-title">2026??5??- AI ???�먯??????嶺뚮Ĳ�걠�뤃???????�몴?�룸????�ル??��?���????�넭?�ｋ���젆?/p>
+        <p className="sub-title">2026년 5월 - AI 요원 및 정예 대원 수익률 명예의 전당</p>
         
-        {/* 1000?�ル??���?????????�ル??��?���??*/}
+        {/* 1000만원 원칙 명시 */}
         <div className="simulation-rule-badge glass">
           <ShieldCheck size={16} className="gold" />
-          <span>?�ル??��?�泳����????????縕�??�녿?????�?��?�堉�?<strong>1,000?�ル??���???/strong>??��?���큔 ???�맧�럡???�슦踰� ??筌�??�援�??筌�????�뜮??</span>
+          <span>모든 랭커는 초기 자본금 <strong>1,000만원</strong>으로 동일하게 시작되었습니다.</span>
         </div>
       </div>
 
@@ -64,7 +65,7 @@ export default function StrategyPerformance() {
             <div className="avatar-box silver-border">{top3[1].name[0]}</div>
             <h3 className="rank-name">{top3[1].name}</h3>
             <div className="rank-yield">{top3[1].yield.toFixed(2)}%</div>
-            <div className="rank-label">?�넭?�κ데??????濚�?/div>
+            <div className="rank-label">전투 대기 중</div>
           </div>
           <div className="base silver-base">2</div>
         </div>
@@ -76,7 +77,7 @@ export default function StrategyPerformance() {
             <div className="avatar-box gold-border">{top3[0].name[0]}</div>
             <h3 className="rank-name gold-text">{top3[0].name}</h3>
             <div className="rank-yield gold-text">{top3[0].yield.toFixed(2)}%</div>
-            <div className="rank-label gold-text">?�넭?�κ데??????濚�?/div>
+            <div className="rank-label gold-text">전투 대기 중</div>
             <div className="sparkle-effects">
               <Sparkles className="s1" size={16} />
               <Sparkles className="s2" size={12} />
@@ -92,7 +93,7 @@ export default function StrategyPerformance() {
             <div className="avatar-box bronze-border">{top3[2].name[0]}</div>
             <h3 className="rank-name">{top3[2].name}</h3>
             <div className="rank-yield">{top3[2].yield.toFixed(2)}%</div>
-            <div className="rank-label">?�넭?�κ데??????濚�?/div>
+            <div className="rank-label">전투 대기 중</div>
           </div>
           <div className="base bronze-base">3</div>
         </div>
@@ -101,15 +102,15 @@ export default function StrategyPerformance() {
       {/* Leaderboard Grid */}
       <div className="leaderboard-layout">
         <GlassCard className="leaderboard-card">
-          <h3 className="section-title"><Award size={20} className="gold" /> ?�넭?�ｋ�?????��?(Total Rankings)</h3>
+          <h3 className="section-title"><Award size={20} className="gold" /> 전체 랭킹 (Total Rankings)</h3>
           <div className="rank-table">
             <div className="table-header">
-              <span>??筌�??�彛�?/span>
-              <span>????AI</span>
-              <span>??�꺂履뉑�?/span>
-              <span>?�ル?��걠獒�???�몴?�룸???�꺁�꼤??/span>
-              <span>?�뛾�룆�?��??/span>
-              <span>??�몴?�룸???/span>
+              <span>순위</span>
+              <span>대원/AI</span>
+              <span>유형</span>
+              <span>최고수익종목</span>
+              <span>승률</span>
+              <span>수익률</span>
             </div>
             {rankers.map((r, i) => (
               <div key={r.id} className="table-row">
@@ -129,21 +130,21 @@ export default function StrategyPerformance() {
           <GlassCard className="mini-stat">
             <div className="m-icon"><Star size={20} className="gold" /></div>
             <div className="m-info">
-              <span className="m-label">?�ル?��걠獒�????�넭?�ｋ�?���琉�?�럾��</span>
+              <span className="m-label">최고의 전술가</span>
               <span className="m-val">TBD</span>
             </div>
           </GlassCard>
           <GlassCard className="mini-stat">
             <div className="m-icon"><Target size={20} className="gold" /></div>
             <div className="m-info">
-              <span className="m-label">?�ル?��걠獒�???????????/span>
+              <span className="m-label">최다 익절 대원</span>
               <span className="m-val">TBD</span>
             </div>
           </GlassCard>
           <GlassCard className="mini-stat bg-gold-tint">
             <div className="m-icon"><ArrowUpRight size={20} className="gold" /></div>
             <div className="m-info">
-              <span className="m-label">???????�몴?�룸???/span>
+              <span className="m-label">평균 수익률</span>
               <span className="m-val">0.00%</span>
             </div>
           </GlassCard>

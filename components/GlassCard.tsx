@@ -7,11 +7,12 @@ interface GlassCardProps {
   children: React.ReactNode;
   className?: string;
   title?: string;
+  icon?: React.ReactNode;
   hoverable?: boolean;
   onClick?: () => void;
 }
 
-const GlassCard: React.FC<GlassCardProps> = ({ children, className = "", title, hoverable = true, onClick }) => {
+const GlassCard: React.FC<GlassCardProps> = ({ children, className = "", title, icon, hoverable = true, onClick }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -22,7 +23,12 @@ const GlassCard: React.FC<GlassCardProps> = ({ children, className = "", title, 
       onClick={onClick}
       style={onClick ? { cursor: 'pointer' } : {}}
     >
-      {title && <span className="card-title">{title}</span>}
+      {title && (
+        <div className="glass-card-header">
+          {icon && <span className="card-icon">{icon}</span>}
+          <h3>{title}</h3>
+        </div>
+      )}
       {children}
     </motion.div>
   );

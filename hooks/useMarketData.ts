@@ -3,54 +3,37 @@
 import { useState, useEffect, useRef } from 'react';
 
 export function useMarketData() {
-  const [marketState, setMarketState] = useState<{
-    data: any[];
-    lastUpdate: string;
-    isConnected: boolean;
-  }>({
-    data: [],
-    lastUpdate: "",
-    isConnected: false,
-  });
-
+  const [data, setData] = useState<any[]>([]);
+  const [lastUpdate, setLastUpdate] = useState<string>("");
+  const [isConnected, setIsConnected] = useState(false);
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
+    // Connect to the FastAPI WebSocket
+    // Note: In production, this would be your server's URL
     const connect = () => {
       if (typeof window === 'undefined' || !window.WebSocket) return;
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const host = window.location.hostname === 'localhost' ? 'localhost:8000' : 'stockdragonfly.cloud';
-      
-      if (ws.current) {
-        ws.current.close();
-      }
-
       ws.current = new WebSocket(`${protocol}//${host}/ws/market`);
 
       ws.current.onopen = () => {
         console.log("WebSocket Connected");
-        setMarketState(prev => ({ ...prev, isConnected: true }));
+        setIsConnected(true);
       };
 
       ws.current.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          if (message.type === 'MARKET_UPDATE') {
-            setMarketState(prev => ({
-              ...prev,
-              data: message.data,
-              lastUpdate: message.timestamp
-            }));
-          }
-        } catch (err) {
-          console.error("Data Parsing Error:", err);
+        const message = JSON.parse(event.data);
+        if (message.type === 'MARKET_UPDATE') {
+          setData(message.data);
+          setLastUpdate(message.timestamp);
         }
       };
 
       ws.current.onclose = () => {
         console.log("WebSocket Disconnected. Retrying...");
-        setMarketState(prev => ({ ...prev, isConnected: false }));
-        setTimeout(connect, 5000); 
+        setIsConnected(false);
+        setTimeout(connect, 3000); // Reconnect after 3s
       };
 
       ws.current.onerror = (err) => {
@@ -62,15 +45,9 @@ export function useMarketData() {
     connect();
 
     return () => {
-      if (ws.current) {
-        ws.current.close();
-      }
+      ws.current?.close();
     };
   }, []);
 
-  return { 
-    data: marketState.data, 
-    lastUpdate: marketState.lastUpdate, 
-    isConnected: marketState.isConnected 
-  };
+  return { data, lastUpdate, isConnected };
 }
