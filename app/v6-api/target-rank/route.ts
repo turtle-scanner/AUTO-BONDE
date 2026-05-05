@@ -1,0 +1,29 @@
+import { NextResponse } from 'next/server';
+
+const mockRankData = {
+  KOSPI: [
+    { ticker: '??ç¹¹ë¨­?”ï¿½??ï¿½ë„­?¨ï½‹ì³??, rs: 82, roe: 14.5, score: 92, industry: '?è¢â‘¸ì¦µï¿½ëª?¿½?£ï¿½?€?¬ê³ê³·ì? },
+    { ticker: 'SK??ï¿½ëª´?¨ë£»ê¼??ç¹¹ë¨®êµï§¥ï¿?, rs: 95, roe: 18.2, score: 98, industry: '?è¢â‘¸ì¦µï¿½ëª?¿½?£ï¿½?€?¬ê³ê³·ì? },
+    { ticker: '?ï¿½ë„­??²ï¿½?, rs: 88, roe: 12.1, score: 89, industry: '???ç­Œìšï¿½ãƒ?? },
+    { ticker: '?ï¿½êºï¿½ì??ç¯€?°ë??, rs: 91, roe: 15.4, score: 91, industry: '???ç­Œìšï¿½ãƒ?? },
+    { ticker: 'LG?????’ã‚Œ???‰ì˜¨ï¿???‰ë¨®????, rs: 45, roe: 5.2, score: 42, industry: '2?²ãƒ«?“å ‰ê³ë•Ÿ??ï¿½ë²Š??' },
+  ],
+  KOSDAQ: [
+    { ticker: '???ç­Œï¿½?ï¿½ë„­?¨ï½‹ì³›é¸šï¿???ï¿½ë–§?´ï¿½?, rs: 38, roe: 8.5, score: 35, industry: '2?²ãƒ«?“å ‰ê³ë•Ÿ??ï¿½ë²Š??' },
+    { ticker: '??ï¿½ï¿½?¤ë¬œï¿½ï¿½???æºë†ì£?, rs: 98, roe: 12.4, score: 96, industry: '?è¢â‘¸ì¦???? },
+    { ticker: 'HLB', rs: 92, roe: 4.5, score: 82, industry: '?è¢â‘¸ì¦???? },
+    { ticker: '???‰ë¨¯??¿½??, rs: 94, roe: 10.1, score: 88, industry: '2?²ãƒ«?“å ‰ê³ë•Ÿ??ï¿½ë²Š??' },
+    { ticker: '??Ÿë°¸Å¦ï§ã©ì³??ï¿½ë‡?¡ëŒì«?, rs: 85, roe: 28.5, score: 94, industry: '?è¢â‘¸ì¦µï¿½ëª?¿½?£ï¿½?€?¬ê³ê³·ì? },
+  ],
+  NASDAQ: [
+    { ticker: 'NVDA', rs: 99, roe: 91.2, score: 99, industry: 'AI/Semicon' },
+    { ticker: 'AMD', rs: 85, roe: 12.4, score: 84, industry: 'Semicon' },
+    { ticker: 'SMCI', rs: 96, roe: 45.2, score: 97, industry: 'AI Server' },
+    { ticker: 'META', rs: 92, roe: 28.1, score: 93, industry: 'Social/AI' },
+    { ticker: 'MSFT', rs: 88, roe: 38.5, score: 90, industry: 'Cloud/AI' },
+  ]
+};
+
+export async function GET() {
+  return NextResponse.json(mockRankData);
+}

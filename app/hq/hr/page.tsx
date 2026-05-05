@@ -7,19 +7,18 @@ import { PERMANENT_MEMBERS, Member } from '@/constants/members';
 
 export default function HRDepartment() {
   const staffStats = [
-    { label: "전체 대원", val: "7", icon: <Users size={20} />, color: "#0ea5e9" },
-    { label: "신규 임관", val: "+1", icon: <UserPlus size={20} />, color: "#10b981" },
-    { label: "훈장 수여자", val: "1", icon: <Award size={20} />, color: "#fbbf24" },
-    { label: "작전 투입중", val: "7", icon: <Briefcase size={20} />, color: "#ff0055" }
+    { label: "?�넭?�ｋ�??????, val: "7", icon: <Users size={20} />, color: "#0ea5e9" },
+    { label: "??�꺂留�???�넭?", val: "+1", icon: <UserPlus size={20} />, color: "#10b981" },
+    { label: "???源녾????筌뚯??���??, val: "1", icon: <Award size={20} />, color: "#fbbf24" },
+    { label: "??�뼔???????�뜮?, val: "7", icon: <Briefcase size={20} />, color: "#ff0055" }
   ];
 
   return (
     <div className="hr-container animate-fade-in">
       <div className="hr-header">
         <h1 className="hr-title">
-          <Briefcase size={32} className="title-icon" /> [ HR ] 본부 인적자원부
-        </h1>
-        <p className="hr-subtitle">본대 대원들의 인적 자원 관리 및 복무 기록을 총괄하는 중앙 부서입니다.</p>
+          <Briefcase size={32} className="title-icon" /> [ HR ] ??�뚮?�筌�? ?嶺뚮?���??????�걡?�떷�?        </h1>
+        <p className="hr-subtitle">??�뚮?�筌�? ?????�뤃???嶺뚮?���?????????�돮��??????�뚮?�甕곕맮夷� ?�꺁��??�뼺??��???�뿙�뜮????�▲꺂痢�?濚욌꼬�궡��???�걡?�떷�??筌�??���???�뜄�렡.</p>
       </div>
 
       <div className="stats-grid">
@@ -35,17 +34,17 @@ export default function HRDepartment() {
       </div>
 
       <div className="hr-main-grid">
-        <GlassCard title="진급 예정자 명단 (Promotion Queue)" className="promotion-card">
+        <GlassCard title="?�ル?��???????源놁????�ル??��?���??(Promotion Queue)" className="promotion-card">
           <div className="promotion-info-box">
             <TrendingUp size={16} className="gold" />
-            <span>활동 게시물 (+10pt) | 일일 접속 (+5pt) | 실전 수익 공유 (+50pt)</span>
+            <span>??筌먲?�彛�??濡ろ????�궠�떛?(+10pt) | ??繹먮?��????�뼔?�댆?(+5pt) | ???源놁�???�몴?�룸????�끇?��?? (+50pt)</span>
           </div>
           <div className="promotion-list">
-            {PERMANENT_MEMBERS.filter(m => m.rank !== '방장').map((p, i) => (
+            {PERMANENT_MEMBERS.filter(m => m.rank !== '?袁⑸?�泳�??).map((p, i) => (
               <div key={i} className="promotion-item">
                 <div className="p-info">
                   <span className="p-id">{p.id}</span>
-                  <span className="p-route">{p.rank} → 정예요원</span>
+                  <span className="p-route">{p.rank} ???嶺뚮Ĳ�걠�뤃???�먯???/span>
                 </div>
                 <div className="p-bar-bg">
                   <div className="p-bar-fill" style={{ width: `${((p.points || 0) / 1000) * 100}%` }}></div>
@@ -59,12 +58,12 @@ export default function HRDepartment() {
           </div>
         </GlassCard>
 
-        <GlassCard title="본부 인적자원 시스템 갱신" className="record-card">
+        <GlassCard title="??�뚮?�筌�? ?嶺뚮?���????????筌�?痢�???�씈?��??? className="record-card">
           <div className="record-list">
             {[
-              { date: "2026-05-03", msg: "사령관 특별 지시: 전 대원 진급 게이지 1,000pt 체제로 개편 및 초기화 완료" },
-              { date: "2026-05-03", msg: "활동 포인트 실시간 연동 시스템 가동 시작" },
-              { date: "2026-05-03", msg: "신규 명단: fire33, sebinhi, popsong98 외 2명 기여도 측정 시작" }
+              { date: "2026-05-03", msg: "??�댖?��?�땻? ?�뛾�룆�?��???�ル?��???? ???????�ル?��?????濡ろ???�넫?��?? 1,000pt ?�ル?���??影��냱?��??�씈?�뉓�?????縕�??�녿????�넭?�ｋ�?? },
+              { date: "2026-05-03", msg: "??筌먲?�彛�??????????�뺣�????��?踰좑�???筌�?痢�???�씈�읈?????筌�??�援�? },
+              { date: "2026-05-03", msg: "??�꺂留�???�ル??��?���?? fire33, sebinhi, popsong98 ??2?��??�꺁��??節?�덩???�ル?����?��????筌�??�援�? }
             ].map((r, i) => (
               <div key={i} className="record-item">
                 <span className="record-date">{r.date}</span>

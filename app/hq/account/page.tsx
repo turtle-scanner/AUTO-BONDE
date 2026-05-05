@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import GlassCard from '@/components/GlassCard';
 import { 
   Wallet, 
@@ -12,299 +12,213 @@ import {
   ArrowUpRight, 
   ArrowDownRight,
   MoreVertical,
-  Briefcase
+  Briefcase,
+  User,
+  Cpu,
+  RefreshCw
 } from 'lucide-react';
-import Link from 'next/link';
+
+interface Trade {
+  user: string;
+  ticker: string;
+  market: string;
+  price: number;
+  qty: number;
+  type: string;
+  date: string;
+}
 
 export default function HQAccountDashboard() {
-  // 샘플 데이터 (나중에 API 연동 예정)
-  const portfolio = [
-    { symbol: 'NVDA', name: 'Nvidia Corp', qty: 15, avgPrice: 850.50, currentPrice: 924.79, pnl: 8.7, value: 13871.85 },
-    { symbol: 'TSLA', name: 'Tesla Inc', qty: 50, avgPrice: 185.00, currentPrice: 178.45, pnl: -3.5, value: 8922.50 },
-    { symbol: 'AAPL', name: 'Apple Inc', qty: 25, avgPrice: 172.20, currentPrice: 183.32, pnl: 6.4, value: 4583.00 },
-    { symbol: 'MSFT', name: 'Microsoft Corp', qty: 10, avgPrice: 395.00, currentPrice: 406.32, pnl: 2.8, value: 4063.20 },
-  ];
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAllTrades();
+  }, []);
+
+  const fetchAllTrades = async () => {
+    setLoading(true);
+    try {
+      // In a real app, this would be a dedicated admin API
+      const res = await fetch('/v6-api/mock-trading?all=true'); 
+      const data = await res.json();
+      // Since our current GET only returns for one user, I'll assume we can get all if admin
+      // For now, let's use the trades from the API (I'll need to update the API too)
+      if (data.trades) setTrades(data.trades);
+    } catch (err) {
+      console.error("Failed to fetch all trades", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Group by User and Ticker
+  const aggregateAssets = () => {
+    const assets: Record<string, any> = {};
+    
+    // Add some mock AI trades for demonstration as requested
+    const mockAITrades = [
+      { user: 'AI(O\'Neil)', ticker: 'NVDA', market: 'US', price: 850, qty: 10, type: 'BUY', date: '2024-05-01' },
+      { user: 'AI(Minervini)', ticker: 'AAPL', market: 'US', price: 170, qty: 50, type: 'BUY', date: '2024-05-02' },
+      { user: 'AI(Bonde)', ticker: '??繹먭?��??�넭?�ｋ�??, market: 'KR', price: 78000, qty: 100, type: 'BUY', date: '2024-05-03' }
+    ];
+
+    const allTrades = [...trades, ...mockAITrades];
+
+    allTrades.forEach(t => {
+      const key = `${t.user}-${t.ticker}`;
+      if (!assets[key]) {
+        assets[key] = { 
+          owner: t.user, 
+          ticker: t.ticker, 
+          market: t.market, 
+          qty: 0, 
+          avgPrice: 0,
+          isAI: t.user.startsWith('AI(')
+        };
+      }
+      if (t.type === 'BUY') {
+        const cost = (assets[key].avgPrice * assets[key].qty) + (t.price * t.qty);
+        assets[key].qty += t.qty;
+        assets[key].avgPrice = cost / assets[key].qty;
+      } else {
+        assets[key].qty -= t.qty;
+      }
+    });
+
+    return Object.values(assets).filter(a => a.qty > 0);
+  };
+
+  const assetList = aggregateAssets();
+  const totalValue = assetList.reduce((acc, a) => acc + (a.qty * a.avgPrice * (a.market === 'US' ? 1400 : 1)), 0);
 
   return (
     <div className="hq-account-container animate-fade-in">
-      {/* Header */}
       <div className="hq-header">
         <div className="header-info">
           <h1 className="hq-title">
-            <Wallet className="title-icon" /> HQ ACCOUNT CENTER
-          </h1>
-          <p className="hq-subtitle">사령부 통합 자산 및 포트폴리오 관리 센터입니다.</p>
+            <Briefcase className="title-icon" /> [ PORTFOLIO ] ??????????�ル??��?�泳�戮?�뭄?          </h1>
+          <p className="hq-subtitle">?�넭?�ｋ�?????????AI ???�먯?????源낃??????�뺣�????????�넭?�κ덱????�굝�돲??</p>
         </div>
-        <div className="security-badge">
-          <ShieldCheck size={16} /> SECURITY LEVEL: PLATINUM
-        </div>
+        <button className="refresh-btn" onClick={fetchAllTrades}>
+          <RefreshCw size={18} className={loading ? 'animate-spin' : ''} /> SYNC DATA
+        </button>
       </div>
 
-      {/* Main Stats */}
       <div className="stats-grid">
         <GlassCard className="stat-card primary-stat">
-          <div className="stat-label">TOTAL ASSET VALUE</div>
-          <div className="stat-value">$124,582.45</div>
+          <div className="stat-label">TOTAL ECOSYSTEM VALUE</div>
+          <div className="stat-value">??{totalValue.toLocaleString()}</div>
           <div className="stat-change positive">
-            <TrendingUp size={16} /> +2.45% (+$2,940.12) <span className="label">Today</span>
+            <TrendingUp size={16} /> LIVE <span className="label">Ecosystem Tracking</span>
           </div>
         </GlassCard>
 
         <GlassCard className="stat-card">
-          <div className="stat-label">BUYING POWER</div>
-          <div className="stat-value">$42,850.00</div>
-          <div className="stat-footer">Available for immediate trade</div>
+          <div className="stat-label">ACTIVE POSITIONS</div>
+          <div className="stat-value">{assetList.length} Units</div>
+          <div className="stat-footer">Across all members & AI agents</div>
         </GlassCard>
 
         <GlassCard className="stat-card">
-          <div className="stat-label">TOTAL P/L</div>
-          <div className="stat-value positive">+$18,245.50</div>
-          <div className="stat-footer">All-time realized & unrealized</div>
+          <div className="stat-label">AI AGENT COVERAGE</div>
+          <div className="stat-value">100%</div>
+          <div className="stat-footer">Tactical surveillance active</div>
         </GlassCard>
       </div>
 
-      {/* Content Grid */}
       <div className="content-grid">
-        {/* Left: Positions */}
         <div className="positions-section">
           <div className="section-header">
-            <h3><Briefcase size={20} /> ACTIVE POSITIONS</h3>
-            <button className="btn-text">View All</button>
+            <h3><Briefcase size={20} className="gold" /> ???? ???????��?�늾???�넭?�κ덱??/h3>
+            <div className="filter-tabs">
+              <span className="tab active">ALL</span>
+              <span className="tab">MEMBERS</span>
+              <span className="tab">AI AGENTS</span>
+            </div>
           </div>
           
           <div className="positions-list">
-            {portfolio.map((stock) => (
-              <div key={stock.symbol} className="position-item">
-                <div className="stock-info">
-                  <div className="stock-symbol">{stock.symbol}</div>
-                  <div className="stock-name">{stock.name}</div>
-                </div>
-                <div className="stock-price">
-                  <div className="curr-price">${stock.currentPrice}</div>
-                  <div className="avg-price">Avg: ${stock.avgPrice}</div>
-                </div>
-                <div className={`stock-pnl ${stock.pnl >= 0 ? 'positive' : 'negative'}`}>
-                  {stock.pnl >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-                  {Math.abs(stock.pnl)}%
-                </div>
-                <div className="stock-value">
-                  <div className="val-amount">${stock.value.toLocaleString()}</div>
-                  <div className="val-qty">{stock.qty} Shares</div>
-                </div>
-                <button className="item-action"><MoreVertical size={16} /></button>
-              </div>
-            ))}
+            <table className="unified-table">
+              <thead>
+                <tr>
+                  <th>OWNER</th>
+                  <th>ASSET</th>
+                  <th>QTY</th>
+                  <th>AVG ENTRY</th>
+                  <th>MARKET</th>
+                  <th>VALUATION (KRW)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {assetList.map((asset, i) => (
+                  <tr key={i} className={asset.isAI ? 'ai-row' : ''}>
+                    <td>
+                      <div className="owner-cell">
+                        {asset.isAI ? <Cpu size={14} className="gold" /> : <User size={14} className="muted" />}
+                        <span className={asset.isAI ? 'ai-name' : ''}>{asset.owner}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="ticker-cell">
+                        <span className="t-name">{asset.ticker}</span>
+                      </div>
+                    </td>
+                    <td>{asset.qty}</td>
+                    <td>{asset.market === 'US' ? '$' : '??}{asset.avgPrice.toLocaleString()}</td>
+                    <td><span className={`m-tag ${asset.market.toLowerCase()}`}>{asset.market}</span></td>
+                    <td className="val-cell">
+                      ??{(asset.qty * asset.avgPrice * (asset.market === 'US' ? 1400 : 1)).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
-
-        {/* Right: Asset Allocation & Activity */}
-        <div className="side-section">
-          <GlassCard className="allocation-card">
-            <h3><PieChart size={20} /> ASSET ALLOCATION</h3>
-            <div className="chart-placeholder">
-              {/* Simple CSS Chart Representation */}
-              <div className="chart-ring">
-                <div className="ring-center">
-                  <span className="center-val">65%</span>
-                  <span className="center-label">Stocks</span>
-                </div>
-              </div>
-              <div className="chart-legend">
-                <div className="legend-item"><span className="dot stocks"></span> Stocks (65%)</div>
-                <div className="legend-item"><span className="dot cash"></span> Cash (32%)</div>
-                <div className="legend-item"><span className="dot crypto"></span> Crypto (3%)</div>
-              </div>
-            </div>
-          </GlassCard>
-
-          <GlassCard className="activity-card">
-            <h3><Clock size={20} /> RECENT ACTIVITY</h3>
-            <div className="activity-list">
-              <div className="activity-item">
-                <div className="act-icon buy">B</div>
-                <div className="act-content">
-                  <div className="act-title">Bought 5 NVDA</div>
-                  <div className="act-time">2 hours ago</div>
-                </div>
-              </div>
-              <div className="activity-item">
-                <div className="act-icon sell">S</div>
-                <div className="act-content">
-                  <div className="act-title">Sold 10 AAPL</div>
-                  <div className="act-time">Yesterday</div>
-                </div>
-              </div>
-            </div>
-          </GlassCard>
         </div>
       </div>
 
       <style jsx>{`
-        .hq-account-container {
-          padding: 30px;
-          display: flex;
-          flex-direction: column;
-          gap: 30px;
-          color: white;
-        }
+        .hq-account-container { padding: 30px; display: flex; flex-direction: column; gap: 30px; color: white; }
+        .hq-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .hq-title { font-size: 2rem; font-weight: 900; display: flex; align-items: center; gap: 12px; letter-spacing: -1px; }
+        .title-icon { color: var(--primary); }
+        .hq-subtitle { color: var(--text-muted); margin-top: 4px; font-weight: 600; }
 
-        .hq-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-        }
+        .refresh-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 20px; border-radius: 8px; font-weight: 800; display: flex; align-items: center; gap: 10px; cursor: pointer; }
 
-        .hq-title {
-          font-size: 2rem;
-          font-weight: 900;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          letter-spacing: -1px;
-        }
-
-        .title-icon { color: var(--gold-400); }
-        .hq-subtitle { color: var(--text-muted); margin-top: 4px; }
-
-        .security-badge {
-          background: rgba(212, 175, 55, 0.1);
-          color: var(--gold-400);
-          padding: 6px 12px;
-          border-radius: 20px;
-          font-size: 0.75rem;
-          font-weight: 800;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          border: 1px solid rgba(212, 175, 55, 0.2);
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-          display: grid;
-          grid-template-columns: 1.5fr 1fr 1fr;
-          gap: 20px;
-        }
-
-        .stat-card { padding: 24px; position: relative; }
-        .primary-stat { background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(0, 0, 0, 0) 100%); border: 1px solid rgba(212, 175, 55, 0.3); }
-
-        .stat-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; margin-bottom: 8px; }
-        .stat-value { font-size: 2.2rem; font-weight: 900; margin-bottom: 12px; letter-spacing: -1px; }
-        .stat-change { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.9rem; }
+        .stats-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 20px; }
+        .stat-card { padding: 24px; }
+        .primary-stat { border: 1px solid rgba(212, 175, 55, 0.3); background: rgba(212, 175, 55, 0.05); }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 800; margin-bottom: 10px; }
+        .stat-value { font-size: 2.2rem; font-weight: 900; margin-bottom: 12px; letter-spacing: -1px; color: var(--primary); }
+        .stat-change { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 800; }
         .stat-change.positive { color: #10b981; }
-        .stat-change.negative { color: #ef4444; }
-        .stat-footer { font-size: 0.85rem; color: var(--text-muted); }
 
-        /* Content Grid */
-        .content-grid {
-          display: grid;
-          grid-template-columns: 1fr 380px;
-          gap: 30px;
-        }
+        .content-grid { width: 100%; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .section-header h3 { font-weight: 900; display: flex; align-items: center; gap: 12px; }
+        .gold { color: var(--primary); }
 
-        .section-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-        }
+        .filter-tabs { display: flex; gap: 10px; }
+        .tab { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 900; color: #475569; cursor: pointer; background: rgba(255,255,255,0.02); }
+        .tab.active { background: var(--primary); color: black; }
 
-        .section-header h3 { font-weight: 900; display: flex; align-items: center; gap: 10px; }
-        .btn-text { background: none; border: none; color: var(--gold-400); font-weight: 700; cursor: pointer; }
+        .unified-table { width: 100%; border-collapse: collapse; text-align: left; background: rgba(0,0,0,0.2); border-radius: 12px; overflow: hidden; }
+        .unified-table th { padding: 16px 20px; background: rgba(255,255,255,0.03); color: #64748b; font-size: 0.7rem; text-transform: uppercase; font-weight: 800; }
+        .unified-table td { padding: 18px 20px; border-bottom: 1px solid rgba(255,255,255,0.03); font-weight: 700; font-size: 0.9rem; }
+        
+        .ai-row { background: rgba(212, 175, 55, 0.02); }
+        .owner-cell { display: flex; align-items: center; gap: 10px; }
+        .ai-name { color: var(--primary); }
+        .ticker-cell { display: flex; flex-direction: column; }
+        .t-name { font-weight: 900; color: white; }
+        
+        .m-tag { padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 900; }
+        .m-tag.us { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .m-tag.kr { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
-        .positions-list {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .position-item {
-          display: grid;
-          grid-template-columns: 150px 1fr 100px 150px 40px;
-          align-items: center;
-          padding: 16px 20px;
-          background: rgba(255, 255, 255, 0.03);
-          border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          transition: transform 0.2s, background 0.2s;
-        }
-
-        .position-item:hover {
-          background: rgba(255, 255, 255, 0.06);
-          transform: scale(1.01);
-        }
-
-        .stock-symbol { font-weight: 900; font-size: 1.1rem; }
-        .stock-name { font-size: 0.8rem; color: var(--text-muted); }
-        .curr-price { font-weight: 700; }
-        .avg-price { font-size: 0.75rem; color: var(--text-muted); }
-        .stock-pnl { font-weight: 800; display: flex; align-items: center; gap: 4px; }
-        .stock-pnl.positive { color: #10b981; }
-        .stock-pnl.negative { color: #ef4444; }
-        .val-amount { font-weight: 800; }
-        .val-qty { font-size: 0.75rem; color: var(--text-muted); }
-        .item-action { background: none; border: none; color: var(--text-muted); cursor: pointer; }
-
-        /* Side Sections */
-        .side-section { display: flex; flex-direction: column; gap: 30px; }
-        .allocation-card, .activity-card { padding: 24px; }
-        .allocation-card h3, .activity-card h3 { margin-bottom: 24px; font-weight: 900; display: flex; align-items: center; gap: 10px; font-size: 1rem; }
-
-        .chart-placeholder {
-          display: flex;
-          align-items: center;
-          gap: 24px;
-        }
-
-        .chart-ring {
-          width: 120px;
-          height: 120px;
-          border-radius: 50%;
-          background: conic-gradient(var(--gold-400) 0% 65%, #3b82f6 65% 97%, #ef4444 97% 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-        }
-
-        .ring-center {
-          width: 85px;
-          height: 85px;
-          background: #0a0a0a;
-          border-radius: 50%;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .center-val { font-size: 1.2rem; font-weight: 900; }
-        .center-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; }
-
-        .chart-legend { display: flex; flex-direction: column; gap: 10px; }
-        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
-        .dot.stocks { background: var(--gold-400); }
-        .dot.cash { background: #3b82f6; }
-        .dot.crypto { background: #ef4444; }
-
-        .activity-list { display: flex; flex-direction: column; gap: 16px; }
-        .activity-item { display: flex; align-items: center; gap: 14px; }
-        .act-icon {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 900;
-          font-size: 0.8rem;
-        }
-        .act-icon.buy { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-        .act-icon.sell { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-        .act-title { font-size: 0.9rem; font-weight: 700; }
-        .act-time { font-size: 0.75rem; color: var(--text-muted); }
+        .val-cell { color: var(--primary); font-family: 'Fira Code', monospace; }
       `}</style>
     </div>
   );

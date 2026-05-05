@@ -29,7 +29,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
     else if (pathname.includes("/auto")) toggleGroup("auto", true);
     else if (pathname.includes("/strategy")) toggleGroup("strategy", true);
 
-    // 사이드바 자동 닫기 (모바일 대응)
+    // ?�ル??��?�泳���???繹먮굟諭�????�몴?�룻꼧癲?�슣�넊? ????????????筌먦?��?????�뿢?��
     if (isOpen) {
       onClose();
     }
@@ -48,22 +48,14 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
     const isExpanded = expandedGroups[id];
     return (
       <div className={`nav-group-container ${isExpanded ? 'is-expanded' : ''}`}>
-        <button className="nav-group-header" onClick={() => toggleGroup(id)}>
+        <div className="group-header-clickable" onClick={() => toggleGroup(id)}>
           <span className="group-title">{title}</span>
-          {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-        </button>
-        {isExpanded && <div className="nav-group-content">{children}</div>}
+          {isExpanded ? <ChevronDown size={16} className="gold" /> : <ChevronRight size={16} className="muted" />}
+        </div>
+        <div className={`sub-menu-accordion ${isExpanded ? 'open' : 'closed'}`}>
+          {children}
+        </div>
       </div>
-    );
-  };
-
-  const NavItem = ({ href, label, icon: Icon }: { href: string, label: string, icon?: any }) => {
-    const isActive = pathname === href;
-    return (
-      <Link href={href} className={`nav-item ${isActive ? 'active' : ''}`}>
-        {Icon && <Icon size={16} className="nav-icon" />}
-        <span>{label}</span>
-      </Link>
     );
   };
 
@@ -74,6 +66,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
           <img src="/dragonfly4.png" alt="Dragonfly Logo" className="logo-img" />
           <span className="gradient-text logo-text">DRAGONFLY v6.0</span>
         </div>
+        {/* ?�ル??��?�泳���????�넭?�ｋ�?????�뿢?�� ?類����???*/}
         <button className="mobile-close-btn" onClick={onClose}>
           <X size={24} />
         </button>
@@ -83,48 +76,159 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
       </div>
       
       <nav className="nav-menu mission-scroll">
-        <NavGroup id="hq" title="1. 본부 사령부 (HQ)">
-          <NavItem href="/" label="통합 상황실" />
-          <NavItem href="/hq/briefing" label="일일 브리핑" />
-          {isAdmin && <NavItem href="/hq/admin" label="관리자 통제" />}
+        {/* ... (rest of the nav content) ... */}
+        {/* 1. HQ */}
+        <NavGroup id="hq" title="[ HQ ] 1. ??�뚮?�筌�? ??�댖?�뺣?�野�?">
+          <div className="sub-menu">
+            {isAdmin && (
+              <Link href="/hq/admin" className="sub-item-link">
+                <div className={`sub-item ${pathname === "/hq/admin" ? "active" : ""}`}>1-a. [ ADMIN ] ?�ル??���??????�돮��??????�롫??/div>
+              </Link>
+            )}
+            <Link href="/hq/hr" className="sub-item-link"><div className={`sub-item ${pathname === "/hq/hr" ? "active" : ""}`}>1-b. [ HR ] ??�뚮?�筌�? ?嶺뚮?���??????�걡?�떷�?/div></Link>
+            <Link href="/hq/security" className="sub-item-link"><div className={`sub-item ${pathname === "/hq/security" ? "active" : ""}`}>1-c. [ SECURE ] ??節??��?????�녿뼀???�뚮�???/div></Link>
+            <Link href="/hq/account" className="sub-item-link"><div className={`sub-item ${pathname === "/hq/account" ? "active" : ""}`}>1-d. [ PORTFOLIO ] ??????????�ル??��?�泳�戮?�뭄??????????/div></Link>
+          </div>
         </NavGroup>
 
-        <NavGroup id="market" title="2. 시장 데이터 센터">
-          <NavItem href="/market/summary" label="시장 종합 지표" />
-          <NavItem href="/market/heatmap" label="섹터 맵" />
-          <NavItem href="/market/news" label="실시간 속보" />
+        {/* ... */}
+        {/* 7. AUTO */}
+        <NavGroup id="auto" title="[ AUTO ] 7. ???筌욎�㏃??���嫄�????�댖?�뺣?�野�?">
+          <div className="sub-menu">
+            <Link href="/auto/exec" className="sub-item-link"><div className={`sub-item ${pathname === "/auto/exec" ? "active" : ""}`}>7-a. [ EXEC ] ???源놁�??�ル??���????????/div></Link>
+            <Link href="/auto/dashboard" className="sub-item-link"><div className={`sub-item ${pathname === "/auto/dashboard" ? "active" : ""}`}>7-b. [ DASHBOARD ] ?�ル??��?�泳�??????�넭?�κ덱???濡ろ????/div></Link>
+            {isAdmin && (
+              <Link href="/auto/engine" className="sub-item-link">
+                <div className={`sub-item ${pathname === "/auto/engine" ? "active" : ""}`}>
+                  7-c. [ ENGINE ] ???筌욎�㏃??���嫄�???�넭?�ｋ�????�먯??���?
+                </div>
+              </Link>
+            )}
+            <Link href="/auto/report" className="sub-item-link"><div className={`sub-item ${pathname === "/auto/report" ? "active" : ""}`}>7-d. [ REPORT ] ???筌�?????濚밸Ŧ�꺊???/div></Link>
+            <Link href="/auto/rank" className="sub-item-link"><div className={`sub-item ${pathname === "/auto/rank" ? "active" : ""}`}>7-e. [ RANK ] ??�댖?�뺣?�野�? ?�ル??��?���????�넭?�ｋ���젆?/div></Link>
+            {isAdmin && (
+              <Link href="/hq/telegram" className="sub-item-link">
+                <div className={`sub-item ${pathname === "/hq/telegram" ? "active" : ""}`}>7-f. [ TELEGRAM ] ???�먮??�슃�쐺?�쏅챷援�?????���?????�롫??/div>
+              </Link>
+            )}
+          </div>
         </NavGroup>
 
-        <NavGroup id="target" title="3. 타겟 발굴 센터">
-          <NavItem href="/target/rank" label="실시간 RS 순위" />
-          <NavItem href="/target/scan" label="전술적 스캐너" />
-          <NavItem href="/target/watchlist" label="집중 감시 명단" />
-        </NavGroup>
-
-        <NavGroup id="auto" title="4. 자동 매매 시스템">
-          <NavItem href="/auto/dashboard" label="자동 매매 현황" />
-          <NavItem href="/auto/exec" label="정밀 매매 집행" />
-          <NavItem href="/auto/report" label="운용 보고서" />
-        </NavGroup>
-
-        <NavGroup id="strategy" title="5. AI 전략 연구소">
-          <NavItem href="/strategy/intro" label="전략 라이브러리" />
-          <NavItem href="/strategy/performance" label="수익률 시뮬레이션" />
-        </NavGroup>
-
-        <NavGroup id="academy" title="6. 투자 아카데미">
-          <NavItem href="/academy/intro" label="기법 강의" />
-          <NavItem href="/academy/radar" label="나노 바나나 레이더" />
-          <NavItem href="/academy/review" label="매매 복기 노트" />
+        {/* 8. STRATEGY */}
+        <NavGroup id="strategy" title="[ STRATEGY ] 8. AI ?�꾧?���?????源낃???�넭?�ｋ�??>
+          <div className="sub-menu">
+            <Link href="/strategy/intro" className="sub-item-link"><div className={`sub-item ${pathname === "/strategy/intro" ? "active" : ""}`}>8-a. [ INTRO ] AI ???�먯??????�꾧?���??????筌�?/div></Link>
+            <Link href="/strategy/manual" className="sub-item-link"><div className={`sub-item ${pathname === "/strategy/manual" ? "active" : ""}`}>8-b. [ MANUAL ] ?�꾧?���???????源놁�??�넭?�ｋ�???�ル??���????/div></Link>
+            <Link href="/strategy/checklist" className="sub-item-link"><div className={`sub-item ${pathname === "/strategy/checklist" ? "active" : ""}`}>8-c. [ CHECKLIST ] ?�ル?��???????�넭?�ｋ�???�ル?���?�뼃移곤쭚�?��?????/div></Link>
+            <Link href="/strategy/library" className="sub-item-link"><div className={`sub-item ${pathname === "/strategy/library" ? "active" : ""}`}>8-d. [ LIBRARY ] ?��?�베毓�???�넭?�ｋ��筌�?????�넭?�ｋ�????繹먮?���???�쀫뮛??���?/div></Link>
+            <Link href="/strategy/quote" className="sub-item-link"><div className={`sub-item ${pathname === "/strategy/quote" ? "active" : ""}`}>8-e. [ QUOTE ] ???�끂痢�???�꾧?���????�ル??��?��뤃�?��??/div></Link>
+            <Link href="/strategy/logs" className="sub-item-link"><div className={`sub-item ${pathname === "/strategy/logs" ? "active" : ""}`}>8-f. [ LOGS ] AI ???筌욎�㏃??���嫄�?????源놁�??�꺁��??�뼺??��?/div></Link>
+            <Link href="/strategy/performance" className="sub-item-link"><div className={`sub-item ${pathname === "/strategy/performance" ? "active" : ""}`}>8-g. [ PERFORMANCE ] AI ??�몴?�룸????�넭?�λ짃�걡???�끇???/div></Link>
+            <Link href="/hq/briefing" className="sub-item-link"><div className={`sub-item ${pathname === "/hq/briefing" ? "active" : ""}`}>8-h. [ BRIEFING ] AI ?�넭?�ｋ�?????�쀫뮛???/div></Link>
+          </div>
         </NavGroup>
       </nav>
-      
-      <div className="sidebar-footer">
-        <div className="system-status">
-          <div className="status-dot online"></div>
-          <span>SECURE CHANNEL CONNECTED</span>
+
+      <div className="user-profile">
+        <div className="avatar">{isAdmin ? "AD" : "CB"}</div>
+        <div className="user-info">
+          <div className="user-name">{user || "Guest"}</div>
+          <div className="user-role">{isAdmin ? "Master Admin" : "Elite Operator"}</div>
         </div>
       </div>
+
+      <style jsx>{`
+        .sidebar { width: 300px; height: 100vh; background: rgba(10, 10, 15, 0.95); border-right: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; z-index: 1000; flex-shrink: 0; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .logo-container { padding: 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; }
+        .logo-wrapper { display: flex; align-items: center; gap: 12px; }
+        .logo-img { width: 32px; height: 32px; border-radius: 8px; filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.3)); }
+        .logo-text { font-size: 1.4rem; font-weight: 900; letter-spacing: -1px; }
+        
+        .mobile-close-btn { display: none; background: none; border: none; color: var(--text-muted); cursor: pointer; }
+        
+        .mission-control-header { padding: 20px 30px 10px 30px; }
+        .label { font-size: 0.7rem; font-weight: 900; color: var(--primary); letter-spacing: 2px; }
+        .mission-scroll { flex: 1; overflow-y: auto; padding: 10px 20px; }
+        /* ... existing scrollbar styles ... */
+
+        @media (max-width: 768px) {
+          .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            transform: translateX(-100%);
+            width: 100vw;
+            height: 100vh;
+            background: rgba(5, 5, 10, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            padding: 40px 20px;
+          }
+          .sidebar.mobile-open {
+            transform: translateX(0);
+          }
+          .logo-container {
+            margin-bottom: 20px;
+            padding: 0 10px 20px 10px;
+          }
+          .mobile-close-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+          }
+          .group-header-clickable {
+            padding: 18px 15px;
+            font-size: 1rem;
+          }
+          .sub-item {
+            padding: 14px 20px;
+            font-size: 0.9rem;
+          }
+          .nav-menu {
+            padding-top: 20px;
+          }
+        }
+        .mission-scroll::-webkit-scrollbar { width: 4px; }
+        .mission-scroll::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.2); border-radius: 10px; }
+
+        /* Accordion Styles */
+        .nav-group-container { margin-bottom: 8px; border-radius: 12px; overflow: hidden; transition: all 0.3s ease; }
+        .nav-group-container.is-expanded { background: rgba(255, 255, 255, 0.02); }
+        
+        .group-header-clickable { 
+          padding: 14px 15px; display: flex; justify-content: space-between; align-items: center; 
+          cursor: pointer; transition: all 0.2s; font-size: 0.85rem; font-weight: 800; color: #94a3b8;
+        }
+        .group-header-clickable:hover { background: rgba(212, 175, 55, 0.05); color: #f2f2f2; }
+        .is-expanded .group-header-clickable { color: var(--primary); }
+
+        .sub-menu-accordion { overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sub-menu-accordion.closed { max-height: 0; }
+        .sub-menu-accordion.open { max-height: 500px; padding-bottom: 10px; }
+
+        .sub-menu { display: flex; flex-direction: column; padding-left: 10px; }
+        .sub-item { padding: 10px 15px; font-size: 0.8rem; color: #64748b; font-weight: 700; transition: all 0.2s; border-radius: 8px; margin: 2px 0; }
+        .sub-item:hover { background: rgba(255, 255, 255, 0.05); color: #f2f2f2; }
+        .sub-item.active { background: rgba(212, 175, 55, 0.1); color: var(--primary); border-left: 3px solid var(--primary); }
+
+        .nav-item.mission-btn { display: block; padding: 14px 15px; font-size: 0.85rem; font-weight: 800; color: #94a3b8; text-decoration: none; border-radius: 12px; transition: all 0.2s; margin-top: 10px; }
+        .nav-item.mission-btn:hover { background: rgba(255, 255, 255, 0.05); color: #f2f2f2; }
+        .tag { color: var(--primary); margin-right: 8px; }
+
+        .user-profile { padding: 24px; background: rgba(255, 255, 255, 0.02); border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; gap: 16px; }
+        .avatar { width: 40px; height: 40px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: black; }
+        .user-name { font-size: 0.9rem; font-weight: 800; color: #f2f2f2; }
+        .user-role { font-size: 0.7rem; color: #64748b; font-weight: 700; }
+
+        .gold { color: #d4af37; }
+        .muted { color: #475569; }
+      `}</style>
     </aside>
   );
 }

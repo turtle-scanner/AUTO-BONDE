@@ -43,7 +43,7 @@ export default function TradingViewLivePage() {
     <div className="tv-live-container animate-fade-in">
       <div className="tv-header">
         <h1 className="tv-title">
-          <LineChart size={36} className="gold" /> 5-g. [ TVLIVE ] 트레이딩뷰 라이브 사령부
+          <LineChart size={36} className="gold" /> 5-g. [ TVLIVE ] ?嶺뚮?��??????�뻼?��????繹먮?���????�댖?�뺣?�野�?
         </h1>
         <div className="premium-badge">PREMIUM UX v6.5</div>
       </div>
@@ -61,14 +61,14 @@ export default function TradingViewLivePage() {
             <div className="command-grid">
               <button className="cmd-btn danger">
                 <ShieldAlert size={20} />
-                <span>긴급 전량 매도 (EMERGENCY SELL)</span>
+                <span>?�꺂����????�넭?�ｋ�???�ル??���?�뎿��??(EMERGENCY SELL)</span>
               </button>
               <button className="cmd-btn warning">
                 <Zap size={20} />
-                <span>시스템 일시정지 (PAUSE BOT)</span>
+                <span>??筌�?痢�????繹먮굝六�?嶺�? (PAUSE BOT)</span>
               </button>
             </div>
-            <p className="cmd-desc">외부에서도 스마트폰으로 즉시 모든 포지션을 정리하고 안전하게 대피할 수 있습니다.</p>
+            <p className="cmd-desc">?嶺�??????????�똻�뼥?嶺뚮?�援??��??��?���큔 ?�ル?�鍮뽳쭕???�ル??��?�泳����???????�몴?�룰???嶺뚮?��릺��???寃뗏�????源놁�???�슦踰� ?????紐껋�???????��????�뜄�렡.</p>
           </GlassCard>
 
           <GlassCard className="alert-intelligence">
@@ -88,7 +88,7 @@ export default function TradingViewLivePage() {
               </div>
             </div>
             <div className="alert-config">
-              <label>신호 강도 필터 (Signal Sensitivity)</label>
+              <label>??�꺂履뉑???�씈?�녻린醫귣�???�넭?�κ덮??(Signal Sensitivity)</label>
               <input type="range" className="gold-range" />
               <div className="range-labels">
                 <span>Safe</span>

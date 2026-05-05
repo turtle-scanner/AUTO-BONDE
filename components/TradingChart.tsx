@@ -4,11 +4,11 @@ import React, { useEffect, useRef } from "react";
 import { createChart, ColorType, ISeriesApi, CandlestickData } from "lightweight-charts";
 
 interface TradingChartProps {
-  data?: CandlestickData[];
-  ticker?: string;
+  data: CandlestickData[];
+  ticker: string;
 }
 
-const TradingChart: React.FC<TradingChartProps> = ({ data = [], ticker = 'MARKET' }) => {
+const TradingChart: React.FC<TradingChartProps> = ({ data, ticker }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<any>(null);
 

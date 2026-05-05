@@ -13,7 +13,7 @@ const QuickOrder: React.FC = () => {
     setStatus('loading');
 
     try {
-      const res = await fetch('/api/order', {
+      const res = await fetch('/v6-api/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

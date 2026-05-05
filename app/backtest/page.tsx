@@ -12,7 +12,7 @@ export default function BacktestPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/backtest');
+        const res = await fetch('/v6-api/backtest');
         const json = await res.json();
         setData(json);
       } catch (err) {
@@ -24,14 +24,14 @@ export default function BacktestPage() {
     fetchData();
   }, []);
 
-  if (loading) return <div className="loading-state">ê¸°ë¡ ë¶„ì„ ì¤‘...</div>;
+  if (loading) return <div className="loading-state">?ï¿½êºï¿½ì??ï¿½ë¼º??¿½??ï¿½ë‡¡ï¿½ìŠ£ç¶?¿½??æ¿šï¿½?..</div>;
 
   return (
     <div className="backtest-container animate-fade-in">
       <div className="header-row">
         <div className="title-section">
           <h2 className="gradient-text">Strategy Performance Analysis</h2>
-          <p>ì „ëµ: <span className="highlight">Advanced Bonde Strategy v3.0</span> | ê¸°ê°„: 2024-01-01 ~ 2024-04-10</p>
+          <p>?ï¿½ë„­?¨ï½‹ì³?? <span className="highlight">Advanced Bonde Strategy v3.0</span> | ?ï¿½êºï¿½ì??ï¿½ï¿½?±ï¿½? 2024-01-01 ~ 2024-04-10</p>
         </div>
         <button className="download-report">
           <Download size={16} />

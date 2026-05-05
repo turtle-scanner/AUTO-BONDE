@@ -98,6 +98,7 @@ body {
 .layout-container {
   display: flex;
   min-height: 100vh;
+  width: 100%;
   background: #000;
 }
 
@@ -117,6 +118,8 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  width: 100%;
   background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%);
 }
 
@@ -133,6 +136,8 @@ body {
   flex: 1;
   padding: 30px;
   overflow-y: auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* --- [ NAV & COMPONENTS ] --- */
@@ -311,12 +316,12 @@ body {
   }
 
   .content-area {
-    padding: 20px 15px; /* S23 등 최신 기종에 맞는 여백 */
+    padding: 20px 15px; /* S23 ??嶺뚣끉裕???リ옇?ｄ펺??嶺뚮씮?????揶?*/
   }
 
-  /* 터치 타겟 최적화 (S23 등 안드로이드 최적화) */
+  /* ??⑥?뭵 ????嶺뚣끉裕???(S23 ?????덇덧?β돦裕???嶺뚣끉裕??? */
   button, .sub-item, .nav-item, .p-action-btn {
-    min-height: 48px; /* 구글 권장 최소 터치 크기 */
+    min-height: 48px; /* ??? 雅?굝???嶺뚣끉裕????⑥?뭵 ????*/
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
@@ -364,8 +369,8 @@ body {
     gap: 15px !important;
   }
 
-  /* 텍스트 가독성 향상 */
+  /* ???⑸츩???띠럾????얠뎽 ??쒏묾?*/
   body {
-    font-size: 15px; /* 모바일 표준 가독성 */
+    font-size: 15px; /* 嶺뚮ㅄ維?????? ?띠럾????얠뎽 */
   }
 }
